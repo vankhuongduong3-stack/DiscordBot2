@@ -1,14 +1,15 @@
-import discord
-from discord.ext import commands
+
+import os
 import random
 import asyncio
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
+import discord
+from discord.ext import commands
 
 TOKEN = os.getenv("TOKEN")
 OWNER_ID = 1531882555664629861
+
+if not TOKEN:
+    raise ValueError("Lỗi: Không tìm thấy TOKEN trong môi trường hệ thống!")
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -144,7 +145,7 @@ async def roastmode(ctx):
     global current_mode, target_user_id
 
     if ctx.author.id != OWNER_ID:
-        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ BOSS MỚI ĐƯỢC ĐIỀU KHIỂN."** 🔥💀')
+        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ BOSS MỚI ĐƯỢC ĐIỀU KHIỂN TAO."** 🔥💀')
         return
 
     if current_mode == "roast":
@@ -254,11 +255,13 @@ async def on_message(message):
             description=header + roast_text,
             color=0xFF0000
         )
+        avatar_url = bot.user.avatar.url if (bot.user and bot.user.avatar) else None
+        embed.set_author(name="Sun Flower", icon_url=avatar_url)
         embed.set_footer(text="Sun Flower • Toxic Roast Demon 💀🔥")
 
         try:
             await message.reply(embed=embed, mention_author=True)
-        except:
+        except Exception:
             await message.channel.send(content=message.author.mention, embed=embed)
 
     # ===== ANGEL MODE =====
@@ -277,7 +280,7 @@ async def on_message(message):
 
         try:
             await message.reply(embed=embed, mention_author=False)
-        except:
+        except Exception:
             await message.channel.send(embed=embed)
 
 bot.run(TOKEN)
