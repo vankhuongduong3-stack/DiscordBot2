@@ -305,7 +305,7 @@ async def on_message(message):
                 prompt = f"Người dùng {message.author.display_name} vừa nói: '{user_msg}'. Hãy tuân thủ 20 quy tắc hệ thống để đọc và trả lời lại yêu cầu này một cách thông minh, dễ thương và đúng trọng tâm nhất."
 
                 response = ai_client.models.generate_content(
-                    model='gemini-2.5-flash',
+                    model='gemini-1.5-flash',
                     contents=prompt,
                     config={
                         'system_instruction': SYSTEM_INSTRUCTION_ANGEL,
