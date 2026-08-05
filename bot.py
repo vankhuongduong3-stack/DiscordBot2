@@ -1,11 +1,14 @@
 import os
-import discord
-from discord.ext import commands
 import random
 import asyncio
+import discord
+from discord.ext import commands
 
-TOKEN = os.getenv("MTUzMzYzNDc1MTYwNzQ3MjEyOA.G1D4Hb.7tBqHE_-8rJbVrgbaxQakF6mQeaInvoWXydcVY")
+TOKEN = os.getenv("TOKEN")
 OWNER_ID = 1531882555664629861
+
+if not TOKEN:
+    raise ValueError("Lỗi: Không tìm thấy TOKEN trong môi trường Railway!")
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -116,13 +119,13 @@ async def on_message(message):
         description=full_roast,
         color=0xFF0000
     )
-    embed.set_author(name="Sun Flower", icon_url=bot.user.avatar.url if bot.user.avatar else None)
+    avatar_url = bot.user.avatar.url if (bot.user and bot.user.avatar) else None
+    embed.set_author(name="Sun Flower", icon_url=avatar_url)
     embed.set_footer(text="Sun Flower • Toxic Roast Demon 💀")
 
     try:
         await message.reply(embed=embed, mention_author=True)
-    except:
+    except Exception:
         await message.channel.send(content=user_mention, embed=embed)
-
 
 bot.run(TOKEN)
