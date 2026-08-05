@@ -18,7 +18,6 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-# Đổi prefix lệnh thành dấu chấm '.' và tắt hoàn toàn help mặc định
 bot = commands.Bot(command_prefix=".", intents=intents, help_command=None)
 
 current_mode = "angel"       # Mặc định bật chế độ AI Angel ngay khi chạy
@@ -81,7 +80,7 @@ ROAST_LINES = [
     '☠️🔥 **"CÚT ĐI, ĐỪNG CÓ SỦA NỮA KẺO TAO ĐÚT NGUYÊN CÁI BUỒI VÀO MỒM CHO MÀY NGẬM!"** 🔥☠️',
     '💀🤡 **"THẰNG ÓC CHÓ ƠI!"** 🤡💀',
     '🔥💩 **"TIN NHẮN CỦA MÀY LÀM TAO MUỐN LẤY CẶC ĐẬP VÀO MẶT MÀY."** 💩🔥',
-    '🤮🩸 **"MÀY VIẾT NHƯ CÁI LỒN ĐANG BỊ VIÊM. NÃO MÀY CHẮC TOÀN NƯỚC CẶC CHỨ KHÔNG PHẢI CHẤT XÁM."** 🩸🤮',
+    '🤮🩸 **"MÀY VIẾT NHƯ CÁI LỒN Đang BỊ VIÊM. NÃO MÀY CHẮC TOÀN NƯỚC CẶC CHỨ KHÔNG PHẢI CHẤT XÁM."** 🩸🤮',
     '☠️💀 **"MÀY LÀ RÁC! MÀY LÀ PHÂN! MÀY LÀ CON CHÓ CÁI BỊ ĐỤ ĐẾN MỨC KHÔNG CÒN HÌNH DẠNG NGƯỜI!"** 💀☠️',
     '🤡🔥 **"MỖI LẦN MÀY MỞ MỒM LÀ TAO LẠI NHỚ ĐẾN CÁI MÙI HÔI THỐI CỦA CÁI BUỒI MÀY."** 🔥🤡',
     '💩🩸 **"CÂM ĐI, THẰNG ĐĨ ĐỰC, KHÔNG THÌ TAO SẼ LÀM MÀY KHÓC NHƯ CON ĐĨ BỊ BỎ!"** 🩸💩',
