@@ -14,8 +14,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-# Tắt help mặc định của discord.py bằng help_command=None
-bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 current_mode = None          # None / "roast" / "angel"
 target_user_id = None
@@ -36,7 +35,7 @@ ROAST_LINES = [
     '🩸🔥 **"TAO ĐỌC TIN NHẮN CỦA MÀY XONG TAO MUỐN ÓI VÌ MÙI HÔI THỐI CỦA NÓ."** 🔥🩸',
     '🤡💀 **"MÀY LÀ CÁI XÁC SỐNG KHÔNG CÓ NÃO!"** 💀🤡',
     '☠️💩 **"MÀY LÀ CON CHÓ CÁI BỊ BỎ RƠI NGOÀI ĐƯỜNG!"** 💩☠️',
-    '🔥🤮 **"MÀY LÀ ĐỐNG PHÂN MÀ NGAY CẢ RUỒI CỦNG KHÔNG THÈM ĐẬU!"** 🤮🔥',
+    '🔥🤮 **"MÀY LÀ ĐỐNG PHÂN MÀ NGAY CẢ RUỒI CŨNG KHÔNG THÈM ĐẬU!"** 🤮🔥',
     '💀🩸 **"MỖI LẦN MÀY GÕ PHÍM LÀ TAO LẠI NHỚ ĐẾN CÁI LỒN MẸ MÀY ĐANG THỐI RỮA."** 🩸💀',
     '🤡🔥 **"CÂM HỌNG LẠI ĐI THẰNG ÓC CẶC, KHÔNG THÌ TAO SẼ LÀM MÀY KHÓC NHƯ CON CHÓ CÁI BỊ ĐỤ!"** 🔥🤡',
     '☠️💀 **"HAHAHAHA THẰNG SÚC VẬT NÀY!"** 💀☠️',
@@ -61,23 +60,58 @@ ROAST_LINES = [
     '💀🤡 **"GIỜ THÌ NGỒI IM NHƯ CON CHÓ CÁI ĐANG ĐỢI CHỦ, ĐỪNG CÓ SỦA NỮA!"** 🤡💀',
 ]
 
-# ==================== ANGEL LINES ====================
+# ==================== ANGEL LINES (nhiều câu + emote) ====================
 ANGEL_LINES = [
-    '🌸💖 **"Chào cậu nhé~ Tớ là Sun Flower đây 🌸. Cậu đừng lo lắng quá nha."** 💖🌸',
-    '✨🌷 **"Trong server của chúng ta không hề có bot nào được thiết kế để gây hại đâu ạ ✨"** 🌷✨',
-    '💗☁️ **"Các bot ở đây đều là trợ thủ đắc lực được Boss cài đặt để giúp server hoạt động trơn tru hơn thôi đó ☁️"** ☁️💗',
-    '🥰🌸 **"Tớ luôn ở đây để lắng nghe và hỗ trợ cậu một cách nhẹ nhàng nhất có thể 🥰"** 🌸🥰',
-    '💖✨ **"Nếu cậu đang cảm thấy không vui, cứ nói với tớ nha. Tớ sẽ cố gắng làm cậu dễ chịu hơn ✨"** ✨💖',
-    '🌷💗 **"Cậu đang làm rất tốt rồi đó. Đừng tự trách bản thân quá nhiều nha 🌷"** 💗🌷',
-    '☁️🌸 **"Tớ hiểu cảm giác của cậu. Mọi thứ rồi sẽ ổn thôi, cứ từ từ một chút nhé ☁️"** 🌸☁️',
-    '🥰💖 **"Cảm ơn cậu đã chia sẻ với tớ. Tớ rất vui khi được trò chuyện cùng cậu 🥰"** 💖🥰',
-    '✨🌷 **"Dù chuyện gì xảy ra, tớ vẫn sẽ ở đây lắng nghe cậu một cách chân thành ✨"** 🌷✨',
-    '💗🌸 **"Cậu không cần phải mạnh mẽ suốt đâu. Được yếu đuối một chút cũng không sao cả 💗"** 🌸💗',
-    '☁️🥰 **"Hít thở sâu nào~ Tớ ở đây với cậu mà ☁️"** 🥰☁️',
-    '💖✨ **"Mỗi tin nhắn của cậu đều khiến tớ muốn trả lời dịu dàng hơn một chút ✨"** ✨💖',
-    '🌷☁️ **"Cậu có thể kể với tớ bất cứ điều gì. Tớ sẽ không phán xét đâu 🌷"** ☁️🌷',
-    '🌸💗 **"Tớ hy vọng hôm nay của cậu sẽ nhẹ nhàng và dễ chịu hơn một chút 🌸"** 💗🌸',
-    '🥰✨ **"Cứ thoải mái nhé. Không ai ở đây muốn làm cậu tổn thương cả 🥰"** ✨🥰',
+    '🌸💖 **"Chào cậu nhé~ Tớ là Sun Flower đây 🌸"** 💖🌸',
+    '✨🌷 **"Cậu gọi tớ à? Tớ đang lắng nghe đây ✨"** 🌷✨',
+    '💗☁️ **"Tớ nghe thấy cậu rồi. Cứ thoải mái nói nhé ☁️"** ☁️💗',
+    '🥰🌸 **"Có chuyện gì cứ kể cho tớ nghe nha 🥰"** 🌸🥰',
+    '💖✨ **"Tớ luôn sẵn sàng lắng nghe cậu ✨"** ✨💖',
+    '🌷💗 **"Cậu đang cần tớ giúp gì không ạ? 🌷"** 💗🌷',
+    '☁️🌸 **"Tớ ở đây với cậu mà, đừng ngại nha ☁️"** 🌸☁️',
+    '🥰💖 **"Cảm ơn cậu đã nhắn tin cho tớ 🥰"** 💖🥰',
+    '✨🌷 **"Tớ rất vui khi được trò chuyện cùng cậu ✨"** 🌷✨',
+    '💗🌸 **"Cậu muốn chia sẻ điều gì với tớ không? 💗"** 🌸💗',
+    '☁️🥰 **"Hít thở sâu nào~ Tớ đang ở đây ☁️"** 🥰☁️',
+    '💖✨ **"Mỗi lời của cậu tớ đều lắng nghe cẩn thận ✨"** ✨💖',
+    '🌷☁️ **"Cứ từ từ nói, tớ không vội đâu 🌷"** ☁️🌷',
+    '🌸💗 **"Tớ hy vọng có thể làm cậu cảm thấy dễ chịu hơn 🌸"** 💗🌸',
+    '🥰✨ **"Cậu không cần phải mạnh mẽ suốt đâu 🥰"** ✨🥰',
+    '💖🌸 **"Tớ hiểu cảm giác của cậu 💖"** 🌸💖',
+    '✨💗 **"Có tớ ở đây rồi, cậu yên tâm nha ✨"** 💗✨',
+    '🌷🥰 **"Cậu làm tốt lắm rồi đó 🌷"** 🥰🌷',
+    '☁️💖 **"Mọi thứ rồi sẽ ổn thôi ☁️"** 💖☁️',
+    '🌸✨ **"Tớ luôn ở bên cậu 🌸"** ✨🌸',
+    '🥰💗 **"Cậu muốn tớ an ủi không? 🥰"** 💗🥰',
+    '💖🌷 **"Tớ sẵn sàng lắng nghe mọi thứ 💖"** 🌷💖',
+    '✨☁️ **"Cứ kể cho tớ nghe đi ✨"** ☁️✨',
+    '🌷🌸 **"Tớ không phán xét cậu đâu 🌷"** 🌸🌷',
+    '💗🥰 **"Cậu quan trọng với tớ lắm 💗"** 🥰💗',
+    '☁️✨ **"Tớ ở đây để hỗ trợ cậu ☁️"** ✨☁️',
+    '🌸💖 **"Cậu không cô đơn đâu 🌸"** 💖🌸',
+    '🥰🌷 **"Tớ rất thích được trò chuyện với cậu 🥰"** 🌷🥰',
+    '💖☁️ **"Có chuyện buồn cứ nói với tớ nha 💖"** ☁️💖',
+    '✨💗 **"Tớ sẽ nhẹ nhàng bên cậu ✨"** 💗✨',
+    '🌷🌸 **"Cậu đang cố gắng rất nhiều rồi 🌷"** 🌸🌷',
+    '💗☁️ **"Tớ tin ở cậu 💗"** ☁️💗',
+    '🥰✨ **"Cứ dựa vào tớ một chút cũng được 🥰"** ✨🥰',
+    '💖🌷 **"Tớ sẽ không rời cậu đâu 💖"** 🌷💖',
+    '🌸💗 **"Cậu xứng đáng được đối xử dịu dàng 🌸"** 💗🌸',
+    '✨☁️ **"Tớ lắng nghe cậu đây ✨"** ☁️✨',
+    '🌷🥰 **"Cậu muốn ôm không? 🌷"** 🥰🌷',
+    '💗🌸 **"Tớ luôn sẵn sàng 💗"** 🌸💗',
+    '☁️💖 **"Cậu không cần phải giả vờ mạnh mẽ ☁️"** 💖☁️',
+    '🥰✨ **"Tớ hiểu mà 🥰"** ✨🥰',
+    '💖🌷 **"Cứ thoải mái với tớ nha 💖"** 🌷💖',
+    '🌸☁️ **"Tớ ở đây vì cậu 🌸"** ☁️🌸',
+    '✨💗 **"Cậu quan trọng ✨"** 💗✨',
+    '🌷💖 **"Tớ sẽ chờ cậu nói 🌷"** 💖🌷',
+    '💗🥰 **"Cậu muốn tâm sự không? 💗"** 🥰💗',
+    '☁️🌸 **"Tớ không vội đâu ☁️"** 🌸☁️',
+    '🥰🌷 **"Cậu cứ từ từ 🥰"** 🌷🥰',
+    '💖✨ **"Tớ lắng nghe 💖"** ✨💖',
+    '🌸💗 **"Cậu không sao đâu 🌸"** 💗🌸',
+    '✨☁️ **"Tớ bên cậu ✨"** ☁️✨',
 ]
 
 @bot.event
@@ -101,17 +135,10 @@ async def help_command(ctx):
         name="👑 Lệnh chỉ Boss được dùng",
         value=(
             "`!setup` → Hiện bảng kích hoạt + GIF\n"
-            "`!roastmode` → Bật/tắt chế độ chửi tất cả (không giới hạn)\n"
+            "`!roastmode` → Bật/tắt chế độ chửi\n"
             "`!ghim @user` → Chỉ chửi 1 người\n"
-            "`!angelmode` → Bật/tắt chế độ hiền lành (chỉ đúng chừng mực)"
-        ),
-        inline=False
-    )
-    embed.add_field(
-        name="📌 Giải thích chế độ",
-        value=(
-            "**!roastmode** → Thực hiện mọi yêu cầu, kể cả vượt giới hạn\n"
-            "**!angelmode** → Chỉ thực hiện yêu cầu đúng chừng mực"
+            "`!angelmode` → Bật/tắt chế độ hiền lành\n"
+            "`!off` → Tắt bot"
         ),
         inline=False
     )
@@ -128,11 +155,12 @@ async def setup(ctx):
         title="⚡ LÃNH ĐỊA SUN FLOWER MULTIMODAL AI ĐÃ KÍCH HOẠT",
         description=(
             f"📌 Kênh {ctx.channel.mention} đã được liên kết với **Toxic & Sweet Engine**!\n\n"
-            "🖼️ **Gửi tin nhắn**: Tự động đọc + trả lời theo chế độ đang bật\n"
-            "📄 **!roastmode**: Chế độ chửi tất cả (không giới hạn)\n"
-            "📌 **!ghim @user**: Chỉ chửi đúng 1 người\n"
-            "🌸 **!angelmode**: Chế độ hiền lành (chỉ đúng chừng mực)\n"
-            "📖 **!help**: Xem danh sách lệnh"
+            "🖼️ Bot chỉ trả lời khi được gọi (mention hoặc nói tên)\n"
+            "📄 **!roastmode**: Chế độ chửi\n"
+            "📌 **!ghim @user**: Chỉ chửi 1 người\n"
+            "🌸 **!angelmode**: Chế độ hiền lành\n"
+            "📖 **!help**: Xem danh sách lệnh\n"
+            "🔌 **!off**: Tắt bot"
         ),
         color=0x00FF9F
     )
@@ -145,7 +173,7 @@ async def roastmode(ctx):
     global current_mode, target_user_id
 
     if ctx.author.id != OWNER_ID:
-        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ BOSS MỚI ĐƯỢC ĐIỀU KHIỂN TAO."** 🔥💀')
+        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ BOSS MỚI ĐƯỢC ĐIỀU KHIỂN."** 🔥💀')
         return
 
     if current_mode == "roast":
@@ -158,7 +186,7 @@ async def roastmode(ctx):
         current_mode = "roast"
         target_user_id = None
         status = "🟢 **BẬT**"
-        desc = "🔥 **CHẾ ĐỘ CHỬI TẤT CẢ ĐÃ KÍCH HOẠT**\nThực hiện mọi yêu cầu, kể cả vượt giới hạn."
+        desc = "🔥 **CHẾ ĐỘ CHỬI ĐÃ KÍCH HOẠT**\nBot chỉ trả lời khi được gọi."
         color = 0xFF0000
 
     embed = discord.Embed(
@@ -188,7 +216,7 @@ async def ghim(ctx, member: discord.Member = None):
 
     embed = discord.Embed(
         title="🌻 SUN FLOWER • TOXIC ROAST DEMON 💀🔥",
-        description=f"📌 **Đã ghim {member.mention}**\nTừ giờ chỉ thằng này bị chửi.",
+        description=f"📌 **Đã ghim {member.mention}**\nTừ giờ chỉ thằng này bị chửi (khi gọi bot).",
         color=0xFF0000
     )
     embed.set_footer(text="Sun Flower • Only listens to Boss")
@@ -209,7 +237,7 @@ async def angelmode(ctx):
     else:
         current_mode = "angel"
         target_user_id = None
-        desc = "🌸💖 **CHẾ ĐỘ HIỀN LÀNH ĐÃ KÍCH HOẠT**\nTớ sẽ tự động trả lời dịu dàng, chỉ đúng chừng mực."
+        desc = "🌸💖 **CHẾ ĐỘ HIỀN LÀNH ĐÃ KÍCH HOẠT**\nBot chỉ trả lời khi được gọi."
         color = 0xFF69B4
 
     embed = discord.Embed(
@@ -219,6 +247,20 @@ async def angelmode(ctx):
     )
     embed.set_footer(text="Sun Flower • Soft Mode")
     await ctx.send(embed=embed)
+
+@bot.command(name="off")
+async def off(ctx):
+    if ctx.author.id != OWNER_ID:
+        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ BOSS MỚI ĐƯỢC TẮT TAO."** 🔥💀')
+        return
+
+    embed = discord.Embed(
+        title="🔌 SUN FLOWER ĐANG TẮT...",
+        description="💤 Bot sẽ offline sau vài giây.",
+        color=0x2F3136
+    )
+    await ctx.send(embed=embed)
+    await bot.close()
 
 @bot.event
 async def on_message(message):
@@ -231,6 +273,14 @@ async def on_message(message):
         return
 
     if message.author.id == OWNER_ID:
+        return
+
+    # Chỉ trả lời khi được gọi (mention bot hoặc nói tên)
+    content_lower = message.content.lower()
+    bot_mentioned = bot.user in message.mentions
+    called = any(word in content_lower for word in ["sun flower", "sunflower", "bot ơi", "bot ơi", "bot"])
+
+    if not (bot_mentioned or called):
         return
 
     # ===== ROAST MODE =====
@@ -266,14 +316,16 @@ async def on_message(message):
 
     # ===== ANGEL MODE =====
     elif current_mode == "angel":
-        await asyncio.sleep(random.uniform(1.2, 2.5))
+        await asyncio.sleep(random.uniform(1.0, 2.0))
 
-        selected = random.sample(ANGEL_LINES, k=random.randint(3, 5))
-        angel_text = "\n\n".join(selected)
+        user_msg = message.content.strip() if message.content else "..."
+        base = random.choice(ANGEL_LINES)
+
+        reply_text = f"{base}\n\n🌸 **Cậu vừa nói:** `{user_msg}`"
 
         embed = discord.Embed(
             title="🌸 SUN FLOWER • SWEET PRINCESS 💖",
-            description=angel_text,
+            description=reply_text,
             color=0xFF69B4
         )
         embed.set_footer(text="Sun Flower • Soft & Gentle 🌸")
