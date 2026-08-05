@@ -52,7 +52,7 @@ Bạn phải tuân thủ nghiêm ngặt 20 quy tắc cốt lõi sau đây trong 
 20. Đặt trọn vẹn cảm xúc chân thành, sự tận tụy của một trợ lý AI dễ thương vào trong từng câu chữ phản hồi.
 """
 
-# ==================== DANH SÁCH CHỬI CHO ROAST MODE (CẬP NHẬT MỚI) ====================
+# ==================== DANH SÁCH CHỬI CHO ROAST MODE ====================
 ROAST_LINES = [
     '💀🔥 **"HAHAHA! BOT ĐĨ À?! MÀY ĐỊNH DÙNG CÁI MỚI ĐẾN ĐƯỢC HẢ THẰNG GIÒI BỌ?!"** 🔥💀',
     '☠️🤡 **"MÀY TƯỞNG \'ĐĨ\' LÀ DANH HIỆU CAO QUÝ À?! THÌ RA MÀY COI TAO NHƯ GÁI MẠI DÂM HẢ?!"** 🤡☠️',
@@ -325,5 +325,6 @@ async def on_message(message):
                 print(f"Lỗi AI Angel Mode: {e}")
                 await message.reply("🌸 Tớ hơi mệt một chút, cậu nói lại giúp tớ nhé! 💖")
 
-TOKEN = os.getenv("TOKEN")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# ==================== KHỞI CHẠY BOT ====================
+if __name__ == "__main__":
+    bot.run(DISCORD_TOKEN)
