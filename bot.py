@@ -307,7 +307,10 @@ async def on_message(message):
                 response = ai_client.models.generate_content(
                     model='gemini-2.5-flash',
                     contents=prompt,
-                    config={'system_instruction': SYSTEM_INSTRUCTION_ANGEL}
+                    config={
+                        'system_instruction': SYSTEM_INSTRUCTION_ANGEL,
+                        'temperature': 0.7
+                    }
                 )
 
                 ai_reply = response.text if response.text else "Tớ đang lắng nghe cậu đây nè~ 🌸"
@@ -322,8 +325,9 @@ async def on_message(message):
                 await message.reply(embed=embed, mention_author=False)
 
             except Exception as e:
-                print(f"Lỗi AI Angel Mode: {e}")
-                await message.reply("🌸 Tớ hơi mệt một chút, cậu nói lại giúp tớ nhé! 💖")
+                error_msg = str(e)
+                print(f"Lỗi AI Angel Mode: {error_msg}")
+                await message.reply(f"🌸 Lỗi AI: `{error_msg[:120]}` 💖")
 
 # ==================== KHỞI CHẠY BOT ====================
 if __name__ == "__main__":
