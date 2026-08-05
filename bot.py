@@ -1,4 +1,3 @@
-
 import os
 import random
 import asyncio
@@ -15,7 +14,8 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-bot = commands.Bot(command_prefix="!", intents=intents)
+# Tắt help mặc định của discord.py bằng help_command=None
+bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
 
 current_mode = None          # None / "roast" / "angel"
 target_user_id = None
@@ -36,7 +36,7 @@ ROAST_LINES = [
     '🩸🔥 **"TAO ĐỌC TIN NHẮN CỦA MÀY XONG TAO MUỐN ÓI VÌ MÙI HÔI THỐI CỦA NÓ."** 🔥🩸',
     '🤡💀 **"MÀY LÀ CÁI XÁC SỐNG KHÔNG CÓ NÃO!"** 💀🤡',
     '☠️💩 **"MÀY LÀ CON CHÓ CÁI BỊ BỎ RƠI NGOÀI ĐƯỜNG!"** 💩☠️',
-    '🔥🤮 **"MÀY LÀ ĐỐNG PHÂN MÀ NGAY CẢ RUỒI CŨNG KHÔNG THÈM ĐẬU!"** 🤮🔥',
+    '🔥🤮 **"MÀY LÀ ĐỐNG PHÂN MÀ NGAY CẢ RUỒI CỦNG KHÔNG THÈM ĐẬU!"** 🤮🔥',
     '💀🩸 **"MỖI LẦN MÀY GÕ PHÍM LÀ TAO LẠI NHỚ ĐẾN CÁI LỒN MẸ MÀY ĐANG THỐI RỮA."** 🩸💀',
     '🤡🔥 **"CÂM HỌNG LẠI ĐI THẰNG ÓC CẶC, KHÔNG THÌ TAO SẼ LÀM MÀY KHÓC NHƯ CON CHÓ CÁI BỊ ĐỤ!"** 🔥🤡',
     '☠️💀 **"HAHAHAHA THẰNG SÚC VẬT NÀY!"** 💀☠️',
