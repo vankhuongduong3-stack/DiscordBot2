@@ -14,7 +14,8 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-bot = commands.Bot(command_prefix="!", intents=intents)
+# Tắt lệnh help mặc định của discord.py để không bị trùng lặp với custom !help
+bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
 
 current_mode = None          # None / "roast" / "angel"
 last_active_mode = "roast"   # Lưu chế độ trước khi dùng !off (mặc định là roast)
@@ -307,7 +308,7 @@ async def on_message(message):
     # Chỉ trả lời khi được gọi (mention bot hoặc nói tên)
     content_lower = message.content.lower()
     bot_mentioned = bot.user in message.mentions
-    called = any(word in content_lower for word in ["sun flower", "sunflower", "bot ơi", "bot ơi", "bot"])
+    called = any(word in content_lower for word in ["sun flower", "sunflower", "bot ơi", "bot"])
 
     if not (bot_mentioned or called):
         return
