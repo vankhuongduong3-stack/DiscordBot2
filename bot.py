@@ -16,7 +16,8 @@ intents.members = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-target_user_id = None          # ID người bị ghim
+roast_mode = False
+target_user_id = None
 
 ROAST_LINES = [
     '💀 **"HAHAHA! BOT ĐĨ À?! MÀY ĐỊNH DÙNG CÁI MỚI ĐẾN ĐƯỢC HẢ THẰNG GIÒI BỌ?!"** 💀',
@@ -63,9 +64,30 @@ async def on_ready():
     print(f"Logged in as {bot.user}")
     await bot.change_presence(activity=discord.Game(name="Toxic Roast Demon 💀🔥"))
 
+@bot.command(name="roastmode")
+async def roastmode(ctx):
+    global roast_mode, target_user_id
+
+    if ctx.author.id != OWNER_ID:
+        await ctx.send('💀 **"CÚT ĐI THẰNG LỒN! CHỈ BOSS MỚI ĐƯỢC BẬT/TẮT."** 💀')
+        return
+
+    roast_mode = not roast_mode
+    target_user_id = None  # Bật/tắt roastmode thì xóa ghim cũ
+
+    status = "**BẬT** 🔥" if roast_mode else "**TẮT** 💤"
+
+    embed = discord.Embed(
+        title="🌻 SUN FLOWER • TOXIC ROAST DEMON 💀🔥",
+        description=f'💀 **"ROAST MODE: {status}"** 💀\n\n💀 **"BẤT KỲ AI NHẮN TIN ĐỀU BỊ CHỬI (TRỪ BOSS)."** 💀',
+        color=0xFF0000
+    )
+    embed.set_footer(text="Sun Flower • Only listens to Boss 💀")
+    await ctx.send(embed=embed)
+
 @bot.command(name="ghim")
 async def ghim(ctx, member: discord.Member = None):
-    global target_user_id
+    global target_user_id, roast_mode
 
     if ctx.author.id != OWNER_ID:
         await ctx.send('💀 **"CÚT ĐI THẰNG LỒN! CHỈ BOSS MỚI ĐƯỢC GHIM."** 💀')
@@ -73,14 +95,15 @@ async def ghim(ctx, member: discord.Member = None):
 
     if member is None:
         target_user_id = None
-        await ctx.send('💀 **"ĐÃ BỎ GHIM. HIỆN TẠI KHÔNG AI BỊ CHỬI."** 💀')
+        await ctx.send('💀 **"ĐÃ BỎ GHIM."** 💀')
         return
 
     target_user_id = member.id
+    roast_mode = True  # Tự động bật roast mode khi ghim
 
     embed = discord.Embed(
         title="🌻 SUN FLOWER • TOXIC ROAST DEMON 💀🔥",
-        description=f'💀 **"ĐÃ GHIM {member.mention}"** 💀\n\n💀 **"TỪ GIỜ CỨ THẰNG NÀY NHẮN TIN LÀ TAO TỰ ĐỘNG CHỬI. KHÔNG CẦN LỆNH GÌ THÊM."** 💀',
+        description=f'💀 **"ĐÃ GHIM {member.mention}"** 💀\n\n💀 **"CHỈ THẰNG NÀY BỊ CHỬI. NGƯỜI KHÁC NHẮN GÌ CŨNG BỎ QUA."** 💀',
         color=0xFF0000
     )
     embed.set_footer(text="Sun Flower • Only listens to Boss 💀")
@@ -93,14 +116,14 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
-    # Chỉ chửi người bị ghim, tự động, không cần lệnh
-    if target_user_id is None:
-        return
-
-    if message.author.id != target_user_id:
+    if not roast_mode:
         return
 
     if message.author.id == OWNER_ID:
+        return
+
+    # Nếu đang ghim thì chỉ chửi người bị ghim
+    if target_user_id is not None and message.author.id != target_user_id:
         return
 
     await asyncio.sleep(random.uniform(0.6, 1.8))
@@ -127,7 +150,7 @@ async def on_message(message):
         description=full_roast,
         color=0xFF0000
     )
-    
+
     avatar_url = bot.user.avatar.url if (bot.user and bot.user.avatar) else None
     embed.set_author(name="Sun Flower", icon_url=avatar_url)
     embed.set_footer(text="Sun Flower • Toxic Roast Demon 💀")
