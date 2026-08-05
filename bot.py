@@ -21,8 +21,8 @@ intents.members = True
 # Đổi prefix lệnh thành dấu chấm '.' và tắt hoàn toàn help mặc định
 bot = commands.Bot(command_prefix=".", intents=intents, help_command=None)
 
-current_mode = None          # None / "roast" / "angel"
-last_active_mode = "angel"   # Lưu chế độ trước khi tắt/bật lại
+current_mode = "angel"       # Mặc định bật chế độ AI Angel ngay khi chạy
+last_active_mode = "angel"   
 target_user_id = None
 
 # ==================== HỆ THỐNG 20 QUY TẮC PHẢN HỒI CHO ANGEL MODE (AI) ====================
@@ -305,7 +305,7 @@ async def on_message(message):
                 prompt = f"Người dùng {message.author.display_name} vừa nói: '{user_msg}'. Hãy tuân thủ 20 quy tắc hệ thống để đọc và trả lời lại yêu cầu này một cách thông minh, dễ thương và đúng trọng tâm nhất."
 
                 response = ai_client.models.generate_content(
-                    model='gemini-1.5-flash',
+                    model='gemini-2.0-flash',
                     contents=prompt,
                     config={
                         'system_instruction': SYSTEM_INSTRUCTION_ANGEL,
