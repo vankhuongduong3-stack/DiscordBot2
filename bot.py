@@ -325,4 +325,5 @@ async def on_message(message):
                 print(f"Lỗi AI Angel Mode: {e}")
                 await message.reply("🌸 Tớ hơi mệt một chút, cậu nói lại giúp tớ nhé! 💖")
 
-bot.run(DISCORD_TOKEN)
+TOKEN = os.getenv("TOKEN")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
