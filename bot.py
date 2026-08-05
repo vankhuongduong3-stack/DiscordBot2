@@ -14,11 +14,11 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-# Tắt lệnh help mặc định của discord.py để không bị trùng lặp với custom !help
-bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
+# Đổi prefix sang dấu chấm '.'
+bot = commands.Bot(command_prefix=".", intents=intents, help_command=None)
 
 current_mode = None          # None / "roast" / "angel"
-last_active_mode = "roast"   # Lưu chế độ trước khi dùng !off (mặc định là roast)
+last_active_mode = "roast"   # Lưu chế độ trước khi dùng .off
 target_user_id = None
 
 # ==================== ROAST LINES ====================
@@ -121,6 +121,9 @@ async def on_ready():
     print(f"Logged in as {bot.user}")
     await bot.change_presence(activity=discord.Game(name="Sun Flower • Sweet & Toxic"))
 
+# Đảm bảo gỡ bỏ lệnh help cũ trước khi tạo lại để tránh CommandRegistrationError
+bot.remove_command("help")
+
 @bot.command(name="help")
 async def help_command(ctx):
     embed = discord.Embed(
@@ -130,18 +133,18 @@ async def help_command(ctx):
     )
     embed.add_field(
         name="🌸 Lệnh công khai",
-        value="`!help` → Xem danh sách lệnh này",
+        value="`.help` → Xem danh sách lệnh này",
         inline=False
     )
     embed.add_field(
         name="👑 Lệnh chỉ Boss được dùng",
         value=(
-            "`!setup` → Hiện bảng kích hoạt + GIF\n"
-            "`!on` → Kích hoạt lại bot\n"
-            "`!roastmode` → Bật/tắt chế độ chửi\n"
-            "`!ghim @user` → Chỉ chửi 1 người\n"
-            "`!angelmode` → Bật/tắt chế độ hiền lành\n"
-            "`!off` → Tắt bot"
+            "`.setup` → Khởi động bot ở Chế độ Hiền Lành + GIF\n"
+            "`.on` → Kích hoạt lại bot\n"
+            "`.roastmode` → Bật/tắt chế độ chửi\n"
+            "`.ghim @user` → Chỉ chửi 1 người\n"
+            "`.angelmode` → Bật/tắt chế độ hiền lành\n"
+            "`.off` → Tắt bot"
         ),
         inline=False
     )
@@ -150,23 +153,31 @@ async def help_command(ctx):
 
 @bot.command(name="setup")
 async def setup(ctx):
+    global current_mode, last_active_mode, target_user_id
+
     if ctx.author.id != OWNER_ID:
         await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ BOSS MỚI ĐƯỢC SETUP."** 🔥💀')
         return
 
+    # Tự động chuyển sang Angel Mode khi gọi setup
+    current_mode = "angel"
+    last_active_mode = "angel"
+    target_user_id = None
+
     embed = discord.Embed(
         title="⚡ LÃNH ĐỊA SUN FLOWER MULTIMODAL AI ĐÃ KÍCH HOẠT",
         description=(
-            f"📌 Kênh {ctx.channel.mention} đã được liên kết với **Toxic & Sweet Engine**!\n\n"
-            "🖼️ Bot chỉ trả lời khi được gọi (mention hoặc nói tên)\n"
-            "⚡ **!on**: Kích hoạt lại bot\n"
-            "📄 **!roastmode**: Chế độ chửi\n"
-            "📌 **!ghim @user**: Chỉ chửi 1 người\n"
-            "🌸 **!angelmode**: Chế độ hiền lành\n"
-            "📖 **!help**: Xem danh sách lệnh\n"
-            "🔌 **!off**: Tắt bot"
+            f"📌 Kênh {ctx.channel.mention} đã được liên kết với **Toxic & Sweet Engine**!\n"
+            "🌸 **Trạng thái hiện tại:** Tự động kích hoạt **ANGEL MODE** (Hiền lành)\n\n"
+            "🖼️ Bot chỉ trả lời khi được gọi tên hoặc tag!\n"
+            "⚡ **.on**: Kích hoạt lại bot\n"
+            "📄 **.roastmode**: Chế độ chửi\n"
+            "📌 **.ghim @user**: Chỉ chửi 1 người\n"
+            "🌸 **.angelmode**: Chế độ hiền lành\n"
+            "📖 **.help**: Xem danh sách lệnh\n"
+            "🔌 **.off**: Tắt bot"
         ),
-        color=0x00FF9F
+        color=0xFF69B4
     )
     embed.set_image(url="https://i.pinimg.com/originals/32/88/26/328826fa582ff4e248949e467cd59710.gif")
     embed.set_footer(text="✦ Độc quyền sở hữu bởi Boss • Sun Flower 🌸")
@@ -265,7 +276,7 @@ async def angelmode(ctx):
         current_mode = "angel"
         last_active_mode = "angel"
         target_user_id = None
-        desc = "🌸💖 **CHẾ ĐỘ HIỀN LÀNH ĐÃ KÍCH HOẠT**\nBot chỉ trả lời khi được gọi."
+        desc = "🌸💖 **CHẾ ĐỘ HIỀN LÀNH ĐÃ KÍCH HOẠT**\nBot chỉ trả lời khi được gọi tên hoặc tag!"
         color = 0xFF69B4
 
     embed = discord.Embed(
@@ -287,7 +298,7 @@ async def off(ctx):
     current_mode = None
     embed = discord.Embed(
         title="🔌 SUN FLOWER ĐÃ TẮT CÁC CHẾ ĐỘ HOẠT ĐỘNG",
-        description="💤 Bot chuyển sang trạng thái chờ. Dùng `!on` hoặc `!setup` để bật lại.",
+        description="💤 Bot chuyển sang trạng thái chờ. Dùng `.on` hoặc `.setup` để bật lại.",
         color=0x2F3136
     )
     await ctx.send(embed=embed)
@@ -302,19 +313,19 @@ async def on_message(message):
     if current_mode is None:
         return
 
-    if message.author.id == OWNER_ID:
-        return
-
-    # Chỉ trả lời khi được gọi (mention bot hoặc nói tên)
+    # Kiểm tra xem bot có được gọi tên hoặc tag không
     content_lower = message.content.lower()
     bot_mentioned = bot.user in message.mentions
     called = any(word in content_lower for word in ["sun flower", "sunflower", "bot ơi", "bot"])
 
-    if not (bot_mentioned or called):
-        return
-
     # ===== ROAST MODE =====
     if current_mode == "roast":
+        if message.author.id == OWNER_ID:
+            return
+
+        if not (bot_mentioned or called):
+            return
+
         if target_user_id is not None and message.author.id != target_user_id:
             return
 
@@ -346,6 +357,10 @@ async def on_message(message):
 
     # ===== ANGEL MODE =====
     elif current_mode == "angel":
+        # Trả lời khi người dùng gọi tên hoặc tag bot
+        if not (bot_mentioned or called):
+            return
+
         await asyncio.sleep(random.uniform(1.0, 2.0))
 
         user_msg = message.content.strip() if message.content else "..."
