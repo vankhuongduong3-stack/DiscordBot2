@@ -4,7 +4,6 @@ import asyncio
 import discord
 from discord.ext import commands
 
-# Lấy TOKEN từ Variables trên Railway
 TOKEN = os.getenv("TOKEN")
 OWNER_ID = 1531882555664629861
 
@@ -17,7 +16,6 @@ intents.members = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-roast_mode = False
 target_user_id = None          # ID người bị ghim
 
 ROAST_LINES = [
@@ -65,25 +63,6 @@ async def on_ready():
     print(f"Logged in as {bot.user}")
     await bot.change_presence(activity=discord.Game(name="Toxic Roast Demon 💀🔥"))
 
-@bot.command(name="roastmode")
-async def roastmode(ctx):
-    global roast_mode
-
-    if ctx.author.id != OWNER_ID:
-        await ctx.send('💀 **"CÚT ĐI THẰNG LỒN! CHỈ BOSS MỚI ĐƯỢC BẬT/TẮT TAO."** 💀')
-        return
-
-    roast_mode = not roast_mode
-    status = "**BẬT** 🔥" if roast_mode else "**TẮT** 💤"
-
-    embed = discord.Embed(
-        title="🌻 SUN FLOWER • TOXIC ROAST DEMON 💀🔥",
-        description=f'💀 **"ROAST MODE HIỆN TẠI: {status}"** 💀\n\n💀 **"TỪ GIỜ BẤT KỲ THẰNG NÀO NHẮN TIN TAO CŨNG CHỬI, TRỪ BOSS."** 💀',
-        color=0xFF0000
-    )
-    embed.set_footer(text="Sun Flower • Only listens to Boss 💀")
-    await ctx.send(embed=embed)
-
 @bot.command(name="ghim")
 async def ghim(ctx, member: discord.Member = None):
     global target_user_id
@@ -94,13 +73,14 @@ async def ghim(ctx, member: discord.Member = None):
 
     if member is None:
         target_user_id = None
-        await ctx.send('💀 **"ĐÃ BỎ GHIM. HIỆN TẠI KHÔNG AI BỊ CHỬI RIÊNG."** 💀')
+        await ctx.send('💀 **"ĐÃ BỎ GHIM. HIỆN TẠI KHÔNG AI BỊ CHỬI."** 💀')
         return
 
     target_user_id = member.id
+
     embed = discord.Embed(
         title="🌻 SUN FLOWER • TOXIC ROAST DEMON 💀🔥",
-        description=f'💀 **"ĐÃ GHIM {member.mention}"** 💀\n\n💀 **"TỪ GIỜ CHỈ THẰNG NÀY BỊ CHỬI, NGƯỜI KHÁC NHẮN GÌ CŨNG BỎ QUA."** 💀',
+        description=f'💀 **"ĐÃ GHIM {member.mention}"** 💀\n\n💀 **"TỪ GIỜ CỨ THẰNG NÀY NHẮN TIN LÀ TAO TỰ ĐỘNG CHỬI. KHÔNG CẦN LỆNH GÌ THÊM."** 💀',
         color=0xFF0000
     )
     embed.set_footer(text="Sun Flower • Only listens to Boss 💀")
@@ -113,17 +93,17 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
-    if not roast_mode:
+    # Chỉ chửi người bị ghim, tự động, không cần lệnh
+    if target_user_id is None:
+        return
+
+    if message.author.id != target_user_id:
         return
 
     if message.author.id == OWNER_ID:
         return
 
-    # Chỉ chửi người bị ghim (nếu có thiết lập ghim)
-    if target_user_id is not None and message.author.id != target_user_id:
-        return
-
-    await asyncio.sleep(random.uniform(0.7, 2.0))
+    await asyncio.sleep(random.uniform(0.6, 1.8))
 
     num = random.randint(7, 11)
     selected = random.sample(ROAST_LINES, k=min(num, len(ROAST_LINES)))
