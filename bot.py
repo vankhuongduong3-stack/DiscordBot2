@@ -4,6 +4,7 @@ import asyncio
 import discord
 from discord.ext import commands
 
+# Lấy TOKEN từ Variables trên Railway
 TOKEN = os.getenv("TOKEN")
 OWNER_ID = 1531882555664629861
 
@@ -17,6 +18,7 @@ intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 roast_mode = False
+target_user_id = None          # ID người bị ghim
 
 ROAST_LINES = [
     '💀 **"HAHAHA! BOT ĐĨ À?! MÀY ĐỊNH DÙNG CÁI MỚI ĐẾN ĐƯỢC HẢ THẰNG GIÒI BỌ?!"** 💀',
@@ -82,6 +84,28 @@ async def roastmode(ctx):
     embed.set_footer(text="Sun Flower • Only listens to Boss 💀")
     await ctx.send(embed=embed)
 
+@bot.command(name="ghim")
+async def ghim(ctx, member: discord.Member = None):
+    global target_user_id
+
+    if ctx.author.id != OWNER_ID:
+        await ctx.send('💀 **"CÚT ĐI THẰNG LỒN! CHỈ BOSS MỚI ĐƯỢC GHIM."** 💀')
+        return
+
+    if member is None:
+        target_user_id = None
+        await ctx.send('💀 **"ĐÃ BỎ GHIM. HIỆN TẠI KHÔNG AI BỊ CHỬI RIÊNG."** 💀')
+        return
+
+    target_user_id = member.id
+    embed = discord.Embed(
+        title="🌻 SUN FLOWER • TOXIC ROAST DEMON 💀🔥",
+        description=f'💀 **"ĐÃ GHIM {member.mention}"** 💀\n\n💀 **"TỪ GIỜ CHỈ THẰNG NÀY BỊ CHỬI, NGƯỜI KHÁC NHẮN GÌ CŨNG BỎ QUA."** 💀',
+        color=0xFF0000
+    )
+    embed.set_footer(text="Sun Flower • Only listens to Boss 💀")
+    await ctx.send(embed=embed)
+
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -93,6 +117,10 @@ async def on_message(message):
         return
 
     if message.author.id == OWNER_ID:
+        return
+
+    # Chỉ chửi người bị ghim (nếu có thiết lập ghim)
+    if target_user_id is not None and message.author.id != target_user_id:
         return
 
     await asyncio.sleep(random.uniform(0.7, 2.0))
@@ -119,6 +147,7 @@ async def on_message(message):
         description=full_roast,
         color=0xFF0000
     )
+    
     avatar_url = bot.user.avatar.url if (bot.user and bot.user.avatar) else None
     embed.set_author(name="Sun Flower", icon_url=avatar_url)
     embed.set_footer(text="Sun Flower • Toxic Roast Demon 💀")
