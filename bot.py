@@ -8,7 +8,7 @@ TOKEN = os.getenv("TOKEN")
 OWNER_ID = 1531882555664629861
 
 if not TOKEN:
-    raise ValueError("Lỗi: Không tìm thấy TOKEN trong môi trường Railway!")
+    raise ValueError("Lỗi: Không tìm thấy TOKEN trong môi trường hệ thống!")
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -63,6 +63,27 @@ ROAST_LINES = [
 async def on_ready():
     print(f"Logged in as {bot.user}")
     await bot.change_presence(activity=discord.Game(name="Toxic Roast Demon 💀🔥"))
+
+@bot.command(name="setup")
+async def setup(ctx):
+    if ctx.author.id != OWNER_ID:
+        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ BOSS MỚI ĐƯỢC SETUP."** 🔥💀')
+        return
+
+    embed = discord.Embed(
+        title="⚡ LÃNH ĐỊA SUN FLOWER MULTIMODAL AI ĐÃ KÍCH HOẠT",
+        description=(
+            f"📌 Kênh {ctx.channel.mention} đã được liên kết với **Toxic Roast Engine**!\n\n"
+            "🔥 **Gửi tin nhắn**: Tự động đọc + chửi không thương tiếc\n"
+            "🎯 **!roastmode**: Bật chế độ chửi tất cả mọi người\n"
+            "📌 **!ghim @user**: Chỉ chửi đúng 1 mục tiêu\n"
+            "💀 **Chế độ chuyên trị**: Óc chó • Lồn già • Buồi thối • Súc vật\n"
+            "☠️ **Tự động tag tên + đọc nội dung tin nhắn**"
+        ),
+        color=0x00FF9F
+    )
+    embed.set_footer(text="✦ Độc quyền sở hữu bởi Boss • Sun Flower 🌸")
+    await ctx.send(embed=embed)
 
 @bot.command(name="roastmode")
 async def roastmode(ctx):
