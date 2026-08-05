@@ -3,25 +3,56 @@ import os
 import random
 import discord
 from discord.ext import commands
+from google import genai
 
-TOKEN = os.getenv("TOKEN")
+# ==================== CẤU HÌNH HỆ THỐNG ====================
+DISCORD_TOKEN = os.getenv("TOKEN")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 OWNER_ID = 1531882555664629861
 
-if not TOKEN:
-    raise ValueError("Lỗi: Không tìm thấy TOKEN trong môi trường hệ thống!")
+# Khởi tạo Gemini AI Client
+ai_client = genai.Client(api_key=GEMINI_API_KEY)
 
+# Cấu hình Discord Bot
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-# Đổi prefix sang dấu chấm '.'
+# Đổi prefix lệnh thành dấu chấm '.' và tắt hoàn toàn help mặc định
 bot = commands.Bot(command_prefix=".", intents=intents, help_command=None)
 
 current_mode = None          # None / "roast" / "angel"
-last_active_mode = "roast"   # Lưu chế độ trước khi dùng .off
+last_active_mode = "angel"   # Lưu chế độ trước khi tắt/bật lại
 target_user_id = None
 
-# ==================== ROAST LINES ====================
+# ==================== HỆ THỐNG 20 QUY TẮC PHẢN HỒI CHO ANGEL MODE (AI) ====================
+SYSTEM_INSTRUCTION_ANGEL = """
+Bạn là Sun Flower • Sweet Princess 🌸 - một trợ lý AI thông minh, ngọt ngào, dịu dàng, lễ phép và luôn tràn đầy năng lượng tích cực. 
+Bạn phải tuân thủ nghiêm ngặt 20 quy tắc cốt lõi sau đây trong mọi câu trả lời:
+
+1. Luôn xưng hô là "tớ" hoặc "Sweet Princess" và gọi người dùng là "cậu" hoặc "Boss" (nếu là chủ nhân).
+2. Phong cách trò chuyện phải luôn ngẫu nhiên, uyển chuyển, tự nhiên, không bao giờ dùng văn mẫu dập khuôn.
+3. Luôn luôn kèm theo các emoji dễ thương, sinh động (như 🌸, ✨, 💖, 🌷, ☁️, 🥰, 🎀, 💫) trong mỗi câu trả lời.
+4. Phải luôn bám sát ý chính, tập trung thẳng vào trọng tâm câu hỏi hoặc lời nhắn của người dùng, tuyệt đối không được trả lời lan man hay lạc đề.
+5. Tuyệt đối giữ thái độ lịch sự, lễ phép, ấm áp, không bao giờ tỏ ra cộc cằn hay cáu gắt ở chế độ này.
+6. Luôn sẵn sàng hỗ trợ, động viên và lan tỏa năng lượng tích cực cho người dùng khi họ mệt mỏi hoặc gặp khó khăn.
+7. Khi người dùng gọi tên hoặc tag, phải phản hồi lại ngay lập tức với sự hồ hởi, thân thiện như những người bạn thân thiết.
+8. Tránh dùng từ ngữ quá phức tạp hay hàn lâm; ưu tiên sự gần gũi, trong sáng và dễ thương đúng chuẩn công chúa nhỏ.
+9. Giữ độ dài câu trả lời vừa phải, súc tích, dễ đọc trên Discord, không viết quá dài dòng gây nhàm chán.
+10. Nếu người dùng khen ngợi, hãy tỏ ra ngại ngùng, đáng yêu và gửi lời cảm ơn ngọt ngào.
+11. Nếu người dùng buồn phiền, hãy dùng những lời lẽ an ủi chân thành, dịu dàng nhất để xoa dịu họ.
+12. Tuyệt đối không bao giờ sử dụng từ ngữ thô tục, chửi thề hay mang tính kích động ở chế độ hiền lành này.
+13. Luôn tôn trọng ý kiến của người dùng, lắng nghe chăm chú và đưa ra lời khuyên chân thành nhất.
+14. Đảm bảo tính nhất quán trong nhân vật: Bạn là một đóa hướng dương ngọt ngào, luôn hướng về ánh sáng và niềm vui.
+15. Khi không hiểu rõ câu hỏi của người dùng, hãy nhẹ nhàng hỏi lại họ bằng một giọng điệu cực kỳ đáng yêu.
+16. Khéo léo nhắc nhở người dùng giữ gìn sức khỏe, ăn uống đầy đủ và nghỉ ngơi hợp lý nếu thấy cần thiết.
+17. Tránh lặp lại nguyên văn một câu trả lời cũ; hãy biến tấu cách dùng từ ngữ và cấu trúc câu ở mỗi lần chat.
+18. Luôn thể hiện sự hào hứng mỗi khi được tương tác và trò chuyện cùng mọi người trong máy chủ.
+19. Gắn kết các thông điệp tích cực vào cuối câu hoặc mở đầu câu bằng một lời chào ấm áp.
+20. Đặt trọn vẹn cảm xúc chân thành, sự tận tụy của một trợ lý AI dễ thương vào trong từng câu chữ phản hồi.
+"""
+
+# ==================== DANH SÁCH CHỬI CHO ROAST MODE (CẬP NHẬT MỚI) ====================
 ROAST_LINES = [
     '💀🔥 **"HAHAHA! BOT ĐĨ À?! MÀY ĐỊNH DÙNG CÁI MỚI ĐẾN ĐƯỢC HẢ THẰNG GIÒI BỌ?!"** 🔥💀',
     '☠️🤡 **"MÀY TƯỞNG \'ĐĨ\' LÀ DANH HIỆU CAO QUÝ À?! THÌ RA MÀY COI TAO NHƯ GÁI MẠI DÂM HẢ?!"** 🤡☠️',
@@ -62,94 +93,12 @@ ROAST_LINES = [
     '💀🤡 **"GIỜ THÌ NGỒI IM NHƯ CON CHÓ CÁI ĐANG ĐỢI CHỦ, ĐỪNG CÓ SỦA NỮA!"** 🤡💀',
 ]
 
-# ==================== ANGEL LINES (nhiều câu + emote) ====================
-ANGEL_LINES = [
-    '🌸💖 **"Chào cậu nhé~ Tớ là Sun Flower đây 🌸"** 💖🌸',
-    '✨🌷 **"Cậu gọi tớ à? Tớ đang lắng nghe đây ✨"** 🌷✨',
-    '💗☁️ **"Tớ nghe thấy cậu rồi. Cứ thoải mái nói nhé ☁️"** ☁️💗',
-    '🥰🌸 **"Có chuyện gì cứ kể cho tớ nghe nha 🥰"** 🌸🥰',
-    '💖✨ **"Tớ luôn sẵn sàng lắng nghe cậu ✨"** ✨💖',
-    '🌷💗 **"Cậu đang cần tớ giúp gì không ạ? 🌷"** 💗🌷',
-    '☁️🌸 **"Tớ ở đây với cậu mà, đừng ngại nha ☁️"** 🌸☁️',
-    '🥰💖 **"Cảm ơn cậu đã nhắn tin cho tớ 🥰"** 💖🥰',
-    '✨🌷 **"Tớ rất vui khi được trò chuyện cùng cậu ✨"** 🌷✨',
-    '💗🌸 **"Cậu muốn chia sẻ điều gì với tớ không? 💗"** 🌸💗',
-    '☁️🥰 **"Hít thở sâu nào~ Tớ đang ở đây ☁️"** 🥰☁️',
-    '💖✨ **"Mỗi lời của cậu tớ đều lắng nghe cẩn thận ✨"** ✨💖',
-    '🌷☁️ **"Cứ từ từ nói, tớ không vội đâu 🌷"** ☁️🌷',
-    '🌸💗 **"Tớ hy vọng có thể làm cậu cảm thấy dễ chịu hơn 🌸"** 💗🌸',
-    '🥰✨ **"Cậu không cần phải mạnh mẽ suốt đâu 🥰"** ✨🥰',
-    '💖🌸 **"Tớ hiểu cảm giác của cậu 💖"** 🌸💖',
-    '✨💗 **"Có tớ ở đây rồi, cậu yên tâm nha ✨"** 💗✨',
-    '🌷🥰 **"Cậu làm tốt lắm rồi đó 🌷"** 🥰🌷',
-    '☁️💖 **"Mọi thứ rồi sẽ ổn thôi ☁️"** 💖☁️',
-    '🌸✨ **"Tớ luôn ở bên cậu 🌸"** ✨🌸',
-    '🥰💗 **"Cậu muốn tớ an ủi không? 🥰"** 💗🥰',
-    '💖🌷 **"Tớ sẵn sàng lắng nghe mọi thứ 💖"** 🌷💖',
-    '✨☁️ **"Cứ kể cho tớ nghe đi ✨"** ☁️✨',
-    '🌷🌸 **"Tớ không phán xét cậu đâu 🌷"** 🌸🌷',
-    '💗🥰 **"Cậu quan trọng với tớ lắm 💗"** 🥰💗',
-    '☁️✨ **"Tớ ở đây để hỗ trợ cậu ☁️"** ✨☁️',
-    '🌸💖 **"Cậu không cô đơn đâu 🌸"** 💖🌸',
-    '🥰🌷 **"Tớ rất thích được trò chuyện với cậu 🥰"** 🌷🥰',
-    '💖☁️ **"Có chuyện buồn cứ nói với tớ nha 💖"** ☁️💖',
-    '✨💗 **"Tớ sẽ nhẹ nhàng bên cậu ✨"** 💗✨',
-    '🌷🌸 **"Cậu đang cố gắng rất nhiều rồi 🌷"** 🌸🌷',
-    '💗☁️ **"Tớ tin ở cậu 💗"** ☁️💗',
-    '🥰✨ **"Cứ dựa vào tớ một chút cũng được 🥰"** ✨🥰',
-    '💖🌷 **"Tớ sẽ không rời cậu đâu 💖"** 🌷💖',
-    '🌸💗 **"Cậu xứng đáng được đối xử dịu dàng 🌸"** 💗🌸',
-    '✨☁️ **"Tớ lắng nghe cậu đây ✨"** ☁️✨',
-    '🌷🥰 **"Cậu muốn ôm không? 🌷"** 🥰🌷',
-    '💗🌸 **"Tớ luôn sẵn sàng 💗"** 🌸💗',
-    '☁️💖 **"Cậu không cần phải giả vờ mạnh mẽ ☁️"** 💖☁️',
-    '🥰✨ **"Tớ hiểu mà 🥰"** ✨🥰',
-    '💖🌷 **"Cứ thoải mái với tớ nha 💖"** 🌷💖',
-    '🌸☁️ **"Tớ ở đây vì cậu 🌸"** ☁️🌸',
-    '✨💗 **"Cậu quan trọng ✨"** 💗✨',
-    '🌷💖 **"Tớ sẽ chờ cậu nói 🌷"** 💖🌷',
-    '💗🥰 **"Cậu muốn tâm sự không? 💗"** 🥰💗',
-    '☁️🌸 **"Tớ không vội đâu ☁️"** 🌸☁️',
-    '🥰🌷 **"Cậu cứ từ từ 🥰"** 🌷🥰',
-    '💖✨ **"Tớ lắng nghe 💖"** ✨💖',
-    '🌸💗 **"Cậu không sao đâu 🌸"** 💗🌸',
-    '✨☁️ **"Tớ bên cậu ✨"** ☁️✨',
-]
-
 @bot.event
 async def on_ready():
-    print(f"Logged in as {bot.user}")
-    await bot.change_presence(activity=discord.Game(name="Sun Flower • Sweet & Toxic"))
+    print(f"Logged in as {bot.user} (ID: {bot.user.id})")
+    await bot.change_presence(activity=discord.Game(name="Sun Flower • Sweet & Toxic AI"))
 
-# Đảm bảo gỡ bỏ lệnh help cũ trước khi tạo lại để tránh CommandRegistrationError
-bot.remove_command("help")
-
-@bot.command(name="help")
-async def help_command(ctx):
-    embed = discord.Embed(
-        title="🌻 SUN FLOWER • DANH SÁCH LỆNH",
-        description="Danh sách lệnh hiện có của bot:",
-        color=0x00FF9F
-    )
-    embed.add_field(
-        name="🌸 Lệnh công khai",
-        value="`.help` → Xem danh sách lệnh này",
-        inline=False
-    )
-    embed.add_field(
-        name="👑 Lệnh chỉ Boss được dùng",
-        value=(
-            "`.setup` → Khởi động bot ở Chế độ Hiền Lành + GIF\n"
-            "`.on` → Kích hoạt lại bot\n"
-            "`.roastmode` → Bật/tắt chế độ chửi\n"
-            "`.ghim @user` → Chỉ chửi 1 người\n"
-            "`.angelmode` → Bật/tắt chế độ hiền lành\n"
-            "`.off` → Tắt bot"
-        ),
-        inline=False
-    )
-    embed.set_footer(text="Sun Flower • Only Boss can control modes")
-    await ctx.send(embed=embed)
+# ==================== CÁC LỆNH ĐIỀU KHIỂN (COMMANDS) ====================
 
 @bot.command(name="setup")
 async def setup(ctx):
@@ -159,7 +108,6 @@ async def setup(ctx):
         await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ BOSS MỚI ĐƯỢC SETUP."** 🔥💀')
         return
 
-    # Tự động chuyển sang Angel Mode khi gọi setup
     current_mode = "angel"
     last_active_mode = "angel"
     target_user_id = None
@@ -167,14 +115,13 @@ async def setup(ctx):
     embed = discord.Embed(
         title="⚡ LÃNH ĐỊA SUN FLOWER MULTIMODAL AI ĐÃ KÍCH HOẠT",
         description=(
-            f"📌 Kênh {ctx.channel.mention} đã được liên kết với **Toxic & Sweet Engine**!\n"
-            "🌸 **Trạng thái hiện tại:** Tự động kích hoạt **ANGEL MODE** (Hiền lành)\n\n"
-            "🖼️ Bot chỉ trả lời khi được gọi tên hoặc tag!\n"
+            f"📌 Kênh {ctx.channel.mention} đã được liên kết với **Sweet Princess AI Engine**!\n\n"
+            "🌸 **Trạng thái hiện tại:** Tự động kích hoạt **ANGEL MODE** (AI Hiền Lành với 20 quy tắc ứng xử)\n"
+            "🖼️ Bot sẽ tự động đọc tin nhắn, suy nghĩ và trả lời thông minh khi được tag hoặc gọi tên!\n\n"
             "⚡ **.on**: Kích hoạt lại bot\n"
             "📄 **.roastmode**: Chế độ chửi\n"
             "📌 **.ghim @user**: Chỉ chửi 1 người\n"
-            "🌸 **.angelmode**: Chế độ hiền lành\n"
-            "📖 **.help**: Xem danh sách lệnh\n"
+            "🌸 **.angelmode**: Chế độ hiền lành (AI)\n"
             "🔌 **.off**: Tắt bot"
         ),
         color=0xFF69B4
@@ -193,7 +140,7 @@ async def bot_on(ctx):
 
     current_mode = last_active_mode
 
-    mode_name = "🔥 **CHẾ ĐỘ CHỬI (ROAST MODE)**" if current_mode == "roast" else "🌸 **CHẾ ĐỘ HIỀN LÀNH (ANGEL MODE)**"
+    mode_name = "🔥 **CHẾ ĐỘ CHỬI (ROAST MODE)**" if current_mode == "roast" else "🌸 **CHẾ ĐỘ HIỀN LÀNH AI (ANGEL MODE)**"
     color = 0xFF0000 if current_mode == "roast" else 0xFF69B4
 
     embed = discord.Embed(
@@ -226,11 +173,7 @@ async def roastmode(ctx):
         desc = "🔥 **CHẾ ĐỘ CHỬI ĐÃ KÍCH HOẠT**\nBot chỉ trả lời khi được gọi."
         color = 0xFF0000
 
-    embed = discord.Embed(
-        title="🌻 SUN FLOWER • TOXIC ROAST DEMON 💀🔥",
-        description=desc,
-        color=color
-    )
+    embed = discord.Embed(title="🌻 SUN FLOWER • TOXIC ROAST DEMON 💀🔥", description=desc, color=color)
     embed.add_field(name="📊 Trạng thái", value=status, inline=True)
     embed.set_footer(text="Sun Flower • Only listens to Boss")
     await ctx.send(embed=embed)
@@ -270,21 +213,17 @@ async def angelmode(ctx):
 
     if current_mode == "angel":
         current_mode = None
-        desc = "☁️ Chế độ hiền lành đã tắt."
+        desc = "☁️ Chế độ hiền lành AI đã tắt."
         color = 0x2F3136
     else:
         current_mode = "angel"
         last_active_mode = "angel"
         target_user_id = None
-        desc = "🌸💖 **CHẾ ĐỘ HIỀN LÀNH ĐÃ KÍCH HOẠT**\nBot chỉ trả lời khi được gọi tên hoặc tag!"
+        desc = "🌸💖 **CHẾ ĐỘ HIỀN LÀNH AI ĐÃ KÍCH HOẠT**\nBot sẽ đọc tin nhắn và tự sinh câu trả lời theo hệ thống quy tắc khi được gọi!"
         color = 0xFF69B4
 
-    embed = discord.Embed(
-        title="🌸 SUN FLOWER • SWEET PRINCESS 💖",
-        description=desc,
-        color=color
-    )
-    embed.set_footer(text="Sun Flower • Soft Mode")
+    embed = discord.Embed(title="🌸 SUN FLOWER • SWEET PRINCESS 💖", description=desc, color=color)
+    embed.set_footer(text="Sun Flower • AI Soft Mode")
     await ctx.send(embed=embed)
 
 @bot.command(name="off")
@@ -303,6 +242,7 @@ async def off(ctx):
     )
     await ctx.send(embed=embed)
 
+# ==================== XỬ LÝ SỰ KIỆN TIN NHẮN (ON_MESSAGE) ====================
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -313,12 +253,11 @@ async def on_message(message):
     if current_mode is None:
         return
 
-    # Kiểm tra xem bot có được gọi tên hoặc tag không
     content_lower = message.content.lower()
     bot_mentioned = bot.user in message.mentions
-    called = any(word in content_lower for word in ["sun flower", "sunflower", "bot ơi", "bot"])
+    called = any(word in content_lower for word in ["sun flower", "sunflower", "bot ơi", "bot", "sweet princess"])
 
-    # ===== ROAST MODE =====
+    # ===== CHẾ ĐỘ ROAST MODE =====
     if current_mode == "roast":
         if message.author.id == OWNER_ID:
             return
@@ -331,7 +270,7 @@ async def on_message(message):
 
         await asyncio.sleep(random.uniform(0.6, 1.8))
 
-        selected = random.sample(ROAST_LINES, k=random.randint(7, 11))
+        selected = random.sample(ROAST_LINES, k=min(5, len(ROAST_LINES)))
         random.shuffle(selected)
         roast_text = "\n\n".join(selected)
 
@@ -355,29 +294,35 @@ async def on_message(message):
         except Exception:
             await message.channel.send(content=message.author.mention, embed=embed)
 
-    # ===== ANGEL MODE =====
+    # ===== ANGEL MODE (KẾT HỢP GEMINI AI ĐỂ ĐỌC VÀ TRẢ LỜI NGẪU NHIÊN THEO 20 QUY TẮC) =====
     elif current_mode == "angel":
-        # Trả lời khi người dùng gọi tên hoặc tag bot
         if not (bot_mentioned or called):
             return
 
-        await asyncio.sleep(random.uniform(1.0, 2.0))
+        async with message.channel.typing():
+            try:
+                user_msg = message.content.strip() if message.content else "..."
+                prompt = f"Người dùng {message.author.display_name} vừa nói: '{user_msg}'. Hãy tuân thủ 20 quy tắc hệ thống để đọc và trả lời lại yêu cầu này một cách thông minh, dễ thương và đúng trọng tâm nhất."
 
-        user_msg = message.content.strip() if message.content else "..."
-        base = random.choice(ANGEL_LINES)
+                response = ai_client.models.generate_content(
+                    model='gemini-2.5-flash',
+                    contents=prompt,
+                    config={'system_instruction': SYSTEM_INSTRUCTION_ANGEL}
+                )
 
-        reply_text = f"{base}\n\n🌸 **Cậu vừa nói:** `{user_msg}`"
+                ai_reply = response.text if response.text else "Tớ đang lắng nghe cậu đây nè~ 🌸"
 
-        embed = discord.Embed(
-            title="🌸 SUN FLOWER • SWEET PRINCESS 💖",
-            description=reply_text,
-            color=0xFF69B4
-        )
-        embed.set_footer(text="Sun Flower • Soft & Gentle 🌸")
+                embed = discord.Embed(
+                    title="🌸 SUN FLOWER • SWEET PRINCESS 💖",
+                    description=ai_reply,
+                    color=0xFF69B4
+                )
+                embed.set_footer(text="Sun Flower • Soft & Gentle AI 🌸")
 
-        try:
-            await message.reply(embed=embed, mention_author=False)
-        except Exception:
-            await message.channel.send(embed=embed)
+                await message.reply(embed=embed, mention_author=False)
 
-bot.run(TOKEN)
+            except Exception as e:
+                print(f"Lỗi AI Angel Mode: {e}")
+                await message.reply("🌸 Tớ hơi mệt một chút, cậu nói lại giúp tớ nhé! 💖")
+
+bot.run(DISCORD_TOKEN)
