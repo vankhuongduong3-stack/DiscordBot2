@@ -123,6 +123,7 @@ async def on_guild_join(guild):
                 "📌 **`.ghim @user`** - Tự động chửi riêng một mục tiêu\n"
                 "🔨 **`.ban @user [lý do]`** - Tiễn thành viên ra đảo\n"
                 "🌸 **`.angelmode`** - Bật chế độ AI hiền lành (cần gọi tên/tag)\n"
+                "📖 **`.help`** - Xem danh sách hướng dẫn lệnh\n"
                 "🔌 **`.off`** - Tắt các chế độ hoạt động\n\n"
                 "✨ *Chúc mọi người có những trải nghiệm thật vui vẻ bên Sun Flower nhé!* 🌷"
             ),
@@ -160,6 +161,7 @@ async def setup(ctx):
             "📌 **.ghim @user**: Tự động chửi riêng 1 người\n"
             "🔨 **.ban @user [lý do]**: Ban thành viên khỏi server\n"
             "🌸 **.angelmode**: Chế độ hiền lành (cần gọi tên)\n"
+            "📖 **.help**: Xem hướng dẫn lệnh\n"
             "🔌 **.off**: Tắt bot"
         ),
         color=0xFF69B4
@@ -281,6 +283,36 @@ async def angelmode(ctx):
 
     embed = discord.Embed(title="🌸 SUN FLOWER • SWEET PRINCESS 💖", description=desc, color=color)
     embed.set_footer(text="Sun Flower • AI Soft Mode")
+    await ctx.send(embed=embed)
+
+@bot.command(name="help")
+async def help_command(ctx):
+    embed = discord.Embed(
+        title="📖 HƯỚNG DẪN SỬ DỤNG SUN FLOWER BOT 🌸",
+        description="Dưới đây là danh sách các lệnh công khai và đặc quyền của bot:",
+        color=0xFF69B4
+    )
+    embed.add_field(
+        name="🌸 Lệnh cho Mọi người (Public)",
+        value=(
+            "• **`.help`** - Xem bảng hướng dẫn này.\n"
+            "• **Trò chuyện AI:** Nhắc tên bot (hoặc gọi *sun flower, bot ơi, sweet princess*) kèm theo nội dung trong kênh khi bot đang mở Angel Mode để trò chuyện ngọt ngào với AI~ ✨"
+        ),
+        inline=False
+    )
+    embed.add_field(
+        name="⚡ Lệnh Đặc quyền (Admin/Boss)",
+        value=(
+            "• **`.setup`** - Khởi tạo kênh và kết nối bot.\n"
+            "• **`.on` / `.off`** - Bật / Tắt trạng thái hoạt động của bot.\n"
+            "• **`.roastmode`** - Bật/tắt chế độ tự động chửi mọi tin nhắn.\n"
+            "• **`.ghim @user`** - Khóa mục tiêu để bot auto chửi riêng 1 người.\n"
+            "• **`.ban @user [lý do]`** - Tiễn thành viên ra đảo.\n"
+            "• **`.angelmode`** - Bật/tắt chế độ trợ lý AI hiền lành."
+        ),
+        inline=False
+    )
+    embed.set_footer(text="Sun Flower • Help Center 💡")
     await ctx.send(embed=embed)
 
 @bot.command(name="off")
