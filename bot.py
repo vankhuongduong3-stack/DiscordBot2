@@ -4,10 +4,12 @@ import random
 import discord
 from discord.ext import commands
 from groq import Groq
+import google.generativeai as genai
 
 # ==================== CẤU HÌNH HỆ THỐNG ====================
 DISCORD_TOKEN = os.getenv("TOKEN")
-GOQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 OWNER_ID = 1531882555664629861
 
 # Danh sách các ID được phép sử dụng các lệnh đặc quyền (Boss + Các ID bổ sung)
@@ -16,8 +18,11 @@ ALLOWED_ADMIN_IDS = [
     1232558003375308861,  # ID mới được thêm vào
 ]
 
-# Khởi tạo Groq AI Client với biến GOQ
-ai_client = Groq(api_key=GOQ_API_KEY)
+# Khởi tạo các AI Client
+groq_client = Groq(api_key=GROQ_API_KEY)
+
+genai.configure(api_key=GEMINI_API_KEY)
+gemini_model = genai.GenerativeModel("gemini-1.5-flash")
 
 # Cấu hình Discord Bot
 intents = discord.Intents.default()
@@ -101,7 +106,7 @@ ROAST_LINES = [
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
-    await bot.change_presence(activity=discord.Game(name="Sun Flower • Groq AI Engine"))
+    await bot.change_presence(activity=discord.Game(name="Sun Flower • Multi-AI Engine"))
 
 # ==================== SỰ KIỆN KHI BOT ĐƯỢC THÊM VÀO SERVER ====================
 @bot.event
@@ -118,18 +123,19 @@ async def on_guild_join(guild):
             description=(
                 f"Xin chào **{guild.name}**! Cảm ơn vì đã đưa Sun Flower vào lãnh địa của các cậu~ ✨\n\n"
                 "🌸 **Các lệnh điều khiển nhanh:**\n"
-                "⚡ **`.setup`** - Khởi tạo và kết nối Groq AI Engine\n"
+                "⚡ **`.setup`** - Khởi tạo và kết nối hệ thống AI\n"
                 "📄 **`.roastmode`** - Bật chế độ tự động chửi mọi tin nhắn\n"
                 "📌 **`.ghim @user`** - Tự động chửi riêng một mục tiêu\n"
                 "🔨 **`.ban @user [lý do]`** - Tiễn thành viên ra đảo\n"
                 "🌸 **`.angelmode`** - Bật chế độ AI hiền lành (cần gọi tên/tag)\n"
+                "🤖 **`.gemini [nội dung]`** - Trò chuyện trực tiếp với AI Gemini phụ\n"
                 "🔌 **`.off`** - Tắt các chế độ hoạt động\n\n"
                 "✨ *Chúc mọi người có những trải nghiệm thật vui vẻ bên Sun Flower nhé!* 🌷"
             ),
             color=0xFF69B4
         )
         embed.set_thumbnail(url=bot.user.avatar.url if bot.user.avatar else None)
-        embed.set_footer(text="Sun Flower • Groq AI Engine ⚡")
+        embed.set_footer(text="Sun Flower • Multi-AI Engine ⚡")
         
         try:
             await target_channel.send(embed=embed)
@@ -151,15 +157,16 @@ async def setup(ctx):
     target_user_id = None
 
     embed = discord.Embed(
-        title="⚡ LÃNH ĐỊA SUN FLOWER GROQ AI ĐÃ KÍCH HOẠT",
+        title="⚡ LÃNH ĐỊA SUN FLOWER AI ĐÃ KÍCH HOẠT",
         description=(
-            f"📌 Kênh {ctx.channel.mention} đã được liên kết với **Groq AI Engine**!\n\n"
-            "🌸 **Trạng thái hiện tại:** Tự động kích hoạt **ANGEL MODE** (AI Hiền Lành, cần gọi tên/tag mới trả lời)\n\n"
+            f"📌 Kênh {ctx.channel.mention} đã được liên kết với hệ thống AI!\n\n"
+            "🌸 **Trạng thái hiện tại:** Tự động kích hoạt **ANGEL MODE** (AI Groq hiền lành, cần gọi tên/tag mới trả lời)\n\n"
             "⚡ **.on**: Kích hoạt lại bot\n"
             "📄 **.roastmode**: Chế độ Auto Roast (tự động chửi mọi tin nhắn chat)\n"
             "📌 **.ghim @user**: Tự động chửi riêng 1 người\n"
             "🔨 **.ban @user [lý do]**: Ban thành viên khỏi server\n"
             "🌸 **.angelmode**: Chế độ hiền lành (cần gọi tên)\n"
+            "🤖 **.gemini [nội dung]**: Hỏi nhanh AI Gemini phụ\n"
             "🔌 **.off**: Tắt bot"
         ),
         color=0xFF69B4
@@ -299,6 +306,29 @@ async def off(ctx):
     )
     await ctx.send(embed=embed)
 
+# ==================== LỆNH GỌI AI THỨ HAI (GEMINI) ====================
+@bot.command(name="gemini")
+async def gemini_chat(ctx, *, message: str = None):
+    if not message:
+        await ctx.send("🌸 Vui lòng nhập nội dung cần hỏi Gemini nhé! Ví dụ: `.gemini Chào bạn`")
+        return
+
+    async with ctx.channel.typing():
+        try:
+            # Gọi AI Gemini phụ
+            response = gemini_model.generate_content(message)
+            reply_text = response.text if response.text else "Gemini không có câu trả lời cho nội dung này."
+
+            embed = discord.Embed(
+                title="🤖 SUN FLOWER • GEMINI AI PHỤ 🌟",
+                description=reply_text,
+                color=0x4285F4
+            )
+            embed.set_footer(text="Sun Flower • Google Gemini Engine 🚀")
+            await ctx.send(embed=embed)
+        except Exception as e:
+            await ctx.send(f"❌ Lỗi Gemini AI: `{str(e)[:120]}`")
+
 # ==================== XỬ LÝ SỰ KIỆN TIN NHẮN (ON_MESSAGE) ====================
 @bot.event
 async def on_message(message):
@@ -360,7 +390,7 @@ async def on_message(message):
                 user_msg = message.content.strip() if message.content else "..."
                 user_prompt = f"Người dùng {message.author.display_name} vừa nói: '{user_msg}'. Hãy tuân thủ 20 quy tắc hệ thống để đọc và trả lời lại yêu cầu này một cách thông minh, dễ thương và đúng trọng tâm nhất."
 
-                completion = ai_client.chat.completions.create(
+                completion = groq_client.chat.completions.create(
                     model="llama-3.3-70b-versatile",
                     messages=[
                         {"role": "system", "content": SYSTEM_INSTRUCTION_ANGEL},
