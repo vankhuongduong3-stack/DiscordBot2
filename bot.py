@@ -115,12 +115,11 @@ async def setup(ctx):
         title="⚡ LÃNH ĐỊA SUN FLOWER GROQ AI ĐÃ KÍCH HOẠT",
         description=(
             f"📌 Kênh {ctx.channel.mention} đã được liên kết với **Groq AI Engine**!\n\n"
-            "🌸 **Trạng thái hiện tại:** Tự động kích hoạt **ANGEL MODE** (AI Hiền Lành với 20 quy tắc ứng xử)\n"
-            "🖼️ Bot sẽ tự động đọc tin nhắn, suy nghĩ và trả lời thông minh khi được tag hoặc gọi tên!\n\n"
+            "🌸 **Trạng thái hiện tại:** Tự động kích hoạt **ANGEL MODE** (AI Hiền Lành, cần gọi tên/tag mới trả lời)\n\n"
             "⚡ **.on**: Kích hoạt lại bot\n"
-            "📄 **.roastmode**: Chế độ chửi\n"
-            "📌 **.ghim @user**: Chỉ chửi 1 người\n"
-            "🌸 **.angelmode**: Chế độ hiền lành (AI)\n"
+            "📄 **.roastmode**: Chế độ Auto Roast (tự động chửi mọi tin nhắn chat)\n"
+            "📌 **.ghim @user**: Tự động chửi riêng 1 người (Auto chửi mục tiêu)\n"
+            "🌸 **.angelmode**: Chế độ hiền lành (cần gọi tên)\n"
             "🔌 **.off**: Tắt bot"
         ),
         color=0xFF69B4
@@ -139,7 +138,7 @@ async def bot_on(ctx):
 
     current_mode = last_active_mode
 
-    mode_name = "🔥 **CHẾ ĐỘ CHỬI (ROAST MODE)**" if current_mode == "roast" else "🌸 **CHẾ ĐỘ HIỀN LÀNH AI (ANGEL MODE)**"
+    mode_name = "🔥 **CHẾ ĐỘ AUTO ROAST (AUTO CHỬI)**" if current_mode == "roast" else "🌸 **CHẾ ĐỘ HIỀN LÀNH AI (ANGEL MODE)**"
     color = 0xFF0000 if current_mode == "roast" else 0xFF69B4
 
     embed = discord.Embed(
@@ -158,23 +157,23 @@ async def roastmode(ctx):
         await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ BOSS MỚI ĐƯỢC ĐIỀU KHIỂN."** 🔥💀')
         return
 
-    if current_mode == "roast":
+    if current_mode == "roast" and target_user_id is None:
         current_mode = None
         target_user_id = None
         status = "🔴 **TẮT**"
-        desc = "💤 Chế độ chửi đã tắt."
+        desc = "💤 Chế độ Auto Roast đã tắt."
         color = 0x2F3136
     else:
         current_mode = "roast"
         last_active_mode = "roast"
-        target_user_id = None
+        target_user_id = None  # Xóa mục tiêu ghim cũ để chửi toàn bộ server
         status = "🟢 **BẬT**"
-        desc = "🔥 **CHẾ ĐỘ CHỬI ĐÃ KÍCH HOẠT**\nBot chỉ trả lời khi được gọi."
+        desc = "🔥 **CHẾ ĐỘ AUTO ROAST ĐÃ KÍCH HOẠT**\nBot sẽ tự động chửi bất kỳ ai nhắn tin trong kênh mà không cần gọi!"
         color = 0xFF0000
 
-    embed = discord.Embed(title="🌻 SUN FLOWER • TOXIC ROAST DEMON 💀🔥", description=desc, color=color)
+    embed = discord.Embed(title="🌻 SUN FLOWER • AUTO ROAST DEMON 💀🔥", description=desc, color=color)
     embed.add_field(name="📊 Trạng thái", value=status, inline=True)
-    embed.set_footer(text="Sun Flower • Only listens to Boss")
+    embed.set_footer(text="Sun Flower • Auto Chửi Không Cần Gọi")
     await ctx.send(embed=embed)
 
 @bot.command(name="ghim")
@@ -187,7 +186,8 @@ async def ghim(ctx, member: discord.Member = None):
 
     if member is None:
         target_user_id = None
-        await ctx.send('🔓 **Đã bỏ ghim.**')
+        current_mode = None
+        await ctx.send('🔓 **Đã bỏ ghim và tắt auto chửi.**')
         return
 
     target_user_id = member.id
@@ -195,11 +195,11 @@ async def ghim(ctx, member: discord.Member = None):
     last_active_mode = "roast"
 
     embed = discord.Embed(
-        title="🌻 SUN FLOWER • TOXIC ROAST DEMON 💀🔥",
-        description=f"📌 **Đã ghim {member.mention}**\nTừ giờ chỉ thằng này bị chửi (khi gọi bot).",
+        title="🌻 SUN FLOWER • TARGET ROAST 💀🔥",
+        description=f"📌 **Đã ghim {member.mention}**\nTừ giờ bot sẽ tự động canh chừng và auto chửi mọi tin nhắn của người này mà không cần gọi tên!",
         color=0xFF0000
     )
-    embed.set_footer(text="Sun Flower • Only listens to Boss")
+    embed.set_footer(text="Sun Flower • Target Locked")
     await ctx.send(embed=embed)
 
 @bot.command(name="angelmode")
@@ -218,7 +218,7 @@ async def angelmode(ctx):
         current_mode = "angel"
         last_active_mode = "angel"
         target_user_id = None
-        desc = "🌸💖 **CHẾ ĐỘ HIỀN LÀNH AI ĐÃ KÍCH HOẠT**\nBot sẽ đọc tin nhắn và tự sinh câu trả lời theo hệ thống quy tắc khi được gọi!"
+        desc = "🌸💖 **CHẾ ĐỘ HIỀN LÀNH AI ĐÃ KÍCH HOẠT**\nBot sẽ chỉ trả lời khi được gọi tên hoặc tag!"
         color = 0xFF69B4
 
     embed = discord.Embed(title="🌸 SUN FLOWER • SWEET PRINCESS 💖", description=desc, color=color)
@@ -252,18 +252,12 @@ async def on_message(message):
     if current_mode is None:
         return
 
-    content_lower = message.content.lower()
-    bot_mentioned = bot.user in message.mentions
-    called = any(word in content_lower for word in ["sun flower", "sunflower", "bot ơi", "bot", "sweet princess"])
-
-    # ===== CHẾ ĐỘ ROAST MODE =====
+    # ===== CHẾ ĐỘ AUTO ROAST / GHIM (Tự động chửi, KHÔNG CẦN gọi tên) =====
     if current_mode == "roast":
         if message.author.id == OWNER_ID:
             return
 
-        if not (bot_mentioned or called):
-            return
-
+        # Nếu có ghim một user cụ thể, chỉ chửi đúng user đó
         if target_user_id is not None and message.author.id != target_user_id:
             return
 
@@ -280,21 +274,26 @@ async def on_message(message):
         )
 
         embed = discord.Embed(
-            title="🌻 SUN FLOWER • TOXIC ROAST DEMON 💀🔥",
+            title="🌻 SUN FLOWER • AUTO ROAST DEMON 💀🔥",
             description=header + roast_text,
             color=0xFF0000
         )
         avatar_url = bot.user.avatar.url if (bot.user and bot.user.avatar) else None
         embed.set_author(name="Sun Flower", icon_url=avatar_url)
-        embed.set_footer(text="Sun Flower • Toxic Roast Demon 💀🔥")
+        embed.set_footer(text="Sun Flower • Auto Roast Demon 💀🔥")
 
         try:
             await message.reply(embed=embed, mention_author=True)
         except Exception:
             await message.channel.send(content=message.author.mention, embed=embed)
 
-    # ===== ANGEL MODE (KẾT HỢP GROQ AI ĐỂ ĐỌC VÀ TRẢ LỜI NGẪU NHIÊN THEO 20 QUY TẮC) =====
+    # ===== ANGEL MODE (AI Hiền lành, BẮT BUỘC phải gọi tên hoặc tag mới trả lời) =====
     elif current_mode == "angel":
+        content_lower = message.content.lower()
+        bot_mentioned = bot.user in message.mentions
+        called = any(word in content_lower for word in ["sun flower", "sunflower", "bot ơi", "bot", "sweet princess"])
+
+        # Nếu ở chế độ angel mà không gọi tên/tag thì bỏ qua không phản hồi
         if not (bot_mentioned or called):
             return
 
@@ -303,7 +302,6 @@ async def on_message(message):
                 user_msg = message.content.strip() if message.content else "..."
                 user_prompt = f"Người dùng {message.author.display_name} vừa nói: '{user_msg}'. Hãy tuân thủ 20 quy tắc hệ thống để đọc và trả lời lại yêu cầu này một cách thông minh, dễ thương và đúng trọng tâm nhất."
 
-                # Gọi Groq API thông qua client đã cấu hình với GOQ
                 completion = ai_client.chat.completions.create(
                     model="llama-3.3-70b-versatile",
                     messages=[
