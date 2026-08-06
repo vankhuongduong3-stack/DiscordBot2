@@ -118,7 +118,8 @@ async def setup(ctx):
             "🌸 **Trạng thái hiện tại:** Tự động kích hoạt **ANGEL MODE** (AI Hiền Lành, cần gọi tên/tag mới trả lời)\n\n"
             "⚡ **.on**: Kích hoạt lại bot\n"
             "📄 **.roastmode**: Chế độ Auto Roast (tự động chửi mọi tin nhắn chat)\n"
-            "📌 **.ghim @user**: Tự động chửi riêng 1 người (Auto chửi mục tiêu)\n"
+            "📌 **.ghim @user**: Tự động chửi riêng 1 người\n"
+            "🔨 **.ban @user [lý do]**: Ban thành viên khỏi server\n"
             "🌸 **.angelmode**: Chế độ hiền lành (cần gọi tên)\n"
             "🔌 **.off**: Tắt bot"
         ),
@@ -166,7 +167,7 @@ async def roastmode(ctx):
     else:
         current_mode = "roast"
         last_active_mode = "roast"
-        target_user_id = None  # Xóa mục tiêu ghim cũ để chửi toàn bộ server
+        target_user_id = None  
         status = "🟢 **BẬT**"
         desc = "🔥 **CHẾ ĐỘ AUTO ROAST ĐÃ KÍCH HOẠT**\nBot sẽ tự động chửi bất kỳ ai nhắn tin trong kênh mà không cần gọi!"
         color = 0xFF0000
@@ -201,6 +202,29 @@ async def ghim(ctx, member: discord.Member = None):
     )
     embed.set_footer(text="Sun Flower • Target Locked")
     await ctx.send(embed=embed)
+
+@bot.command(name="ban")
+async def ban(ctx, member: discord.Member = *, *, reason="Không có lý do được cung cấp"):
+    # Kiểm tra quyền hạn chủ nhân bot
+    if ctx.author.id != OWNER_ID:
+        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ BOSS MỚI CÓ QUYỀN BAN."** 🔥💀')
+        return
+
+    if member is None:
+        await ctx.send('⚠️ **Vui lòng tag người cần ban! Ví dụ:** `.ban @user [lý do]`')
+        return
+
+    try:
+        await member.ban(reason=reason)
+        embed = discord.Embed(
+            title="🔨 SUN FLOWER • THỰC THI BAN",
+            description=f"🚨 Đã tiễn thành viên {member.mention} ra đảo thành công!\n📝 **Lý do:** {reason}",
+            color=0xFF0000
+        )
+        embed.set_footer(text="Sun Flower • Ban System ⚡")
+        await ctx.send(embed=embed)
+    except Exception as e:
+        await ctx.send(f'❌ **Không thể ban người này!** Lỗi: `{e}` (Hãy đảm bảo bot có quyền Administrator hoặc Ban Members và thứ hạng role của bot cao hơn mục tiêu).')
 
 @bot.command(name="angelmode")
 async def angelmode(ctx):
