@@ -9,6 +9,11 @@ from groq import Groq
 DISCORD_TOKEN = os.getenv("TOKEN")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
+# Danh sách ID chủ sở hữu riêng của bot (Thêm các ID Discord của cậu vào đây, cách nhau bằng dấu phẩy)
+BOT_OWNERS = [
+    1531882555664629861,  # ID mẫu, cậu có thể thay thế hoặc thêm ID khác vào đây
+]
+
 # Khởi tạo Groq AI Client
 groq_client = Groq(api_key=GROQ_API_KEY)
 
@@ -94,12 +99,14 @@ ROAST_LINES = [
     '💀🤡 **"GIỜ THÌ NGỒI IM NHƯ CON CHÓ CÁI ĐANG ĐỢI CHỦ, ĐỪNG CÓ SỦA NỮA!"** 🤡💀',
 ]
 
-# Hàm kiểm tra xem người dùng có phải là Chủ server (Owner) hay không
-def is_guild_owner():
+# Hàm kiểm tra quyền: Là Bot Owner HOẶC Server Owner thì được quyền dùng lệnh
+def is_bot_or_guild_owner():
     async def predicate(ctx):
-        if ctx.guild is None:
-            return False
-        return ctx.author.id == ctx.guild.owner_id
+        if ctx.author.id in BOT_OWNERS:
+            return True
+        if ctx.guild and ctx.author.id == ctx.guild.owner_id:
+            return True
+        return False
     return commands.check(predicate)
 
 @bot.event
@@ -122,7 +129,7 @@ async def on_guild_join(guild):
             description=(
                 f"Xin chào **{guild.name}**! Cảm ơn vì đã đưa Sun Flower vào lãnh địa của các cậu~ ✨\n\n"
                 "🌸 **Các lệnh điều khiển nhanh:**\n"
-                "⚡ **`.setup`** - Khởi tạo và kết nối hệ thống AI (Dành cho Chủ server)\n"
+                "⚡ **`.setup`** - Khởi tạo và kết nối hệ thống AI (Dành cho Chủ bot & Chủ server)\n"
                 "📊 **`.stats`** - Xem thông tin tổng quan về máy chủ\n"
                 "📄 **`.roastmode`** - Bật chế độ tự động chửi mọi tin nhắn\n"
                 "📌 **`.ghim @user`** - Tự động chửi riêng một mục tiêu\n"
@@ -145,7 +152,7 @@ async def on_guild_join(guild):
 # ==================== CÁC LỆNH ĐIỀU KHIỂN (COMMANDS) ====================
 
 @bot.command(name="setup")
-@is_guild_owner()
+@is_bot_or_guild_owner()
 async def setup(ctx):
     global current_mode, last_active_mode, target_user_id
 
@@ -176,7 +183,7 @@ async def setup(ctx):
 @setup.error
 async def setup_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU (SERVER OWNER) MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
+        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU BOT HOẶC CHỦ SERVER MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
 
 @bot.command(name="stats")
 async def stats(ctx):
@@ -240,7 +247,7 @@ async def stats(ctx):
     await ctx.send(embed=embed)
 
 @bot.command(name="on")
-@is_guild_owner()
+@is_bot_or_guild_owner()
 async def bot_on(ctx):
     global current_mode, last_active_mode
 
@@ -260,10 +267,10 @@ async def bot_on(ctx):
 @bot_on.error
 async def bot_on_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU (SERVER OWNER) MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
+        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU BOT HOẶC CHỦ SERVER MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
 
 @bot.command(name="roastmode")
-@is_guild_owner()
+@is_bot_or_guild_owner()
 async def roastmode(ctx):
     global current_mode, last_active_mode, target_user_id
 
@@ -289,10 +296,10 @@ async def roastmode(ctx):
 @roastmode.error
 async def roastmode_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU (SERVER OWNER) MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
+        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU BOT HOẶC CHỦ SERVER MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
 
 @bot.command(name="ghim")
-@is_guild_owner()
+@is_bot_or_guild_owner()
 async def ghim(ctx, member: discord.Member = None):
     global target_user_id, current_mode, last_active_mode
 
@@ -317,10 +324,10 @@ async def ghim(ctx, member: discord.Member = None):
 @ghim.error
 async def ghim_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU (SERVER OWNER) MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
+        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU BOT HOẶC CHỦ SERVER MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
 
 @bot.command(name="ban")
-@is_guild_owner()
+@is_bot_or_guild_owner()
 async def ban(ctx, member: discord.Member, *, reason="Không có lý do được cung cấp"):
     try:
         await member.ban(reason=reason)
@@ -337,10 +344,10 @@ async def ban(ctx, member: discord.Member, *, reason="Không có lý do được
 @ban.error
 async def ban_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU (SERVER OWNER) MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
+        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU BOT HOẶC CHỦ SERVER MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
 
 @bot.command(name="angelmode")
-@is_guild_owner()
+@is_bot_or_guild_owner()
 async def angelmode(ctx):
     global current_mode, last_active_mode, target_user_id
 
@@ -362,7 +369,7 @@ async def angelmode(ctx):
 @angelmode.error
 async def angelmode_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('🌸💖 **"Chỉ có chủ sở hữu (Server Owner) mới được bật chế độ này nha~"** 💖🌸')
+        await ctx.send('🌸💖 **"Chỉ có chủ sở hữu bot hoặc chủ server mới được bật chế độ này nha~"** 💖🌸')
 
 @bot.command(name="help")
 async def help_command(ctx):
@@ -381,7 +388,7 @@ async def help_command(ctx):
         inline=False
     )
     embed.add_field(
-        name="⚡ Lệnh Chủ Server (Server Owner Only)",
+        name="⚡ Lệnh Đặc Quyền (Bot Owner & Server Owner)",
         value=(
             "• **`.setup`** - Khởi tạo kênh và kết nối bot (với ảnh GIF độc quyền).\n"
             "• **`.on` / `.off`** - Bật / Tắt trạng thái hoạt động của bot.\n"
@@ -396,7 +403,7 @@ async def help_command(ctx):
     await ctx.send(embed=embed)
 
 @bot.command(name="off")
-@is_guild_owner()
+@is_bot_or_guild_owner()
 async def off(ctx):
     global current_mode
 
@@ -411,7 +418,7 @@ async def off(ctx):
 @off.error
 async def off_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU (SERVER OWNER) MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
+        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU BOT HOẶC CHỦ SERVER MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
 
 # ==================== XỬ LÝ SỰ KIỆN TIN NHẮN (ON_MESSAGE) ====================
 @bot.event
@@ -426,6 +433,9 @@ async def on_message(message):
 
     # ===== CHẾ ĐỘ AUTO ROAST / GHIM (Tự động chửi, KHÔNG CẦN gọi tên) =====
     if current_mode == "roast":
+        # Bỏ qua nếu người nhắn là Bot Owner hoặc Server Owner
+        if message.author.id in BOT_OWNERS:
+            return
         if message.guild and message.author.id == message.guild.owner_id:
             return
 
