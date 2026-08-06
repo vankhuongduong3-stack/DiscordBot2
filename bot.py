@@ -7,7 +7,7 @@ from groq import Groq
 
 # ==================== CẤU HÌNH HỆ THỐNG ====================
 DISCORD_TOKEN = os.getenv("TOKEN")
-GOQ_API_KEY = os.getenv("GOQ") or os.getenv("GROQ_API_KEY")
+GOQ_API_KEY = os.getenv("GROQ_API_KEY")
 OWNER_ID = 1531882555664629861
 
 # Khởi tạo Groq AI Client với biến GOQ
