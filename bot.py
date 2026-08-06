@@ -166,7 +166,7 @@ async def setup(ctx):
         ),
         color=0xFF69B4
     )
-    embed.set_image(url="https://i.pinimg.com/originals/32/88/26/328826fa582ff4e248949e467cd59710.gif")
+    embed.set_image(url="https://i.pinimg.com/originals/c3/e1/e4/c3e1e47113a4bea928309e341b245dac.gif")
     embed.set_footer(text="✦ Hệ thống quản lý Sun Flower 🌸")
     await ctx.send(embed=embed)
 
