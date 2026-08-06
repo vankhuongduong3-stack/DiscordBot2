@@ -204,14 +204,9 @@ async def ghim(ctx, member: discord.Member = None):
     await ctx.send(embed=embed)
 
 @bot.command(name="ban")
-async def ban(ctx, member: discord.Member = *, *, reason="Không có lý do được cung cấp"):
-    # Kiểm tra quyền hạn chủ nhân bot
+async def ban(ctx, member: discord.Member, *, reason="Không có lý do được cung cấp"):
     if ctx.author.id != OWNER_ID:
         await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ BOSS MỚI CÓ QUYỀN BAN."** 🔥💀')
-        return
-
-    if member is None:
-        await ctx.send('⚠️ **Vui lòng tag người cần ban! Ví dụ:** `.ban @user [lý do]`')
         return
 
     try:
