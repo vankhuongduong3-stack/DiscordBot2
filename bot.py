@@ -9,9 +9,9 @@ from groq import Groq
 DISCORD_TOKEN = os.getenv("TOKEN")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-# Danh sách ID chủ sở hữu riêng của bot (Thêm các ID Discord của cậu vào đây, cách nhau bằng dấu phẩy)
+# Danh sách ID chủ sở hữu riêng của bot (Thêm ID Discord của cậu vào đây)
 BOT_OWNERS = [
-    1531882555664629861,  # ID mẫu, cậu có thể thay thế hoặc thêm ID khác vào đây
+    1531882555664629861,  
 ]
 
 # Khởi tạo Groq AI Client
@@ -28,8 +28,8 @@ current_mode = "angel"
 last_active_mode = "angel"   
 target_user_id = None
 
-# Link ảnh GIF cho lệnh .setup theo yêu cầu
-CUSTOM_SETUP_GIF = "https://i.imgur.com/8QY2S7j.gif"
+# Link ảnh GIF từ Pinterest của cậu đã được thêm vào đây!
+CUSTOM_SETUP_GIF = "https://i.pinimg.com/originals/f2/1b/fb/f21bfbb4208888a75300e1afddebba6b.gif"
 
 # ==================== HỆ THỐNG 20 QUY TẮC PHẢN HỒI CHO ANGEL MODE (AI) ====================
 SYSTEM_INSTRUCTION_ANGEL = """
@@ -99,7 +99,7 @@ ROAST_LINES = [
     '💀🤡 **"GIỜ THÌ NGỒI IM NHƯ CON CHÓ CÁI ĐANG ĐỢI CHỦ, ĐỪNG CÓ SỦA NỮA!"** 🤡💀',
 ]
 
-# Hàm kiểm tra quyền: Là Bot Owner HOẶC Server Owner thì được quyền dùng lệnh
+# Hàm kiểm tra quyền: Bot Owner HOẶC Server Owner
 def is_bot_or_guild_owner():
     async def predicate(ctx):
         if ctx.author.id in BOT_OWNERS:
@@ -433,7 +433,6 @@ async def on_message(message):
 
     # ===== CHẾ ĐỘ AUTO ROAST / GHIM (Tự động chửi, KHÔNG CẦN gọi tên) =====
     if current_mode == "roast":
-        # Bỏ qua nếu người nhắn là Bot Owner hoặc Server Owner
         if message.author.id in BOT_OWNERS:
             return
         if message.guild and message.author.id == message.guild.owner_id:
