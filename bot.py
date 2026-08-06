@@ -319,7 +319,7 @@ async def openrouter_chat(ctx, *, message: str = None):
     async with ctx.channel.typing():
         try:
             completion = openrouter_client.chat.completions.create(
-                model="deepseek/deepseek-r1:free",
+                model="meta-llama/llama-3.3-70b-instruct:free",
                 messages=[{"role": "user", "content": message}]
             )
             reply_text = completion.choices[0].message.content if completion.choices[0].message.content else "OpenRouter không có câu trả lời cho nội dung này."
