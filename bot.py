@@ -4,12 +4,10 @@ import random
 import discord
 from discord.ext import commands
 from groq import Groq
-from openai import OpenAI
 
 # ==================== CẤU HÌNH HỆ THỐNG ====================
 DISCORD_TOKEN = os.getenv("TOKEN")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OWNER_ID = 1531882555664629861
 
 # Danh sách các ID được phép sử dụng các lệnh đặc quyền (Boss + Các ID bổ sung)
@@ -18,14 +16,8 @@ ALLOWED_ADMIN_IDS = [
     1232558003375308861,  # ID mới được thêm vào
 ]
 
-# Khởi tạo các AI Client
+# Khởi tạo Groq AI Client
 groq_client = Groq(api_key=GROQ_API_KEY)
-
-# Khởi tạo OpenRouter Client
-openrouter_client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=OPENROUTER_API_KEY,
-)
 
 # Cấu hình Discord Bot
 intents = discord.Intents.default()
@@ -88,7 +80,7 @@ ROAST_LINES = [
     '💩🔥 **"MÀY NGHĨ MÌNH QUAN TRỌNG LẮM HẢ? MÀY CHỈ LÀ CÁI BUỒI KHÔ HÉO BỊ BỎ QUÊN TRONG NHÀ VỆ SINH CÔNG CỘNG THÔI!"** 🔥💩',
     '🩸🤡 **"THẰNG ĐÉO CÓ TƯƠNG LAI!"** 🤡🩸',
     '💀☠️ **"CON CHÓ NHÀ AI BỎ ĐI!"** ☠️💀',
-    '🔥🤮 **"CÁI LỒN ĐANG MỞ TOANG CHỜ AI NHÉT CẶC VÀO!"** 🤮🔥',
+    '🔥🤮 **"CÁI LỒN Đang MỞ TOANG CHỜ AI NHÉT CẶC VÀO!"** 🤮🔥',
     '🤡💩 **"TAO KHÔNG CHỬI MÀY VÌ VUI. TAO CHỬI MÀY VÌ MÀY ĐÁNG BỊ CHỬI."** 💩🤡',
     '🩸💀 **"MÀY TỒN TẠI CHỈ ĐỂ LÀM NỀN CHO NGƯỜI KHÁC CƯỜI."** 💀🩸',
     '☠️🔥 **"CÚT ĐI, ĐỪNG CÓ SỦA NỮA KẺO TAO ĐÚT NGUYÊN CÁI BUỒI VÀO MỒM CHO MÀY NGẬM!"** 🔥☠️',
@@ -109,7 +101,7 @@ ROAST_LINES = [
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
-    await bot.change_presence(activity=discord.Game(name="Sun Flower • Multi-AI Engine"))
+    await bot.change_presence(activity=discord.Game(name="Sun Flower • AI Engine"))
 
 # ==================== SỰ KIỆN KHI BOT ĐƯỢC THÊM VÀO SERVER ====================
 @bot.event
@@ -131,14 +123,13 @@ async def on_guild_join(guild):
                 "📌 **`.ghim @user`** - Tự động chửi riêng một mục tiêu\n"
                 "🔨 **`.ban @user [lý do]`** - Tiễn thành viên ra đảo\n"
                 "🌸 **`.angelmode`** - Bật chế độ AI hiền lành (cần gọi tên/tag)\n"
-                "🤖 **`.openrouter [nội dung]`** - Trò chuyện trực tiếp với AI OpenRouter phụ\n"
                 "🔌 **`.off`** - Tắt các chế độ hoạt động\n\n"
                 "✨ *Chúc mọi người có những trải nghiệm thật vui vẻ bên Sun Flower nhé!* 🌷"
             ),
             color=0xFF69B4
         )
         embed.set_thumbnail(url=bot.user.avatar.url if bot.user.avatar else None)
-        embed.set_footer(text="Sun Flower • Multi-AI Engine ⚡")
+        embed.set_footer(text="Sun Flower • AI Engine ⚡")
         
         try:
             await target_channel.send(embed=embed)
@@ -169,7 +160,6 @@ async def setup(ctx):
             "📌 **.ghim @user**: Tự động chửi riêng 1 người\n"
             "🔨 **.ban @user [lý do]**: Ban thành viên khỏi server\n"
             "🌸 **.angelmode**: Chế độ hiền lành (cần gọi tên)\n"
-            "🤖 **.openrouter [nội dung]**: Hỏi nhanh AI OpenRouter phụ\n"
             "🔌 **.off**: Tắt bot"
         ),
         color=0xFF69B4
@@ -308,31 +298,6 @@ async def off(ctx):
         color=0x2F3136
     )
     await ctx.send(embed=embed)
-
-# ==================== LỆNH GỌI AI THỨ HAI (OPENROUTER) ====================
-@bot.command(name="openrouter")
-async def openrouter_chat(ctx, *, message: str = None):
-    if not message:
-        await ctx.send("🌸 Vui lòng nhập nội dung cần hỏi OpenRouter nhé! Ví dụ: `.openrouter Chào bạn`")
-        return
-
-    async with ctx.channel.typing():
-        try:
-            completion = openrouter_client.chat.completions.create(
-                model="meta-llama/llama-3.3-70b-instruct:free",
-                messages=[{"role": "user", "content": message}]
-            )
-            reply_text = completion.choices[0].message.content if completion.choices[0].message.content else "OpenRouter không có câu trả lời cho nội dung này."
-
-            embed = discord.Embed(
-                title="🤖 SUN FLOWER • OPENROUTER AI PHỤ 🌟",
-                description=reply_text,
-                color=0x764ABC
-            )
-            embed.set_footer(text="Sun Flower • OpenRouter Engine 🚀")
-            await ctx.send(embed=embed)
-        except Exception as e:
-            await ctx.send(f"❌ Lỗi OpenRouter AI: `{str(e)[:120]}`")
 
 # ==================== XỬ LÝ SỰ KIỆN TIN NHẮN (ON_MESSAGE) ====================
 @bot.event
