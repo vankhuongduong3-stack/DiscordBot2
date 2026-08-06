@@ -8,13 +8,6 @@ from groq import Groq
 # ==================== CẤU HÌNH HỆ THỐNG ====================
 DISCORD_TOKEN = os.getenv("TOKEN")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-OWNER_ID = 1531882555664629861
-
-# Danh sách các ID được phép sử dụng các lệnh đặc quyền (Boss + Các ID bổ sung)
-ALLOWED_ADMIN_IDS = [
-    1531882555664629861,  # Boss chính
-    1232558003375308861,  # ID mới được thêm vào
-]
 
 # Khởi tạo Groq AI Client
 groq_client = Groq(api_key=GROQ_API_KEY)
@@ -26,9 +19,12 @@ intents.members = True
 
 bot = commands.Bot(command_prefix=".", intents=intents, help_command=None)
 
-current_mode = "angel"       # Mặc định bật chế độ AI Angel ngay khi chạy
+current_mode = "angel"       
 last_active_mode = "angel"   
 target_user_id = None
+
+# Link ảnh GIF cho lệnh .setup theo yêu cầu
+CUSTOM_SETUP_GIF = "https://i.imgur.com/8QY2S7j.gif"
 
 # ==================== HỆ THỐNG 20 QUY TẮC PHẢN HỒI CHO ANGEL MODE (AI) ====================
 SYSTEM_INSTRUCTION_ANGEL = """
@@ -74,7 +70,7 @@ ROAST_LINES = [
     '🤡💀 **"MÀY LÀ CÁI XÁC SỐNG KHÔNG CÓ NÃO!"** 💀🤡',
     '☠️💩 **"MÀY LÀ CON CHÓ CÁI BỊ BỎ RƠI NGOÀI ĐƯỜNG!"** 💩☠️',
     '🔥🤮 **"MÀY LÀ ĐỐNG PHÂN MÀ NGAY CẢ RUỒI CŨNG KHÔNG THÈM ĐẬU!"** 🤮🔥',
-    '💀🩸 **"MỖI LẦN MÀY GÕ PHÍM LÀ TAO LẠI NHỚ ĐẾN CÁI LỒN MẸ MÀY ĐANG THỐI RỮA."** 🩸💀',
+    '💀🩸 **"MỖI LẦN MÀY GÕ PHÍM LÀ TAO LẠI NHỚ ĐẾN CÁI LỒN MẸ MÀY ĐANG THỐI RỮA."** 💀🩸',
     '🤡🔥 **"CÂM HỌNG LẠI ĐI THẰNG ÓC CẶC, KHÔNG THÌ TAO SẼ LÀM MÀY KHÓC NHƯ CON CHÓ CÁI BỊ ĐỤ!"** 🔥🤡',
     '☠️💀 **"HAHAHAHA THẰNG SÚC VẬT NÀY!"** 💀☠️',
     '💩🔥 **"MÀY NGHĨ MÌNH QUAN TRỌNG LẮM HẢ? MÀY CHỈ LÀ CÁI BUỒI KHÔ HÉO BỊ BỎ QUÊN TRONG NHÀ VỆ SINH CÔNG CỘNG THÔI!"** 🔥💩',
@@ -98,6 +94,14 @@ ROAST_LINES = [
     '💀🤡 **"GIỜ THÌ NGỒI IM NHƯ CON CHÓ CÁI ĐANG ĐỢI CHỦ, ĐỪNG CÓ SỦA NỮA!"** 🤡💀',
 ]
 
+# Hàm kiểm tra xem người dùng có phải là Chủ server (Owner) hay không
+def is_guild_owner():
+    async def predicate(ctx):
+        if ctx.guild is None:
+            return False
+        return ctx.author.id == ctx.guild.owner_id
+    return commands.check(predicate)
+
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
@@ -118,7 +122,8 @@ async def on_guild_join(guild):
             description=(
                 f"Xin chào **{guild.name}**! Cảm ơn vì đã đưa Sun Flower vào lãnh địa của các cậu~ ✨\n\n"
                 "🌸 **Các lệnh điều khiển nhanh:**\n"
-                "⚡ **`.setup`** - Khởi tạo và kết nối hệ thống AI\n"
+                "⚡ **`.setup`** - Khởi tạo và kết nối hệ thống AI (Dành cho Chủ server)\n"
+                "📊 **`.stats`** - Xem thông tin tổng quan về máy chủ\n"
                 "📄 **`.roastmode`** - Bật chế độ tự động chửi mọi tin nhắn\n"
                 "📌 **`.ghim @user`** - Tự động chửi riêng một mục tiêu\n"
                 "🔨 **`.ban @user [lý do]`** - Tiễn thành viên ra đảo\n"
@@ -140,12 +145,9 @@ async def on_guild_join(guild):
 # ==================== CÁC LỆNH ĐIỀU KHIỂN (COMMANDS) ====================
 
 @bot.command(name="setup")
+@is_guild_owner()
 async def setup(ctx):
     global current_mode, last_active_mode, target_user_id
-
-    if ctx.author.id not in ALLOWED_ADMIN_IDS:
-        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! BẠN KHÔNG CÓ QUYỀN SETUP."** 🔥💀')
-        return
 
     current_mode = "angel"
     last_active_mode = "angel"
@@ -157,6 +159,7 @@ async def setup(ctx):
             f"📌 Kênh {ctx.channel.mention} đã được liên kết với hệ thống AI!\n\n"
             "🌸 **Trạng thái hiện tại:** Tự động kích hoạt **ANGEL MODE** (AI Groq hiền lành, cần gọi tên/tag mới trả lời)\n\n"
             "⚡ **.on**: Kích hoạt lại bot\n"
+            "📊 **.stats**: Xem thống kê tổng quan server\n"
             "📄 **.roastmode**: Chế độ Auto Roast (tự động chửi mọi tin nhắn chat)\n"
             "📌 **.ghim @user**: Tự động chửi riêng 1 người\n"
             "🔨 **.ban @user [lý do]**: Ban thành viên khỏi server\n"
@@ -166,17 +169,80 @@ async def setup(ctx):
         ),
         color=0xFF69B4
     )
-    embed.set_image(url="https://i.pinimg.com/originals/c3/e1/e4/c3e1e47113a4bea928309e341b245dac.gif")
+    embed.set_image(url=CUSTOM_SETUP_GIF)
     embed.set_footer(text="✦ Hệ thống quản lý Sun Flower 🌸")
     await ctx.send(embed=embed)
 
+@setup.error
+async def setup_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU (SERVER OWNER) MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
+
+@bot.command(name="stats")
+async def stats(ctx):
+    guild = ctx.guild
+
+    total_members = guild.member_count
+    humans = sum(not m.bot for m in guild.members)
+    bots = sum(m.bot for m in guild.members)
+
+    text_channels = len(guild.text_channels)
+    voice_channels = len(guild.voice_channels)
+    categories = len(guild.categories)
+    total_channels = len(guild.channels)
+
+    roles_count = len(guild.roles)
+    boost_count = guild.premium_subscription_count
+    boost_tier = guild.premium_tier
+    owner = guild.owner
+
+    embed = discord.Embed(
+        title=f"📊 THÔNG TIN TỔNG QUAN MÁY CHỦ • {guild.name.upper()} ✨",
+        description=f"📌 **ID Máy chủ:** `{guild.id}`\n👑 **Chủ sở hữu:** {owner.mention if owner else 'Không rõ'}",
+        color=0xFF69B4
+    )
+
+    if guild.icon:
+        embed.set_thumbnail(url=guild.icon.url)
+
+    embed.add_field(
+        name="👥 Thành viên",
+        value=(
+            f"• **Tổng số:** `{total_members}`\n"
+            f"• **Con người:** `{humans}` 🧑\n"
+            f"• **Bot:** `{bots}` 🤖"
+        ),
+        inline=True
+    )
+
+    embed.add_field(
+        name="📁 Kênh & Danh mục",
+        value=(
+            f"• **Tổng số kênh:** `{total_channels}`\n"
+            f"• **Kênh chat:** `{text_channels}` 💬\n"
+            f"• **Kênh thoại:** `{voice_channels}` 🔊\n"
+            f"• **Danh mục:** `{categories}` 📂"
+        ),
+        inline=True
+    )
+
+    embed.add_field(
+        name="🛡️ Khác & Boost",
+        value=(
+            f"• **Vai trò (Roles):** `{roles_count}` 🏷️\n"
+            f"• **Cấp độ Boost:** `Cấp {boost_tier}` 🚀\n"
+            f"• **Lượt Boost:** `{boost_count}` 💎"
+        ),
+        inline=False
+    )
+
+    embed.set_footer(text="Sun Flower • Server Statistics 📈")
+    await ctx.send(embed=embed)
+
 @bot.command(name="on")
+@is_guild_owner()
 async def bot_on(ctx):
     global current_mode, last_active_mode
-
-    if ctx.author.id not in ALLOWED_ADMIN_IDS:
-        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! BẠN KHÔNG CÓ QUYỀN BẬT BOT."** 🔥💀')
-        return
 
     current_mode = last_active_mode
 
@@ -191,13 +257,15 @@ async def bot_on(ctx):
     embed.set_footer(text="Sun Flower • Online & Ready")
     await ctx.send(embed=embed)
 
+@bot_on.error
+async def bot_on_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU (SERVER OWNER) MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
+
 @bot.command(name="roastmode")
+@is_guild_owner()
 async def roastmode(ctx):
     global current_mode, last_active_mode, target_user_id
-
-    if ctx.author.id not in ALLOWED_ADMIN_IDS:
-        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! BẠN KHÔNG CÓ QUYỀN ĐIỀU KHIỂN."** 🔥💀')
-        return
 
     if current_mode == "roast" and target_user_id is None:
         current_mode = None
@@ -218,13 +286,15 @@ async def roastmode(ctx):
     embed.set_footer(text="Sun Flower • Auto Chửi Không Cần Gọi")
     await ctx.send(embed=embed)
 
+@roastmode.error
+async def roastmode_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU (SERVER OWNER) MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
+
 @bot.command(name="ghim")
+@is_guild_owner()
 async def ghim(ctx, member: discord.Member = None):
     global target_user_id, current_mode, last_active_mode
-
-    if ctx.author.id not in ALLOWED_ADMIN_IDS:
-        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! BẠN KHÔNG CÓ QUYỀN GHIM."** 🔥💀')
-        return
 
     if member is None:
         target_user_id = None
@@ -244,12 +314,14 @@ async def ghim(ctx, member: discord.Member = None):
     embed.set_footer(text="Sun Flower • Target Locked")
     await ctx.send(embed=embed)
 
-@bot.command(name="ban")
-async def ban(ctx, member: discord.Member, *, reason="Không có lý do được cung cấp"):
-    if ctx.author.id not in ALLOWED_ADMIN_IDS:
-        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! MÀY ĐÉO CÓ QUYỀN SỬ DỤNG LỆNH BAN."** 🔥💀')
-        return
+@ghim.error
+async def ghim_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU (SERVER OWNER) MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
 
+@bot.command(name="ban")
+@is_guild_owner()
+async def ban(ctx, member: discord.Member, *, reason="Không có lý do được cung cấp"):
     try:
         await member.ban(reason=reason)
         embed = discord.Embed(
@@ -262,13 +334,15 @@ async def ban(ctx, member: discord.Member, *, reason="Không có lý do được
     except Exception as e:
         await ctx.send(f'❌ **Không thể ban người này!** Lỗi: `{e}` (Hãy đảm bảo bot có quyền Administrator hoặc Ban Members và thứ hạng role của bot cao hơn mục tiêu).')
 
+@ban.error
+async def ban_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU (SERVER OWNER) MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
+
 @bot.command(name="angelmode")
+@is_guild_owner()
 async def angelmode(ctx):
     global current_mode, last_active_mode, target_user_id
-
-    if ctx.author.id not in ALLOWED_ADMIN_IDS:
-        await ctx.send('🌸💖 **"Bạn không có quyền bật chế độ này nha~"** 💖🌸')
-        return
 
     if current_mode == "angel":
         current_mode = None
@@ -285,6 +359,11 @@ async def angelmode(ctx):
     embed.set_footer(text="Sun Flower • AI Soft Mode")
     await ctx.send(embed=embed)
 
+@angelmode.error
+async def angelmode_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send('🌸💖 **"Chỉ có chủ sở hữu (Server Owner) mới được bật chế độ này nha~"** 💖🌸')
+
 @bot.command(name="help")
 async def help_command(ctx):
     embed = discord.Embed(
@@ -296,14 +375,15 @@ async def help_command(ctx):
         name="🌸 Lệnh cho Mọi người (Public)",
         value=(
             "• **`.help`** - Xem bảng hướng dẫn này.\n"
+            "• **`.stats`** - Xem thông tin tổng quan, số lượng thành viên, bot, kênh và vai trò của server.\n"
             "• **Trò chuyện AI:** Nhắc tên bot (hoặc gọi *sun flower, bot ơi, sweet princess*) kèm theo nội dung trong kênh khi bot đang mở Angel Mode để trò chuyện ngọt ngào với AI~ ✨"
         ),
         inline=False
     )
     embed.add_field(
-        name="⚡ Lệnh Đặc quyền (Admin/Boss)",
+        name="⚡ Lệnh Chủ Server (Server Owner Only)",
         value=(
-            "• **`.setup`** - Khởi tạo kênh và kết nối bot.\n"
+            "• **`.setup`** - Khởi tạo kênh và kết nối bot (với ảnh GIF độc quyền).\n"
             "• **`.on` / `.off`** - Bật / Tắt trạng thái hoạt động của bot.\n"
             "• **`.roastmode`** - Bật/tắt chế độ tự động chửi mọi tin nhắn.\n"
             "• **`.ghim @user`** - Khóa mục tiêu để bot auto chửi riêng 1 người.\n"
@@ -316,12 +396,9 @@ async def help_command(ctx):
     await ctx.send(embed=embed)
 
 @bot.command(name="off")
+@is_guild_owner()
 async def off(ctx):
     global current_mode
-
-    if ctx.author.id not in ALLOWED_ADMIN_IDS:
-        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! BẠN KHÔNG CÓ QUYỀN TẮT BOT."** 🔥💀')
-        return
 
     current_mode = None
     embed = discord.Embed(
@@ -330,6 +407,11 @@ async def off(ctx):
         color=0x2F3136
     )
     await ctx.send(embed=embed)
+
+@off.error
+async def off_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU (SERVER OWNER) MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
 
 # ==================== XỬ LÝ SỰ KIỆN TIN NHẮN (ON_MESSAGE) ====================
 @bot.event
@@ -344,7 +426,7 @@ async def on_message(message):
 
     # ===== CHẾ ĐỘ AUTO ROAST / GHIM (Tự động chửi, KHÔNG CẦN gọi tên) =====
     if current_mode == "roast":
-        if message.author.id in ALLOWED_ADMIN_IDS:
+        if message.guild and message.author.id == message.guild.owner_id:
             return
 
         if target_user_id is not None and message.author.id != target_user_id:
