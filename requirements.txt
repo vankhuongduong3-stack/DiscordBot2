@@ -1,2 +1,2 @@
+groq
 discord.py
-google-genai
