@@ -4,12 +4,12 @@ import random
 import discord
 from discord.ext import commands
 from groq import Groq
-import google.generativeai as genai
+from openai import OpenAI
 
 # ==================== CẤU HÌNH HỆ THỐNG ====================
 DISCORD_TOKEN = os.getenv("TOKEN")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OWNER_ID = 1531882555664629861
 
 # Danh sách các ID được phép sử dụng các lệnh đặc quyền (Boss + Các ID bổ sung)
@@ -21,8 +21,11 @@ ALLOWED_ADMIN_IDS = [
 # Khởi tạo các AI Client
 groq_client = Groq(api_key=GROQ_API_KEY)
 
-genai.configure(api_key=GEMINI_API_KEY)
-gemini_model = genai.GenerativeModel("gemini-1.5-flash")
+# Khởi tạo OpenRouter Client
+openrouter_client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=OPENROUTER_API_KEY,
+)
 
 # Cấu hình Discord Bot
 intents = discord.Intents.default()
@@ -128,7 +131,7 @@ async def on_guild_join(guild):
                 "📌 **`.ghim @user`** - Tự động chửi riêng một mục tiêu\n"
                 "🔨 **`.ban @user [lý do]`** - Tiễn thành viên ra đảo\n"
                 "🌸 **`.angelmode`** - Bật chế độ AI hiền lành (cần gọi tên/tag)\n"
-                "🤖 **`.gemini [nội dung]`** - Trò chuyện trực tiếp với AI Gemini phụ\n"
+                "🤖 **`.openrouter [nội dung]`** - Trò chuyện trực tiếp với AI OpenRouter phụ\n"
                 "🔌 **`.off`** - Tắt các chế độ hoạt động\n\n"
                 "✨ *Chúc mọi người có những trải nghiệm thật vui vẻ bên Sun Flower nhé!* 🌷"
             ),
@@ -166,7 +169,7 @@ async def setup(ctx):
             "📌 **.ghim @user**: Tự động chửi riêng 1 người\n"
             "🔨 **.ban @user [lý do]**: Ban thành viên khỏi server\n"
             "🌸 **.angelmode**: Chế độ hiền lành (cần gọi tên)\n"
-            "🤖 **.gemini [nội dung]**: Hỏi nhanh AI Gemini phụ\n"
+            "🤖 **.openrouter [nội dung]**: Hỏi nhanh AI OpenRouter phụ\n"
             "🔌 **.off**: Tắt bot"
         ),
         color=0xFF69B4
@@ -306,28 +309,30 @@ async def off(ctx):
     )
     await ctx.send(embed=embed)
 
-# ==================== LỆNH GỌI AI THỨ HAI (GEMINI) ====================
-@bot.command(name="gemini")
-async def gemini_chat(ctx, *, message: str = None):
+# ==================== LỆNH GỌI AI THỨ HAI (OPENROUTER) ====================
+@bot.command(name="openrouter")
+async def openrouter_chat(ctx, *, message: str = None):
     if not message:
-        await ctx.send("🌸 Vui lòng nhập nội dung cần hỏi Gemini nhé! Ví dụ: `.gemini Chào bạn`")
+        await ctx.send("🌸 Vui lòng nhập nội dung cần hỏi OpenRouter nhé! Ví dụ: `.openrouter Chào bạn`")
         return
 
     async with ctx.channel.typing():
         try:
-            # Gọi AI Gemini phụ
-            response = gemini_model.generate_content(message)
-            reply_text = response.text if response.text else "Gemini không có câu trả lời cho nội dung này."
+            completion = openrouter_client.chat.completions.create(
+                model="deepseek/deepseek-r1:free",
+                messages=[{"role": "user", "content": message}]
+            )
+            reply_text = completion.choices[0].message.content if completion.choices[0].message.content else "OpenRouter không có câu trả lời cho nội dung này."
 
             embed = discord.Embed(
-                title="🤖 SUN FLOWER • GEMINI AI PHỤ 🌟",
+                title="🤖 SUN FLOWER • OPENROUTER AI PHỤ 🌟",
                 description=reply_text,
-                color=0x4285F4
+                color=0x764ABC
             )
-            embed.set_footer(text="Sun Flower • Google Gemini Engine 🚀")
+            embed.set_footer(text="Sun Flower • OpenRouter Engine 🚀")
             await ctx.send(embed=embed)
         except Exception as e:
-            await ctx.send(f"❌ Lỗi Gemini AI: `{str(e)[:120]}`")
+            await ctx.send(f"❌ Lỗi OpenRouter AI: `{str(e)[:120]}`")
 
 # ==================== XỬ LÝ SỰ KIỆN TIN NHẮN (ON_MESSAGE) ====================
 @bot.event
@@ -345,7 +350,6 @@ async def on_message(message):
         if message.author.id in ALLOWED_ADMIN_IDS:
             return
 
-        # Nếu có ghim một user cụ thể, chỉ chửi đúng user đó
         if target_user_id is not None and message.author.id != target_user_id:
             return
 
@@ -381,7 +385,6 @@ async def on_message(message):
         bot_mentioned = bot.user in message.mentions
         called = any(word in content_lower for word in ["sun flower", "sunflower", "bot ơi", "bot", "sweet princess"])
 
-        # Nếu ở chế độ angel mà không gọi tên/tag thì bỏ qua không phản hồi
         if not (bot_mentioned or called):
             return
 
