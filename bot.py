@@ -8,7 +8,7 @@ from groq import Groq
 
 # ==================== CẤU HÌNH HỆ THỐNG ====================
 DISCORD_TOKEN = os.getenv("TOKEN")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY") # Dán khóa API Groq của bạn vào biến môi trường hoặc thay trực tiếp vào đây
+GROQ_API_KEY = os.getenv("GROQ_API_KEY") # Hãy chắc chắn bạn đã điền đúng Key của Groq
 
 # Khởi tạo Groq Client chính thức
 groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
@@ -80,31 +80,7 @@ async def on_ready():
     print("✨ Hệ thống Groq AI thông minh đã sẵn sàng hoạt động!")
     await bot.change_presence(activity=discord.Game(name="✨ Gõ .help để mở Siêu Menu Lệnh"))
 
-@bot.event
-async def on_guild_join(guild):
-    target_channel = None
-    for channel in guild.text_channels:
-        if channel.permissions_for(guild.me).send_messages:
-            target_channel = channel
-            break
-
-    if target_channel is not None:
-        embed = discord.Embed(
-            title="╔════════════════════════════════════════╗\n║  🌟 sᴜɴ ꜰʟᴏᴡᴇʀ ᴀɪ • ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ sᴇʀᴠᴇʀ  🌟  ║\n╚════════════════════════════════════════╝",
-            description=(
-                f"🎉 Chào mừng đến với lãnh địa **{guild.name}**! Cảm ơn vì đã lựa chọn Sun Flower Bot làm trợ lý ảo đồng hành tối thượng~ ✨\n\n"
-                "🔹 Gõ lệnh **`.help`** để mở **Bảng Điều Khiển & Siêu Menu** toàn diện.\n"
-                "🔹 Gõ lệnh **`.setup`** để thiết lập không gian quản trị độc quyền cho kênh.\n"
-            ),
-            color=0xFF69B4
-        )
-        embed.set_thumbnail(url=bot.user.avatar.url if bot.user.avatar else None)
-        try:
-            await target_channel.send(embed=embed)
-        except Exception:
-            pass
-
-# ==================== CÁC LỆNH ĐIỀU KHIỂN ====================
+# ==================== CÁC LỆNH ĐIỀU KHIỂN & SIÊU MENU ====================
 
 @bot.command(name="setup")
 @has_high_privilege()
@@ -120,10 +96,11 @@ async def setup(ctx):
         description=(
             f"📌 **Kênh kết nối định mệnh:** {ctx.channel.mention}\n"
             f"🌸 **Nhân cách khởi tạo mặc định:** `{p_info['name']}`\n\n"
-            "🔸 **`.persona <1|2|3>`** ➔ Chuyển đổi linh hoạt giữa 3 nhân cách độc đáo.\n"
-            "🔸 **`.ghim @user`**      ➔ Khóa mục tiêu trò chuyện riêng tư chỉ định.\n"
-            "🔸 **`.stats`**          ➔ Trích xuất bảng thông số chi tiết của máy chủ.\n"
-            "🔸 **`.help`**           ➔ Triệu hồi toàn bộ Siêu Menu hướng dẫn hệ thống.\n"
+            "🔸 **`.persona <1|2|3>`** ➔ Chuyển đổi linh hoạt giữa 3 nhân cách.\n"
+            "🔸 **`.ghim @user`**      ➔ Khóa mục tiêu trò chuyện riêng tư.\n"
+            "🔸 **`.stats`**          ➔ Trích xuất thông số máy chủ.\n"
+            "🔸 **`.help`**           ➔ Triệu hồi Siêu Menu hướng dẫn.\n"
+            "🔸 **`.on` / `.off`**    ➔ Bật hoặc tắt trạng thái tiếp nhận chat."
         ),
         color=p_info['color']
     )
@@ -133,7 +110,7 @@ async def setup(ctx):
 @setup.error
 async def setup_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN ĐỂ SỬ DỤNG LỆNH NÀY!"** 🔥💀')
+        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
 
 @bot.command(name="persona")
 @has_high_privilege()
@@ -171,12 +148,63 @@ async def stats(ctx):
             f"🏰 **Server:** `{guild.name}`\n"
             f"👥 **Thành viên:** `{guild.member_count}`\n"
             f"🤖 **Nhân cách hiện tại:** {p_info['name']}\n"
-            f"🛡️ **Trạng thái bảo vệ:** `Anti-Nuke Active`"
+            f"🛡️ **Bảo vệ:** `Anti-Nuke Active`"
         ),
         color=p_info['color']
     )
     embed.set_thumbnail(url=guild.icon.url if guild.icon else None)
     await ctx.send(embed=embed)
+
+@bot.command(name="on")
+@has_high_privilege()
+async def bot_on(ctx):
+    global current_persona_id, last_active_persona_id
+    current_persona_id = last_active_persona_id
+    p_info = PERSONAS[current_persona_id]
+    embed = discord.Embed(
+        title="🟢 KÍCH HOẠT HỆ THỐNG TRỰC TUYẾN",
+        description=f"Bot đã hoạt động trở lại với nhân cách: **{p_info['name']}**",
+        color=0x00FF00
+    )
+    await ctx.send(embed=embed)
+
+@bot_on.error
+async def bot_on_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
+
+@bot.command(name="off")
+@has_high_privilege()
+async def bot_off(ctx):
+    global current_persona_id
+    current_persona_id = None
+    embed = discord.Embed(
+        title="🔌 NGẮT KẾT NỐI HỆ THỐNG",
+        description="Đã tạm tắt phản hồi chat của bot. Gõ `.on` để bật lại.",
+        color=0xFF0000
+    )
+    await ctx.send(embed=embed)
+
+@bot_off.error
+async def bot_off_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
+
+@bot.command(name="ghim")
+@has_high_privilege()
+async def ghim(ctx, member: discord.Member = None):
+    global target_user_id
+    if member is None:
+        target_user_id = None
+        await ctx.send("🔓 Đã hủy ghim mục tiêu. Bot trò chuyện với tất cả mọi người.")
+        return
+    target_user_id = member.id
+    await ctx.send(f"🎯 Đã ghim mục tiêu trò chuyện riêng tư với: {member.mention}")
+
+@ghim.error
+async def ghim_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
 
 @bot.command(name="ban")
 @has_high_privilege()
@@ -188,10 +216,9 @@ async def ban(ctx, member: discord.Member = None, *, reason="Không có lý do")
         await member.ban(reason=reason)
         await ctx.send(f"🔨 Đã trục xuất thành công {member.mention}. Lý do: `{reason}`")
     except discord.Forbidden:
-        # Thay thế hoàn toàn đoạn lỗi kỹ thuật bằng câu thông báo dễ hiểu
-        await ctx.send("🛡️ **Không thể thực thi lệnh:** Vai trò của thành viên này bằng hoặc cao hơn bot, hoặc bot thiếu quyền Ban Members!")
+        await ctx.send("🛡️ **Không thể thực thi lệnh:** Bot thiếu quyền Ban Members hoặc vai trò của mục tiêu cao hơn bot!")
     except Exception as e:
-        await ctx.send(f"❌ Đã xảy ra lỗi khi thực thi lệnh.")
+        await ctx.send("❌ Đã xảy ra lỗi khi thực thi lệnh.")
 
 @ban.error
 async def ban_error(ctx, error):
@@ -200,13 +227,14 @@ async def ban_error(ctx, error):
 
 @bot.command(name="help")
 async def help_command(ctx):
-    p_info = PERSONAS[current_persona_id]
+    p_info = PERSONAS[current_persona_id] if current_persona_id else PERSONAS[1]
     embed = discord.Embed(
         title="📖 SIÊU MENU ĐIỀU KHIỂN • SUN FLOWER",
         description=(
             "• **`.setup`** ➔ Khởi tạo không gian quản trị.\n"
             "• **`.persona <1|2|3>`** ➔ Đổi nhân cách AI (1: Sweet, 2: Toxic Roast, 3: Cold Master).\n"
             "• **`.ghim @user`** ➔ Khóa mục tiêu trò chuyện riêng tư.\n"
+            "• **`.on` / `.off`** ➔ Bật/tắt nhanh phản hồi chat của bot.\n"
             "• **`.ban @user [lý do]`** ➔ Trục xuất thành viên.\n"
             "• **`.stats`** ➔ Xem thông số server."
         ),
@@ -214,7 +242,13 @@ async def help_command(ctx):
     )
     await ctx.send(embed=embed)
 
-# ==================== XỬ LÝ TIN NHẮN (TÍCH HỢP GROQ AI CHO MỌI NHÂN CÁCH) ====================
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        return
+    print(f"[ERROR] Lỗi lệnh: {error}")
+
+# ==================== XỬ LÝ TIN NHẮN (GROQ AI) ====================
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -229,12 +263,9 @@ async def on_message(message):
         return
 
     should_reply = False
-    
-    # Cho phép tất cả các nhân cách đều tự động phản hồi hoặc phản hồi khi được gọi tên/nhắc đến
     if current_persona_id == 1:
-        should_reply = True  # Nhân cách 1 phản hồi tất cả tin nhắn
+        should_reply = True  
     else:
-        # Nhân cách 2 (Toxic) và 3 (Cold Master) sẽ phản hồi khi được tag, gọi tên hoặc khi đang ghim user
         bot_mentioned = bot.user in message.mentions
         called = any(word in message.content.lower() for word in ["sun flower", "sunflower", "bot ơi", "bot", "sún"])
         if bot_mentioned or called or (target_user_id is not None and message.author.id == target_user_id):
@@ -257,7 +288,7 @@ async def on_message(message):
                     )
                     ai_reply = chat_completion.choices[0].message.content
                 else:
-                    ai_reply = f"Dạ, tớ đã nhận được yêu cầu nhưng chưa cấu hình GROQ_API_KEY nên chưa gọi được AI!"
+                    ai_reply = "⚠️ Chưa thiết lập biến môi trường GROQ_API_KEY!"
 
                 embed = discord.Embed(
                     title=f"✨ {p_info['name']}",
@@ -270,7 +301,7 @@ async def on_message(message):
 
             except Exception as e:
                 print(f"Lỗi Groq AI: {e}")
-                await message.reply(f"❌ `Hệ thống AI đang bận, vui lòng thử lại sau ít phút!`")
+                await message.reply("❌ `Lỗi API Key Groq không hợp lệ (401 Unauthorized). Vui lòng kiểm tra lại Key!`")
 
 if __name__ == "__main__":
     bot.run(DISCORD_TOKEN)
