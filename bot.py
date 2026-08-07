@@ -4,27 +4,21 @@ import random
 import time
 import discord
 from discord.ext import commands
+from dotenv import load_dotenv
 from groq import Groq
+
+# Load các biến môi trường từ file .env
+load_dotenv()
 
 # ==================== CẤU HÌNH HỆ THỐNG ====================
 DISCORD_TOKEN = os.getenv("TOKEN")
 
-# Danh sách các Groq API Key của bạn
-GROQ_API_KEYS = [
-    os.getenv("GROQ_KEY_1", ""),
-    os.getenv("GROQ_KEY_2", ""),
-    os.getenv("GROQ_KEY_3", ""),
-    os.getenv("GROQ_KEY_4", ""),
-    os.getenv("GROQ_KEY_5", ""),
-]
+# Lấy API Keys từ biến môi trường (Bảo mật tuyệt đối)
+XAI_API_KEYS = [os.getenv("XAI_API_KEY")] if os.getenv("XAI_API_KEY") else []
+TOGETHER_API_KEYS = [os.getenv("TOGETHER_API_KEY")] if os.getenv("TOGETHER_API_KEY") else []
 
-# Lọc bỏ các key trống
-GROQ_API_KEYS = [k for k in GROQ_API_KEYS if k]
-if not GROQ_API_KEYS:
-    env_keys = os.getenv("GROQ_KEYS", "")
-    GROQ_API_KEYS = [k.strip() for k in env_keys.split(",") if k.strip()]
-
-current_key_index = 0
+current_xai_index = 0
+current_together_index = 0
 
 # Danh sách ID chủ sở hữu riêng của bot
 BOT_OWNERS = [
@@ -53,7 +47,7 @@ CUSTOM_SETUP_GIF = "https://i.pinimg.com/originals/f2/1b/fb/f21bfbb4208888a75300
 # ==================== ĐỊNH NGHĨA 3 NHÂN CÁCH (PERSONAS) ====================
 PERSONAS = {
     1: {
-        'name': 'SWEET PRINCESS 🌸',
+        'name': '🌸 ꜱᵂᴱᴱᵀ ᴾᴿᴵᴺᶜᴱˢ • ᴛʜɪêɴ tàɪ ᴛâᴜ ʜɪểᴜ ✨',
         'color': 0xFF66C4,
         'instruction': """
 [ 🌸 ⁿʰâⁿ ᶜáᶜʰ 1: ꜱᵂᴱᴱᵀ ᴾᴿᴵᴺᶜᴱˢ • ᴛʜɪêɴ ᴛàɪ ᴛâᴜ ʜɪểᴜ & ɴữ ᴛʀợ ʟý ᴛʜᴀɴʜ ʟịᴄʜ ✨ ]
@@ -65,7 +59,7 @@ PERSONAS = {
 """
     },
     2: {
-        'name': 'TOXIC ROAST DEMON ☠️🔥',
+        'name': '☠️🔥 ᴛᴏxɪᴄ ʀᴏᴀsᴛ ᴅᴇᴍᴏɴ • ʜᴜỷ ᴅɪệᴛ ɴʜâɴ ᴘʜẩᴍ 🖕',
         'color': 0xFF0033,
         'instruction': """
 [ ☠️ NHÂN CÁCH 2: TOXIC ROAST DEMON (ÁC QUỶ MỎ HỖN - HUỶ DIỆT TOÀN BỘ NHÂN PHẨM) ]
@@ -77,7 +71,7 @@ PERSONAS = {
 """
     },
     3: {
-        'name': 'COLD MASTER 🗿',
+        'name': '🗿 ᴄᴏʟᴅ ᴍᴀsᴛᴇʀ • ᴏᴍɴɪᴠᴇʀsᴇ sᴏᴠᴇʀᴇɪɢɴ ⚡',
         'color': 0x00E5FF,
         'instruction': """
 [NHÂN CÁCH 3 - COLD MASTER 🗿 (OMNIVERSE SOVEREIGN - SUPREME STOIC & PERVERTED JUDGE)]
@@ -91,45 +85,48 @@ PERSONAS = {
 
 nuke_tracker = {}
 
-# ==================== HỆ THỐNG XOAY VÒNG API KEY GROQ (FAILOVER) ====================
-def call_groq_with_rotation(system_instruction, user_prompt):
-    global current_key_index
+# ==================== GỌI API AI (XAI / TOGETHER AI) ====================
+def call_ai_with_rotation(system_instruction, user_prompt):
+    global current_xai_index, current_together_index
     
-    if not GROQ_API_KEYS:
-        raise Exception("Không tìm thấy Groq API Key nào trong cấu hình!")
-
-    total_keys = len(GROQ_API_KEYS)
-    attempts = 0
-
-    while attempts < total_keys:
-        key_num = current_key_index + 1
-        current_key = GROQ_API_KEYS[current_key_index]
-        
+    if XAI_API_KEYS:
         try:
-            client = Groq(api_key=current_key)
+            client = Groq(
+                api_key=XAI_API_KEYS[current_xai_index],
+                base_url="https://api.x.ai/v1"
+            )
             completion = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="grok-beta",
                 messages=[
                     {"role": "system", "content": system_instruction},
                     {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.7,
             )
-            
-            print(f"[GROQ] Thành công | Key #{key_num}")
             return completion.choices[0].message.content
-
         except Exception as e:
-            err_str = str(e)
-            if "429" in err_str or "rate_limit_exceeded" in err_str or "Quota exceeded" in err_str:
-                print(f"[GROQ] Key #{key_num} hết quota (429) → chuyển key ngay")
-                current_key_index = (current_key_index + 1) % total_keys
-                attempts += 1
-            else:
-                print(f"[GROQ] Lỗi khác ở Key #{key_num}: {err_str}")
-                raise e
+            print(f"[AI] XAI lỗi, chuyển sang Together AI: {e}")
 
-    raise Exception("Tất cả các Groq API Key đều đã bị hết quota (429)! Vui lòng thử lại sau.")
+    if TOGETHER_API_KEYS:
+        try:
+            client = Groq(
+                api_key=TOGETHER_API_KEYS[current_together_index],
+                base_url="https://api.together.xyz/v1"
+            )
+            completion = client.chat.completions.create(
+                model="meta-llama/Llama-3-70b-chat-hf",
+                messages=[
+                    {"role": "system", "content": system_instruction},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.7,
+            )
+            return completion.choices[0].message.content
+        except Exception as e:
+            print(f"[AI] Together AI lỗi: {e}")
+            raise e
+
+    raise Exception("Tất cả các API Key đều không khả dụng!")
 
 def is_bot_or_guild_owner():
     async def predicate(ctx):
@@ -143,8 +140,8 @@ def is_bot_or_guild_owner():
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
-    print(f"Đã tải thành công {len(GROQ_API_KEYS)} Groq API Key vào hệ thống xoay vòng.")
-    await bot.change_presence(activity=discord.Game(name="Sun Flower • Groq Key Rotation"))
+    print("✨ Hệ thống menu màu mè, đẳng cấp đã sẵn sàng hoạt động!")
+    await bot.change_presence(activity=discord.Game(name="✨ Gõ .help để mở Siêu Menu Lệnh"))
 
 @bot.event
 async def on_guild_join(guild):
@@ -156,19 +153,20 @@ async def on_guild_join(guild):
 
     if target_channel is not None:
         embed = discord.Embed(
-            title="🌻 SUN FLOWER • ĐÃ ĐẶT CHÂN ĐẾN MÁY CHỦ! 💖",
+            title="╔══════════════════════════════════════╗\n║  🌟 ꜱᴜɴ ꜰʟᴏᴡᴇʀ ᴀɪ • ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ꜱᴇʀᴠᴇʀ  🌟  ║\n╚══════════════════════════════════════╝",
             description=(
-                f"Xin chào **{guild.name}**! Cảm ơn vì đã đưa Sun Flower vào lãnh địa của các cậu~ ✨\n\n"
-                "🌸 **Các tính năng bảo vệ tự động:**\n"
-                "🛡️ **Anti-Nuke 24/7:** Bot tự động kiểm tra kênh, mute kẻ spam lệnh nuke 100 phút!\n\n"
-                "🌸 **Lệnh chuyển nhân cách:**\n"
-                "⚡ **`.persona <1|2|3>`** - Chuyển đổi giữa 3 nhân cách\n"
-                "⚡ **`.setup`** - Khởi tạo hệ thống\n"
-                "📊 **`.stats`** - Xem thông tin server\n"
+                f"🎉 Chào mừng đến với lãnh địa **{guild.name}**! Cảm ơn vì đã lựa chọn Sun Flower Bot làm người đồng hành tối thượng~ ✨\n\n"
+                "╔══════════════════════════════════════╗\n"
+                "║          🔮 ʜƯỚɴɢ DẪN ɴʜᴀɴʜ          ║\n"
+                "╚══════════════════════════════════════╝\n"
+                "🔹 Gõ lệnh **`.help`** để mở **Bảng Điều Khiển & Siêu Menu** toàn diện.\n"
+                "🔹 Gõ lệnh **`.setup`** để thiết lập không gian quản trị độc quyền cho kênh.\n"
+                "🔹 Hệ thống bảo vệ Anti-Nuke 24/7 đang chạy ngầm bảo vệ tuyệt đối server!"
             ),
             color=0xFF69B4
         )
         embed.set_thumbnail(url=bot.user.avatar.url if bot.user.avatar else None)
+        embed.set_footer(text="⚡ Power by XAI (Grok) & Together AI Architecture 🚀")
         try:
             await target_channel.send(embed=embed)
         except Exception:
@@ -208,7 +206,7 @@ async def check_nuke_activity(guild):
     except Exception:
         pass
 
-# ==================== CÁC LỆNH ĐIỀU KHIỂN (COMMANDS) ====================
+# ==================== CÁC LỆNH ĐIỀU KHIỂN & SIÊU MENU ====================
 
 @bot.command(name="setup")
 @is_bot_or_guild_owner()
@@ -220,18 +218,23 @@ async def setup(ctx):
 
     p_info = PERSONAS[current_persona_id]
     embed = discord.Embed(
-        title="⚡ LÃNH ĐỊA SUN FLOWER AI ĐÃ KÍCH HOẠT",
+        title="╔════════════════════════════════════════╗\n║     ⚡ ꜱᴇᴛᴜᴘ ʜệ ᴛʜốɴɢ qᴜảɴ ᴛʀị sᴜɴ ꜰʟᴏᴡᴇʀ     ⚡     ║\n╚════════════════════════════════════════╝",
         description=(
-            f"📌 Kênh {ctx.channel.mention} đã liên kết với hệ thống AI!\n\n"
-            f"🌸 **Nhân cách hiện tại:** {p_info['name']}\n"
-            f"🔑 **Hệ thống Key Rotation:** Đang quản lý `{len(GROQ_API_KEYS)}` API Keys.\n\n"
-            "⚡ `.persona <1|2|3>`: Đổi nhân cách\n"
-            "📊 `.stats`: Thống kê server\n"
-            "📌 `.ghim @user`: Khóa mục tiêu tương tác"
+            f"📌 **Kênh kết nối định mệnh:** {ctx.channel.mention}\n"
+            f"🌸 **Nhân cách khởi tạo mặc định:** `{p_info['name']}`\n"
+            "🔮 **Trạng thái kết nối AI:** Hoạt động mượt mà với XAI & Together AI.\n\n"
+            "╔════════════════════════════════════════╗\n"
+            "║        📋 ʙẢɴɢ ʟệɴʜ qᴜảɴ ᴛʀị ɴʜᴀɴʜ        ║\n"
+            "╚════════════════════════════════════════╝\n"
+            "🔸 **`.persona <1|2|3>`** ➔ Chuyển đổi linh hoạt giữa 3 nhân cách AI độc đáo.\n"
+            "🔸 **`.ghim @user`**      ➔ Khóa mục tiêu trò chuyện riêng tư chỉ định.\n"
+            "🔸 **`.stats`**          ➔ Trích xuất bảng thông số chi tiết của máy chủ.\n"
+            "🔸 **`.help`**           ➔ Triệu hồi toàn bộ Siêu Menu hướng dẫn hệ thống."
         ),
         color=p_info['color']
     )
     embed.set_image(url=CUSTOM_SETUP_GIF)
+    embed.set_footer(text="✨ Đã cấu hình thành công vùng kiểm soát độc quyền cho Chủ Nhân!")
     await ctx.send(embed=embed)
 
 @setup.error
@@ -245,7 +248,23 @@ async def persona(ctx, persona_id: int = None):
     global current_persona_id, last_active_persona_id, target_user_id
 
     if persona_id not in PERSONAS:
-        await ctx.send("⚠️ Vui lòng chọn đúng số thứ tự từ 1 đến 3: `1` (Sweet Princess), `2` (Toxic Roast), `3` (Cold Master).")
+        embed_err = discord.Embed(
+            title="╔════════════════════════════════════════╗\n║       ⚠️ sᴀɪ cÚ ᴘʜáᴘ • ᴄʜọɴ ɴʜâɴ ᴄáᴄʜ       ⚠️       ║\n╚════════════════════════════════════════╝",
+            description=(
+                "Hệ thống ghi nhận bạn chưa truyền đúng số thứ tự nhân cách hợp lệ!\n"
+                "Vui lòng sử dụng một trong các cú pháp siêu cấp sau đây:\n\n"
+                "🌸 **`1` ➔ Sweet Princess**\n"
+                "└ *Phong cách: Thiếu nữ ngọt ngào, thanh lịch, đáng yêu, tôn kính Chủ Nhân.*\n\n"
+                "☠️🔥 **`2` ➔ Toxic Roast Demon**\n"
+                "└ *Phong cách: Ác quỷ mỏ hỗn, cà khịa chửi thề cực gắt, hủy diệt nhân phẩm.*\n\n"
+                "🗿⚡ **`3` ➔ Cold Master**\n"
+                "└ *Phong cách: Bậc thầy lạnh lùng, cao ngạo, uy quyền tột độ.*\n\n"
+                "📌 *Ví dụ thực tế:* `.persona 1` hoặc `.persona 2` hoặc `.persona 3`"
+            ),
+            color=0xFFA500
+        )
+        embed_err.set_footer(text="💡 Hãy kiểm tra lại số thứ tự và thử lại ngay nhé!")
+        await ctx.send(embed=embed_err)
         return
 
     current_persona_id = persona_id
@@ -254,9 +273,15 @@ async def persona(ctx, persona_id: int = None):
 
     p_info = PERSONAS[current_persona_id]
     embed = discord.Embed(
-        title=f"✨ ĐÃ CHUYỂN SANG NHÂN CÁCH: {p_info['name']}",
+        title="╔════════════════════════════════════════╗\n║     ✨ ĐÃ CHUYỂN ĐỔI NHÂN CÁCH THÀNH CÔNG     ✨     ║\n╚════════════════════════════════════════╝",
+        description=(
+            f"🔮 Trạng thái nhân cách hiện tại đã được thiết lập:\n"
+            f"👑 **{p_info['name']}**\n\n"
+            "⚡ Mọi phản hồi sắp tới của bot sẽ hoàn toàn tuân thủ theo hệ tư tưởng mới này!"
+        ),
         color=p_info['color']
     )
+    embed.set_footer(text="✨ Chúc bạn có những trải nghiệm tuyệt vời cùng Sun Flower Bot!")
     await ctx.send(embed=embed)
 
 @persona.error
@@ -269,10 +294,19 @@ async def stats(ctx):
     guild = ctx.guild
     p_info = PERSONAS[current_persona_id]
     embed = discord.Embed(
-        title=f"📊 THÔNG TIN MÁY CHỦ • {guild.name.upper()}",
-        description=f"• **Thành viên:** `{guild.member_count}`\n• **Kênh:** `{len(guild.channels)}`",
+        title="╔════════════════════════════════════════╗\n║      📊 THÔNG SỐ KỸ THUẬT MÁY CHỦ • sᴜɴ      📊      ║\n╚════════════════════════════════════════╝",
+        description=(
+            f"🏰 **Tên lãnh địa (Server):** `{guild.name}`\n"
+            f"👑 **Tối Cao Chủ Sở Hữu:** <@{guild.owner_id}>\n"
+            f"👥 **Tổng số công dân (Members):** `{guild.member_count}`\n"
+            f"📁 **Tổng hệ thống kênh (Channels):** `{len(guild.channels)}`\n"
+            f"🤖 **Nhân cách AI đang trực chiến:** {p_info['name']}\n"
+            f"🛡️ **Trạng thái bảo vệ:** `Anti-Nuke 24/7 Active (Max Security)`"
+        ),
         color=p_info['color']
     )
+    embed.set_thumbnail(url=guild.icon.url if guild.icon else None)
+    embed.set_footer(text="⚡ Báo cáo thống kê chi tiết từ hệ thống lõi Sun Flower AI")
     await ctx.send(embed=embed)
 
 @bot.command(name="on")
@@ -281,7 +315,12 @@ async def bot_on(ctx):
     global current_persona_id, last_active_persona_id
     current_persona_id = last_active_persona_id
     p_info = PERSONAS[current_persona_id]
-    await ctx.send(f"🟢 Bot đã bật lại với nhân cách: **{p_info['name']}**")
+    embed = discord.Embed(
+        title="🟢 KÍCH HOẠT HỆ THỐNG TRỰC TUYẾN",
+        description=f"Bot đã khôi phục hoạt động và sẵn sàng lắng nghe với nhân cách: **{p_info['name']}**",
+        color=0x00FF00
+    )
+    await ctx.send(embed=embed)
 
 @bot_on.error
 async def bot_on_error(ctx, error):
@@ -294,10 +333,20 @@ async def ghim(ctx, member: discord.Member = None):
     global target_user_id
     if member is None:
         target_user_id = None
-        await ctx.send("🔓 Đã bỏ ghim mục tiêu.")
+        embed_off = discord.Embed(
+            title="🔓 ĐÃ HỦY KHÓA MỤC TIÊU GHIM",
+            description="Bot đã trở lại trạng thái tự do, sẵn sàng tương tác và trò chuyện với tất cả thành viên trong server.",
+            color=0x00FFFF
+        )
+        await ctx.send(embed=embed_off)
         return
     target_user_id = member.id
-    await ctx.send(f"🎯 Đã ghim mục tiêu: {member.mention}")
+    embed_on = discord.Embed(
+        title="🎯 ĐÃ KHÓA MỤC TIÊU TƯƠNG TÁC RIÊNG TƯ",
+        description=f"Từ khoảnh khắc này, bot sẽ chỉ tập trung phản hồi duy nhất một mình thành viên: {member.mention}",
+        color=0xFF00FF
+    )
+    await ctx.send(embed=embed_on)
 
 @ghim.error
 async def ghim_error(ctx, error):
@@ -306,15 +355,25 @@ async def ghim_error(ctx, error):
 
 @bot.command(name="ban")
 @is_bot_or_guild_owner()
-async def ban(ctx, member: discord.Member = None, *, reason="Không có lý do"):
+async def ban(ctx, member: discord.Member = None, *, reason="Không có lý do được cung cấp"):
     if member is None:
-        await ctx.send("Thiếu tên người cần ban!")
+        embed_err = discord.Embed(
+            title="⚠️ THIẾU THÔNG TIN MỤC TIÊU TRỤC XUẤT",
+            description="Vui lòng tag rõ tên thành viên cần ban!\n*Cú pháp chuẩn:* `.ban @username [Lý do cụ thể]`",
+            color=0xFF0000
+        )
+        await ctx.send(embed=embed_err)
         return
     try:
         await member.ban(reason=reason)
-        await ctx.send(f"🔨 Đã ban {member.mention}. Lý do: {reason}")
+        embed_ban = discord.Embed(
+            title="🔨 THỰC THI TRỤC XUẤT THÀNH CÔNG (BAN)",
+            description=f"Đã trục xuất vĩnh viễn thành viên {member.mention} khỏi lãnh địa.\n📝 **Lý do xử phạt:** `{reason}`",
+            color=0x8B0000
+        )
+        await ctx.send(embed=embed_ban)
     except Exception as e:
-        await ctx.send(f"❌ Không thể ban: {e}")
+        await ctx.send(f"❌ Không thể thực thi lệnh ban do lỗi phân quyền: `{e}`")
 
 @ban.error
 async def ban_error(ctx, error):
@@ -325,10 +384,52 @@ async def ban_error(ctx, error):
 async def help_command(ctx):
     p_info = PERSONAS[current_persona_id]
     embed = discord.Embed(
-        title="📖 HƯỚNG DẪN SUN FLOWER BOT 🌸",
-        description="• `.help`, `.stats`, `.persona`, `.setup`, `.ghim`, `.ban`, `.on`, `.off`",
+        title="╔════════════════════════════════════════╗\n║     📖 sɪêᴜ ᴍᴇɴᴜ đɪềᴜ ᴋʜɪểɴ • sᴜɴ ꜰʟᴏᴡᴇʀ     📖     ║\n╚════════════════════════════════════════╝",
+        description=(
+            "Chào mừng bạn đến với bảng điều khiển trung tâm tối cao của **Sun Flower Bot**.\n"
+            "Dưới đây là hệ thống lệnh toàn diện được phân chia chi tiết theo từng phân quyền:\n"
+        ),
         color=p_info['color']
     )
+    
+    embed.add_field(
+        name="🛠️ [ HỆ THỐNG LỆNH QUẢN TRỊ & ĐẶC QUYỀN ]",
+        value=(
+            "• **`.setup`**\n"
+            "  └ *Khởi tạo không gian tương tác AI cao cấp và bảng điều khiển nhanh cho kênh hiện tại.*\n"
+            "• **`.persona <1|2|3>`**\n"
+            "  └ *Thay đổi phong cách giao tiếp và tư duy nhân cách của AI (Sweet Princess, Toxic Roast, Cold Master).*\n"
+            "• **`.ghim @user`**\n"
+            "  └ *Khóa cứng bot chỉ trò chuyện riêng với 1 người chỉ định (Gõ `.ghim` trống để tắt chế độ)..*\n"
+            "• **`.on` / `.off`**\n"
+            "  └ *Bật hoặc tạm ngắt hoàn toàn hệ thống tiếp nhận phản hồi chat tự động của AI.*\n"
+            "• **`.ban @user [lý do]`**\n"
+            "  └ *Trục xuất khẩn cấp và vĩnh viễn các thành viên phá hoại khỏi máy chủ.*"
+        ),
+        inline=False
+    )
+    
+    embed.add_field(
+        name="📊 [ HỆ THỐNG TIỆN ÍCH & THÔNG TIN CHUNG ]",
+        value=(
+            "• **`.help`**\n"
+            "  └ *Triệu hồi bảng Siêu Menu hướng dẫn chi tiết toàn bộ tính năng này.*\n"
+            "• **`.stats`**\n"
+            "  └ *Trích xuất toàn bộ bảng thông số chi tiết, trạng thái server và nhân cách đang bật.*"
+        ),
+        inline=False
+    )
+    
+    embed.add_field(
+        name="🛡️ [ HỆ THỐNG BẢO VỆ TỰ ĐỘNG NGẦM ]",
+        value=(
+            "• **Anti-Nuke 24/7 Protocol:** Tự động phát hiện hành vi tạo/xóa kênh bất thường, lập tức timeout 100 phút và kick kẻ gian khỏi server nhằm bảo vệ an toàn tuyệt đối cho cộng đồng!"
+        ),
+        inline=False
+    )
+
+    embed.set_thumbnail(url=bot.user.avatar.url if bot.user.avatar else None)
+    embed.set_footer(text="🌟 Sun Flower Bot Architecture • Designed with Maximum Colors & Style ⚡")
     await ctx.send(embed=embed)
 
 @bot.command(name="off")
@@ -336,7 +437,12 @@ async def help_command(ctx):
 async def off(ctx):
     global current_persona_id
     current_persona_id = None
-    await ctx.send("🔌 Bot đã tắt.")
+    embed = discord.Embed(
+        title="🔌 NGẮT KẾT NỐI HỆ THỐNG AI",
+        description="Đã tắt toàn bộ tính năng phản hồi trò chuyện của bot. Sử dụng `.on` để khởi động lại.",
+        color=0xFF0000
+    )
+    await ctx.send(embed=embed)
 
 @off.error
 async def off_error(ctx, error):
@@ -374,22 +480,21 @@ async def on_message(message):
                 user_msg = message.content.strip() if message.content else "..."
                 user_prompt = f"Người dùng {message.author.display_name} (ID: {message.author.id}) gửi: '{user_msg}'"
 
-                # Gọi hàm xoay vòng key Groq tự động
-                ai_reply = call_groq_with_rotation(p_info['instruction'], user_prompt)
+                ai_reply = call_ai_with_rotation(p_info['instruction'], user_prompt)
 
                 embed = discord.Embed(
-                    title=f"✨ SUN FLOWER • {p_info['name']}",
+                    title=f"✨ {p_info['name']}",
                     description=ai_reply,
                     color=p_info['color']
                 )
-                embed.set_footer(text="Sun Flower • Groq Key Rotation Engine ⚡")
+                embed.set_footer(text="Sun Flower • XAI & Together AI Engine ⚡")
 
                 await message.reply(embed=embed, mention_author=False)
 
             except Exception as e:
                 error_msg = str(e)
-                print(f"Lỗi Key Rotation: {error_msg}")
-                await message.reply(f"❌ `{error_msg}`")
+                print(f"Lỗi AI: {error_msg}")
+                await message.reply(f"❌ `Lỗi xử lý hệ thống AI: {error_msg}`")
 
 # ==================== KHỞI CHẠY BOT ====================
 if __name__ == "__main__":
