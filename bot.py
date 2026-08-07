@@ -8,7 +8,7 @@ from groq import Groq
 
 # ==================== CẤU HÌNH HỆ THỐNG ====================
 DISCORD_TOKEN = os.getenv("TOKEN")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY") # Hãy chắc chắn bạn đã điền đúng Key của Groq
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 # Khởi tạo Groq Client chính thức
 groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
@@ -141,7 +141,7 @@ async def persona_error(ctx, error):
 @bot.command(name="stats")
 async def stats(ctx):
     guild = ctx.guild
-    p_info = PERSONAS[current_persona_id]
+    p_info = PERSONAS[current_persona_id] if current_persona_id else PERSONAS[1]
     embed = discord.Embed(
         title="📊 THÔNG SỐ KỸ THUẬT MÁY CHỦ",
         description=(
@@ -216,6 +216,7 @@ async def ban(ctx, member: discord.Member = None, *, reason="Không có lý do")
         await member.ban(reason=reason)
         await ctx.send(f"🔨 Đã trục xuất thành công {member.mention}. Lý do: `{reason}`")
     except discord.Forbidden:
+        # Ẩn hoàn toàn mã lỗi 403 Forbidden / code 50013, thay bằng thông báo thân thiện
         await ctx.send("🛡️ **Không thể thực thi lệnh:** Bot thiếu quyền Ban Members hoặc vai trò của mục tiêu cao hơn bot!")
     except Exception as e:
         await ctx.send("❌ Đã xảy ra lỗi khi thực thi lệnh.")
@@ -301,7 +302,7 @@ async def on_message(message):
 
             except Exception as e:
                 print(f"Lỗi Groq AI: {e}")
-                await message.reply("❌ `Lỗi API Key Groq không hợp lệ (401 Unauthorized). Vui lòng kiểm tra lại Key!`")
+                await message.reply("❌ `Lỗi API Key Groq không hợp lệ hoặc hết hạn. Vui lòng kiểm tra lại Key trên Railway!`")
 
 if __name__ == "__main__":
     bot.run(DISCORD_TOKEN)
