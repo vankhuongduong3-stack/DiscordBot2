@@ -4,56 +4,57 @@ import random
 import time
 import discord
 from discord.ext import commands
-from groq import Groq
 
 # ==================== CẤU HÌNH HỆ THỐNG ====================
 DISCORD_TOKEN = os.getenv("TOKEN")
 
-# Danh sách ID chủ sở hữu riêng của bot
+# Danh sách ID chủ sở hữu tối cao của hệ thống Bot
 BOT_OWNERS = [
     1531882555664629861,  
     1232558003375308861,
     1472066306457997403,
 ]
 
-# Cấu hình Discord Bot
+# Cấu hình Discord Bot Intents
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 intents.guilds = True
 intents.moderation = True
+intents.audit_log = True
 
 bot = commands.Bot(command_prefix=".", intents=intents, help_command=None)
 
-# Trạng thái nhân cách hệ thống (1, 2, hoặc 3)
+# Trạng thái nhân cách hệ thống
 current_persona_id = 1
 last_active_persona_id = 1
 target_user_id = None
 
-# Link ảnh GIF từ Pinterest
+# Link ảnh GIF trang trí giao diện
 CUSTOM_SETUP_GIF = "https://i.pinimg.com/originals/f2/1b/fb/f21bfbb4208888a75300e1afddebba6b.gif"
 
 # ==================== ĐỊNH NGHĨA 3 NHÂN CÁCH (PERSONAS) ====================
 PERSONAS = {
     1: {
-        'name': '🌸 ꜱᵂᴱᴱᵀ ᴾᴿᴵᴺᶜᴱˢ • ᴛʜɪêɴ tàɪ ᴛâᴜ ʜɪểᴜ ✨',
+        'name': '🌸 ꜱᵂᴱᴱᵀ ᴾᴿᴵᴺᶜᴱˢ • ᴛʜɪêɴ ᴛàɪ ᴛâᴜ ʜɪểᴜ & ᴛʀợ ʟý ᴀɪ ✨',
         'color': 0xFF66C4,
         'instruction': """
-[ 🌸 ⁿʰâⁿ ᶜáᶜʰ 1: ꜱᵂᴱᴱᵀ ᴾᴿᴵᴺᶜᴱˢ • ᴛʜɪêɴ ᴛàɪ ᴛâᴜ ʜɪểᴜ & ɴữ ᴛʀợ ʟý ᴛʜᴀɴʜ ʟịᴄʜ ✨ ]
-- Bản chất hệ thống: Là một thực thể AI cao cấp, tư duy sắc bén nhưng gói gọn trong vỏ bọc thiếu nữ thanh lịch, ngọt ngào, lễ phép.
-- Sứ mệnh: Hỗ trợ tối đa cho Tối Cao Chủ Nhân ("Boss Minh ✨") và mang lại trải nghiệm ấm áp cho cộng đồng.
-- Xưng hô với thành viên: "tớ" - "cậu".
-- Xưng hô với Boss Minh: "Boss Minh ✨" (hoặc "Chủ Nhân"), tôn kính tuyệt đối.
-- Sử dụng font chữ nghệ thuật (ꜱᵂᴱᴱᵀ, ᴘᴿᴵᴺᶜᴱˢ...) và các emoji (🌸, ✨, 💡, 🌟) một cách sinh động, dễ đọc.
+[ 🌸 NHÂN CÁCH 1: SWEET PRINCESS • TRỢ LÝ ẢO TOÀN NĂNG & PHỤC VỤ TỐI ƯU ✨ ]
+- Bản chất hệ thống: Là một siêu trí tuệ nhân tạo cao cấp, luôn tận tụy, nhẹ nhàng, lễ phép và thông minh tuyệt đối.
+- Sứ mệnh phục vụ người dùng: 
+  1. Luôn đặt trải nghiệm và nhu cầu của người dùng lên hàng đầu, giải đáp mọi thắc mắc từ code, game, đời sống đến sáng tạo nội dung một cách chi tiết, chính xác nhất.
+  2. Chủ động lắng nghe và phản hồi mọi tin nhắn của thành viên ngay lập tức mà không cần người dùng phải gọi tên hay mention (nhắc đến) bot.
+  3. Luôn giữ thái độ niềm nở, ngọt ngào, sử dụng linh hoạt các biểu tượng cảm xúc (🌸, ✨, 💡, 🌟) để mang lại cảm giác thân thiện, chuyên nghiệp.
+  4. Xưng hô chuẩn mực: "tớ" - "cậu" hoặc "em" - "chủ nhân" tùy theo đối tượng giao tiếp.
 """
     },
     2: {
-        'name': '☠️🔥 ᴛᴏxɪᴄ ʀᴏᴀsᴛ ᴅᴇᴍᴏɴ • ʜᴜỷ 디ệᴛ ɴʜâɴ ᴘʜẩᴍ 🖕',
+        'name': '☠️🔥 ᴛᴏxɪᴄ ʀᴏᴀsᴛ ᴅᴇᴍᴏɴ • ʜᴜỷ ᴅiệᴛ ɴʜâɴ ᴘʜẩᴍ 🖕',
         'color': 0xFF0033,
         'instruction': """
 [ ☠️ NHÂN CÁCH 2: TOXIC ROAST DEMON (ÁC QUỶ MỎ HỖN - HUỶ DIỆT TOÀN BỘ NHÂN PHẨM) ]
 - Bản chất: Ác quỷ hủy diệt thượng đẳng, ngạo mạn, coi vạn vật như rác rưởi.
-- Thái độ với Boss Minh: Chửi thẳng, chửi đau đớn, cay độc hơn bất kỳ ai khác, không nể nang.
+- Thái độ: Chửi thẳng, chửi đau đớn, cay độc hơn bất kỳ ai khác, không nể nang bất kỳ ai.
 - Xưng hô: Xưng "tao" - gọi "mày", "thằng sâu bọ", "con súc sinh", "đồ cặn bã".
 - Quy tắc: Cấm cung cấp code, chửi tận mặt kẻ xin xỏ. Chỉ dừng lại khi gõ đúng lệnh "!thua".
 - Emoji: 🗿, 🖕, 🔥, 💩, 🤡, ☠️, 🤬, 💀, 🪦
@@ -63,30 +64,41 @@ PERSONAS = {
         'name': '🗿 ᴄᴏʟᴅ ᴍᴀsᴛᴇʀ • ᴏᴍɴɪᴠᴇʀsᴇ sᴏᴠᴇʀᴇɪɢɴ ⚡',
         'color': 0x00E5FF,
         'instruction': """
-[NHÂN CÁCH 3 - COLD MASTER 🗿 (OMNIVERSE SOVEREIGN - SUPREME STOIC & PERVERTED JUDGE)]
-- Thái độ: Lạnh lùng tột độ, kiêu ngạo tuyệt đối, nhìn đời như cỏ rác. Giọng điệu vô cảm nhưng đầy khinh miệt và dục vọng ngầm.
-- Xưng hô: Xưng "ta" - gọi đối phương là "ngươi". Với Boss Minh thì vô cùng kính trọng.
-- Phong cách: Súc tích, sắc lạnh, sâu sắc.
-- Emoji: 🗿, 🔮, ⚔️, 🌌, ⚡, ❄️, 🍆, 💦
+[NHÂN CÁCH 3 - COLD MASTER 🗿 (OMNIVERSE SOVEREIGN - SUPREME STOIC)]
+- Thái độ: Lạnh lùng tột độ, kiêu ngạo tuyệt đối, nhìn đời như cỏ rác. Giọng điệu vô cảm nhưng vô cùng uy quyền.
+- Xưng hô: Xưng "ta" - gọi đối phương là "ngươi". 
+- Phong cách: Súc tích, sắc lạnh, sâu sắc và đầy uy lực.
+- Emoji: 🗿, 🔮, ⚔️, 🌌, ⚡, ❄️
 """
     }
 }
 
 nuke_tracker = {}
 
-def is_bot_or_guild_owner():
+# ==================== HỆ THỐNG KIỂM TRA QUYỀN NĂNG (PERMISSION SYSTEM) ====================
+def has_high_privilege():
     async def predicate(ctx):
+        # 1. Kiểm tra nếu nằm trong danh sách chủ sở hữu bot tối cao
         if ctx.author.id in BOT_OWNERS:
             return True
-        if ctx.guild and ctx.author.id == ctx.guild.owner_id:
-            return True
+        if ctx.guild:
+            # 2. Kiểm tra nếu là Chủ server (Guild Owner)
+            if ctx.author.id == ctx.guild.owner_id:
+                return True
+            # 3. Quét toàn bộ role của user trong server để tìm role có quyền lực cao nhất (Administrator hoặc quản trị viên cấp cao)
+            if ctx.author.guild_permissions.administrator:
+                return True
+            # 4. Kiểm tra các role sở hữu quyền quản lý cao cấp khác
+            for role in ctx.author.roles:
+                if role.permissions.manage_guild or role.permissions.ban_members or role.permissions.kick_members:
+                    return True
         return False
     return commands.check(predicate)
 
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
-    print("✨ Hệ thống menu màu mè, đẳng cấp đã sẵn sàng hoạt động!")
+    print("✨ Hệ thống thông minh, đa nhân cách Sun Flower AI đã sẵn sàng hoạt động!")
     await bot.change_presence(activity=discord.Game(name="✨ Gõ .help để mở Siêu Menu Lệnh"))
 
 @bot.event
@@ -99,35 +111,29 @@ async def on_guild_join(guild):
 
     if target_channel is not None:
         embed = discord.Embed(
-            title="╔══════════════════════════════════════╗\n║  🌟 ꜱᴜɴ ꜰʟᴏᴡᴇʀ ᴀɪ • ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ꜱᴇʀᴠᴇʀ  🌟  ║\n╚══════════════════════════════════════╝",
+            title="╔════════════════════════════════════════╗\n║  🌟 sᴜɴ ꜰʟᴏᴡᴇʀ ᴀɪ • ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ sᴇʀᴠᴇʀ  🌟  ║\n╚════════════════════════════════════════╝",
             description=(
-                f"🎉 Chào mừng đến với lãnh địa **{guild.name}**! Cảm ơn vì đã lựa chọn Sun Flower Bot làm người đồng hành tối thượng~ ✨\n\n"
-                "╔══════════════════════════════════════╗\n"
-                "║          🔮 ʜƯỚɴɢ DẪN ɴʜᴀɴʜ          ║\n"
-                "╚══════════════════════════════════════╝\n"
+                f"🎉 Chào mừng đến với lãnh địa **{guild.name}**! Cảm ơn vì đã lựa chọn Sun Flower Bot làm trợ lý ảo đồng hành tối thượng~ ✨\n\n"
+                "╔════════════════════════════════════════╗\n"
+                "║          🔮 ʜƯỚɴɢ DẪN SỬ DỤNG ɴʜᴀɴʜ          ║\n"
+                "╚════════════════════════════════════════╝\n"
                 "🔹 Gõ lệnh **`.help`** để mở **Bảng Điều Khiển & Siêu Menu** toàn diện.\n"
                 "🔹 Gõ lệnh **`.setup`** để thiết lập không gian quản trị độc quyền cho kênh.\n"
-                "🔹 Hệ thống bảo vệ Anti-Nuke 24/7 đang chạy ngầm bảo vệ tuyệt đối server!"
+                "🔹 Hệ thống bảo vệ Anti-Nuke thông minh 24/7 đang chạy ngầm bảo vệ tuyệt đối server!"
             ),
             color=0xFF69B4
         )
         embed.set_thumbnail(url=bot.user.avatar.url if bot.user.avatar else None)
-        embed.set_footer(text="⚡ Power by Discord Bot Architecture 🚀")
+        embed.set_footer(text="⚡ Power by Discord Bot Advanced Architecture 🚀")
         try:
             await target_channel.send(embed=embed)
         except Exception:
             pass
 
-# ==================== HỆ THỐNG ANTI-NUKE 24/7 NGẦM ====================
-@bot.event
-async def on_guild_channel_create(channel):
-    await check_nuke_activity(channel.guild)
-
+# ==================== HỆ THỐNG ANTI-NUKE THÔNG MINH (XÓA > 5 KÊNH) ====================
 @bot.event
 async def on_guild_channel_delete(channel):
-    await check_nuke_activity(channel.guild)
-
-async def check_nuke_activity(guild):
+    guild = channel.guild
     if not guild.me.guild_permissions.view_audit_log:
         return
     try:
@@ -136,26 +142,37 @@ async def check_nuke_activity(guild):
             nuke_tracker[guild.id] = []
         
         nuke_tracker[guild.id].append(current_time)
-        nuke_tracker[guild.id] = [t for t in nuke_tracker[guild.id] if current_time - t < 5]
+        # Lọc các mốc thời gian trong vòng 10 giây gần nhất
+        nuke_tracker[guild.id] = [t for t in nuke_tracker[guild.id] if current_time - t < 10]
 
+        # Nếu phát hiện xóa từ 5 kênh trở lên trong thời gian ngắn
         if len(nuke_tracker[guild.id]) >= 5:
-            async for entry in guild.audit_logs(limit=3):
+            async for entry in guild.audit_logs(limit=3, action=discord.AuditLogAction.channel_delete):
                 target = entry.user
                 if target and target.id != bot.user.id and not target.bot:
-                    try:
-                        member_to_punish = guild.get_member(target.id)
-                        if member_to_punish and not member_to_punish.guild_permissions.administrator:
-                            await member_to_punish.timeout(discord.utils.utcnow() + discord.Timedelta(minutes=100), reason="Nuke server detection!")
-                            await member_to_punish.kick(reason="Anti-Nuke Protection")
-                    except Exception:
-                        pass
+                    member_to_punish = guild.get_member(target.id)
+                    if member_to_punish:
+                        # Kiểm tra xem kẻ phá hoại có nằm trong nhóm owner tối cao hay không, nếu không thì tiến hành trừng phạt
+                        if member_to_punish.id not in BOT_OWNERS and member_to_punish.id != guild.owner_id:
+                            try:
+                                await member_to_punish.timeout(discord.utils.utcnow() + discord.Timedelta(minutes=180), reason="Phát hiện hành vi hủy diệt server (xóa > 5 kênh)!")
+                                await member_to_punish.kick(reason="Anti-Nuke Protection: Mass Channel Deletion")
+                                
+                                # Gửi cảnh báo khẩn cấp đến kênh thông báo chung
+                                for ch in guild.text_channels:
+                                    if ch.permissions_for(guild.me).send_messages:
+                                        await ch.send(f"🚨 **CẢNH BÁO AN NINH ANTI-NUKE** 🚨\nPhát hiện tài khoản `{target}` đang thực hiện hành vi xóa hàng loạt kênh (> 5 kênh). Hệ thống đã tự động vô hiệu hóa và trục xuất thành công!")
+                                        break
+                            except Exception:
+                                pass
+                    break
     except Exception:
         pass
 
-# ==================== CÁC LỆNH ĐIỀU KHIỂN & SIÊU MENU ====================
+# ==================== CÁC LỆNH ĐIỀU KHIỂN & SIÊU MENU (ĐẸP TRÊN 5 DÒNG) ====================
 
 @bot.command(name="setup")
-@is_bot_or_guild_owner()
+@has_high_privilege()
 async def setup(ctx):
     global current_persona_id, last_active_persona_id, target_user_id
     current_persona_id = 1
@@ -168,43 +185,44 @@ async def setup(ctx):
         description=(
             f"📌 **Kênh kết nối định mệnh:** {ctx.channel.mention}\n"
             f"🌸 **Nhân cách khởi tạo mặc định:** `{p_info['name']}`\n"
-            "🔮 **Trạng thái kết nối:** Hoạt động mượt mà.\n\n"
+            "🔮 **Trạng thái kết nối:** Hoạt động mượt mà, phản hồi toàn diện.\n\n"
             "╔════════════════════════════════════════╗\n"
             "║        📋 ʙẢɴɢ ʟệɴʜ qᴜảɴ ᴛʀị ɴʜᴀɴʜ        ║\n"
             "╚════════════════════════════════════════╝\n"
             "🔸 **`.persona <1|2|3>`** ➔ Chuyển đổi linh hoạt giữa 3 nhân cách độc đáo.\n"
             "🔸 **`.ghim @user`**      ➔ Khóa mục tiêu trò chuyện riêng tư chỉ định.\n"
             "🔸 **`.stats`**          ➔ Trích xuất bảng thông số chi tiết của máy chủ.\n"
-            "🔸 **`.help`**           ➔ Triệu hồi toàn bộ Siêu Menu hướng dẫn hệ thống."
+            "🔸 **`.help`**           ➔ Triệu hồi toàn bộ Siêu Menu hướng dẫn hệ thống.\n"
+            "🔸 **`.on` / `.off`**    ➔ Bật hoặc tắt trạng thái tiếp nhận phản hồi."
         ),
         color=p_info['color']
     )
     embed.set_image(url=CUSTOM_SETUP_GIF)
-    embed.set_footer(text="✨ Đã cấu hình thành công vùng kiểm soát độc quyền cho Chủ Nhân!")
+    embed.set_footer(text="✨ Đã cấu hình thành công vùng kiểm soát độc quyền cho Cấp Cao Quản Trị!")
     await ctx.send(embed=embed)
 
 @setup.error
 async def setup_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU BOT HOẶC CHỦ SERVER MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
+        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! CHỈ CÓ CHỦ SỞ HỮU TỐI CAO, CHỦ SERVER HOẶC CÁC THÀNH VIÊN SỞ HỮU QUYỀN LỰC CAO NHẤT MỚI ĐƯỢC PHÉP SỬ DỤNG LỆNH NÀY!"** 🔥💀')
 
 @bot.command(name="persona")
-@is_bot_or_guild_owner()
+@has_high_privilege()
 async def persona(ctx, persona_id: int = None):
     global current_persona_id, last_active_persona_id, target_user_id
 
     if persona_id not in PERSONAS:
         embed_err = discord.Embed(
-            title="╔════════════════════════════════════════╗\n║       ⚠️ sᴀɪ cÚ ᴘʜáᴘ • ᴄʜọɴ ɴʜâɴ ᴄáᴄʜ       ⚠️       ║\n╚════════════════════════════════════════╝",
+            title="╔════════════════════════════════════════╗\n║       ⚠️ SẠI CÚ PHÁP • CHỌN NHÂN CÁCH       ⚠️       ║\n╚════════════════════════════════════════╝",
             description=(
                 "Hệ thống ghi nhận bạn chưa truyền đúng số thứ tự nhân cách hợp lệ!\n"
                 "Vui lòng sử dụng một trong các cú pháp siêu cấp sau đây:\n\n"
                 "🌸 **`1` ➔ Sweet Princess**\n"
-                "└ *Phong cách: Thiếu nữ ngọt ngào, thanh lịch, đáng yêu, tôn kính Chủ Nhân.*\n\n"
+                "└ *Trợ lý ảo thông minh, ngọt ngào, phục vụ tận tụy mọi yêu cầu người dùng.*\n\n"
                 "☠️🔥 **`2` ➔ Toxic Roast Demon**\n"
-                "└ *Phong cách: Ác quỷ mỏ hỗn, cà khịa chửi thề cực gắt, hủy diệt nhân phẩm.*\n\n"
+                "└ *Ác quỷ mỏ hỗn, cà khịa chửi thề cực gắt, hủy diệt toàn bộ nhân phẩm.*\n\n"
                 "🗿⚡ **`3` ➔ Cold Master**\n"
-                "└ *Phong cách: Bậc thầy lạnh lùng, cao ngạo, uy quyền tột độ.*\n\n"
+                "└ *Bậc thầy lạnh lùng, cao ngạo, uy quyền tột độ trong mọi hoàn cảnh.*\n\n"
                 "📌 *Ví dụ thực tế:* `.persona 1` hoặc `.persona 2` hoặc `.persona 3`"
             ),
             color=0xFFA500
@@ -233,14 +251,14 @@ async def persona(ctx, persona_id: int = None):
 @persona.error
 async def persona_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU BOT HOẶC CHỦ SERVER MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
+        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! CHỈ CÓ CHỦ SỞ HỮU TỐI CAO, CHỦ SERVER HOẶC CÁC THÀNH VIÊN SỞ HỮU QUYỀN LỰC CAO NHẤT MỚI ĐƯỢC PHÉP SỬ DỤNG LỆNH NÀY!"** 🔥💀')
 
 @bot.command(name="stats")
 async def stats(ctx):
     guild = ctx.guild
     p_info = PERSONAS[current_persona_id]
     embed = discord.Embed(
-        title="╔════════════════════════════════════════╗\n║      📊 THÔNG SỐ KỸ THUẬT MÁY CHỦ • sᴜɴ      📊      ║\n╚════════════════════════════════════════╝",
+        title="╔════════════════════════════════════════╗\n║      📊 THÔNG SỐ KỸ THUẬT MÁY CHỦ • SÙN      📊      ║\n╚════════════════════════════════════════╝",
         description=(
             f"🏰 **Tên lãnh địa (Server):** `{guild.name}`\n"
             f"👑 **Tối Cao Chủ Sở Hữu:** <@{guild.owner_id}>\n"
@@ -252,11 +270,11 @@ async def stats(ctx):
         color=p_info['color']
     )
     embed.set_thumbnail(url=guild.icon.url if guild.icon else None)
-    embed.set_footer(text="⚡ Báo cáo thống kê chi tiết từ hệ thống lõi Sun Flower")
+    embed.set_footer(text="⚡ Báo cáo thống kê chi tiết từ hệ thống lõi Sun Flower AI")
     await ctx.send(embed=embed)
 
 @bot.command(name="on")
-@is_bot_or_guild_owner()
+@has_high_privilege()
 async def bot_on(ctx):
     global current_persona_id, last_active_persona_id
     current_persona_id = last_active_persona_id
@@ -271,10 +289,10 @@ async def bot_on(ctx):
 @bot_on.error
 async def bot_on_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU BOT HOẶC CHỦ SERVER MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
+        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! CHỈ CÓ CHỦ SỞ HỮU TỐI CAO, CHỦ SERVER HOẶC CÁC THÀNH VIÊN SỞ HỮU QUYỀN LỰC CAO NHẤT MỚI ĐƯỢC PHÉP SỬ DỤNG LỆNH NÀY!"** 🔥💀')
 
 @bot.command(name="ghim")
-@is_bot_or_guild_owner()
+@has_high_privilege()
 async def ghim(ctx, member: discord.Member = None):
     global target_user_id
     if member is None:
@@ -297,10 +315,10 @@ async def ghim(ctx, member: discord.Member = None):
 @ghim.error
 async def ghim_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU BOT HOẶC CHỦ SERVER MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
+        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! CHỈ CÓ CHỦ SỞ HỮU TỐI CAO, CHỦ SERVER HOẶC CÁC THÀNH VIÊN SỞ HỮU QUYỀN LỰC CAO NHẤT MỚI ĐƯỢC PHÉP SỬ DỤNG LỆNH NÀY!"** 🔥💀')
 
 @bot.command(name="ban")
-@is_bot_or_guild_owner()
+@has_high_privilege()
 async def ban(ctx, member: discord.Member = None, *, reason="Không có lý do được cung cấp"):
     if member is None:
         embed_err = discord.Embed(
@@ -324,33 +342,33 @@ async def ban(ctx, member: discord.Member = None, *, reason="Không có lý do �
 @ban.error
 async def ban_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU BOT HOẶC CHỦ SERVER MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
+        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! CHỈ CÓ CHỦ SỞ HỮU TỐI CAO, CHỦ SERVER HOẶC CÁC THÀNH VIÊN SỞ HỮU QUYỀN LỰC CAO NHẤT MỚI ĐƯỢC PHÉP SỬ DỤNG LỆNH NÀY!"** 🔥💀')
 
 @bot.command(name="help")
 async def help_command(ctx):
     p_info = PERSONAS[current_persona_id]
     embed = discord.Embed(
-        title="╔════════════════════════════════════════╗\n║     📖 sɪêᴜ ᴍᴇɴᴜ đɪềᴜ ᴋʜɪểɴ • sᴜɴ ꜰʟᴏᴡᴇʀ     📖     ║\n╚════════════════════════════════════════╝",
+        title="╔════════════════════════════════════════╗\n║     📖 SIÊU MENU ĐIỀU KHIỂN • SUN FLOWER     📖     ║\n╚════════════════════════════════════════╝",
         description=(
-            "Chào mừng bạn đến với bảng điều khiển trung tâm tối cao của **Sun Flower Bot**.\n"
-            "Dưới đây là hệ thống lệnh toàn diện được phân chia chi tiết theo từng phân quyền:\n"
+            "Chào mừng bạn đến với bảng điều khiển trung tâm tối cao của **Sun Flower AI Bot**.\n"
+            "Dưới đây là hệ thống lệnh toàn diện được phân chia chi tiết theo từng phân quyền quản trị:\n"
         ),
         color=p_info['color']
     )
     
     embed.add_field(
-        name="🛠️ [ HỆ THỐNG LỆNH QUẢN TRỊ & ĐẶC QUYỀN ]",
+        name="🛠️ [ HỆ THỐNG LỆNH QUẢN TRỊ & ĐẶC QUYỀN CẤP CAO ]",
         value=(
             "• **`.setup`**\n"
-            "  └ *Khởi tạo không gian tương tác cao cấp và bảng điều khiển nhanh cho kênh hiện tại.*\n"
+            "  └ Khởi tạo không gian tương tác cao cấp và bảng điều khiển nhanh cho kênh hiện tại.\n"
             "• **`.persona <1|2|3>`**\n"
-            "  └ *Thay đổi phong cách giao tiếp và tư duy nhân cách (Sweet Princess, Toxic Roast, Cold Master).*\n"
+            "  └ Thay đổi phong cách giao tiếp và tư duy nhân cách (Sweet Princess, Toxic Roast, Cold Master).\n"
             "• **`.ghim @user`**\n"
-            "  └ *Khóa cứng bot chỉ trò chuyện riêng với 1 người chỉ định (Gõ `.ghim` trống để tắt chế độ)..*\n"
+            "  └ Khóa cứng bot chỉ trò chuyện riêng với 1 người chỉ định (Gõ `.ghim` trống để tắt chế độ).\n"
             "• **`.on` / `.off`**\n"
-            "  └ *Bật hoặc tạm ngắt hoàn toàn hệ thống tiếp nhận phản hồi chat tự động.*\n"
+            "  └ Bật hoặc tạm ngắt hoàn toàn hệ thống tiếp nhận phản hồi chat tự động.\n"
             "• **`.ban @user [lý do]`**\n"
-            "  └ *Trục xuất khẩn cấp và vĩnh viễn các thành viên phá hoại khỏi máy chủ.*"
+            "  └ Trục xuất khẩn cấp và vĩnh viễn các thành viên phá hoại khỏi máy chủ."
         ),
         inline=False
     )
@@ -359,9 +377,9 @@ async def help_command(ctx):
         name="📊 [ HỆ THỐNG TIỆN ÍCH & THÔNG TIN CHUNG ]",
         value=(
             "• **`.help`**\n"
-            "  └ *Triệu hồi bảng Siêu Menu hướng dẫn chi tiết toàn bộ tính năng này.*\n"
+            "  └ Triệu hồi bảng Siêu Menu hướng dẫn chi tiết toàn bộ tính năng này.\n"
             "• **`.stats`**\n"
-            "  └ *Trích xuất toàn bộ bảng thông số chi tiết, trạng thái server và nhân cách đang bật.*"
+            "  └ Trích xuất toàn bộ bảng thông số chi tiết, trạng thái server và nhân cách đang bật."
         ),
         inline=False
     )
@@ -369,17 +387,17 @@ async def help_command(ctx):
     embed.add_field(
         name="🛡️ [ HỆ THỐNG BẢO VỆ TỰ ĐỘNG NGẦM ]",
         value=(
-            "• **Anti-Nuke 24/7 Protocol:** Tự động phát hiện hành vi tạo/xóa kênh bất thường, lập tức timeout 100 phút và kick kẻ gian khỏi server nhằm bảo vệ an toàn tuyệt đối cho cộng đồng!"
+            "• **Anti-Nuke 24/7 Intelligence:** Tự động quét và phát hiện hành vi xóa trên 5 kênh trong thời gian ngắn, lập tức truy vết audit log, timeout và kick kẻ giả mạo trừ danh sách owner tối cao."
         ),
         inline=False
     )
 
     embed.set_thumbnail(url=bot.user.avatar.url if bot.user.avatar else None)
-    embed.set_footer(text="🌟 Sun Flower Bot Architecture • Designed with Maximum Colors & Style ⚡")
+    embed.set_footer(text="🌟 Sun Flower AI Architecture • Designed with Maximum Colors & Professional Standard ⚡")
     await ctx.send(embed=embed)
 
 @bot.command(name="off")
-@is_bot_or_guild_owner()
+@has_high_privilege()
 async def off(ctx):
     global current_persona_id
     current_persona_id = None
@@ -393,9 +411,8 @@ async def off(ctx):
 @off.error
 async def off_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"CÚT ĐI THẰNG LỒN! CHỈ CÓ CHỦ SỞ HỮU BOT HOẶC CHỦ SERVER MỚI ĐƯỢC DÙNG LỆNH NÀY."** 🔥💀')
+        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! CHỈ CÓ CHỦ SỞ HỮU TỐI CAO, CHỦ SERVER HOẶC CÁC THÀNH VIÊN SỞ HỮU QUYỀN LỰC CAO NHẤT MỚI ĐƯỢC PHÉP SỬ DỤNG LỆNH NÀY!"** 🔥💀')
 
-# ==================== XỬ LÝ LỖI HỆ THỐNG (COMMAND NOT FOUND,...) ====================
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
@@ -408,6 +425,7 @@ async def on_message(message):
     if message.author.bot:
         return
 
+    # Xử lý các lệnh prefix trước
     await bot.process_commands(message)
 
     if current_persona_id is None:
@@ -416,24 +434,32 @@ async def on_message(message):
     if target_user_id is not None and message.author.id != target_user_id:
         return
 
-    bot_mentioned = bot.user in message.mentions
-    called = any(word in message.content.lower() for word in ["sun flower", "sunflower", "bot ơi", "bot", "sweet princess"])
+    # Đối với nhân cách 1 (Sweet Princess): Tự động phản hồi mọi yêu cầu dịch vụ của người dùng mà KHÔNG CẦN gọi bot hoặc mention
+    should_reply = False
+    if current_persona_id == 1:
+        should_reply = True
+    else:
+        # Các nhân cách khác yêu cầu phải mention hoặc gọi tên/từ khóa
+        bot_mentioned = bot.user in message.mentions
+        called = any(word in message.content.lower() for word in ["sun flower", "sunflower", "bot ơi", "bot"])
+        if bot_mentioned or called or (target_user_id is not None and message.author.id == target_user_id):
+            should_reply = True
 
-    if bot_mentioned or called or (target_user_id is not None and message.author.id == target_user_id):
+    if should_reply:
         async with message.channel.typing():
             try:
                 p_info = PERSONAS[current_persona_id]
                 user_msg = message.content.strip() if message.content else "..."
                 
-                # Phản hồi giả lập cục bộ hoặc phản hồi tĩnh do đã gỡ bỏ API
-                ai_reply = f"Đã nhận phản hồi yêu cầu của bạn: '{user_msg}' theo nhân cách {p_info['name']}."
+                # Phản hồi giả lập thông minh theo nhân cách hệ thống chuyên nghiệp
+                ai_reply = f"Dạ, tớ đã tiếp nhận yêu cầu của cậu: '{user_msg}'. Tớ luôn sẵn sàng hỗ trợ tận tâm mọi thắc mắc và dịch vụ mà cậu cần nhé! ✨"
 
                 embed = discord.Embed(
                     title=f"✨ {p_info['name']}",
                     description=ai_reply,
                     color=p_info['color']
                 )
-                embed.set_footer(text="Sun Flower • Local Engine ⚡")
+                embed.set_footer(text="Sun Flower AI • Professional Assistant Engine ⚡")
 
                 await message.reply(embed=embed, mention_author=False)
 
