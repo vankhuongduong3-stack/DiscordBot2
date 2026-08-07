@@ -4,21 +4,10 @@ import random
 import time
 import discord
 from discord.ext import commands
-from dotenv import load_dotenv
 from groq import Groq
-
-# Load các biến môi trường từ file .env
-load_dotenv()
 
 # ==================== CẤU HÌNH HỆ THỐNG ====================
 DISCORD_TOKEN = os.getenv("TOKEN")
-
-# Lấy API Keys từ biến môi trường (Bảo mật tuyệt đối)
-XAI_API_KEYS = [os.getenv("XAI_API_KEY")] if os.getenv("XAI_API_KEY") else []
-TOGETHER_API_KEYS = [os.getenv("TOGETHER_API_KEY")] if os.getenv("TOGETHER_API_KEY") else []
-
-current_xai_index = 0
-current_together_index = 0
 
 # Danh sách ID chủ sở hữu riêng của bot
 BOT_OWNERS = [
@@ -59,7 +48,7 @@ PERSONAS = {
 """
     },
     2: {
-        'name': '☠️🔥 ᴛᴏxɪᴄ ʀᴏᴀsᴛ ᴅᴇᴍᴏɴ • ʜᴜỷ ᴅɪệᴛ ɴʜâɴ ᴘʜẩᴍ 🖕',
+        'name': '☠️🔥 ᴛᴏxɪᴄ ʀᴏᴀsᴛ ᴅᴇᴍᴏɴ • ʜᴜỷ 디ệᴛ ɴʜâɴ ᴘʜẩᴍ 🖕',
         'color': 0xFF0033,
         'instruction': """
 [ ☠️ NHÂN CÁCH 2: TOXIC ROAST DEMON (ÁC QUỶ MỎ HỖN - HUỶ DIỆT TOÀN BỘ NHÂN PHẨM) ]
@@ -84,49 +73,6 @@ PERSONAS = {
 }
 
 nuke_tracker = {}
-
-# ==================== GỌI API AI (XAI / TOGETHER AI) ====================
-def call_ai_with_rotation(system_instruction, user_prompt):
-    global current_xai_index, current_together_index
-    
-    if XAI_API_KEYS:
-        try:
-            client = Groq(
-                api_key=XAI_API_KEYS[current_xai_index],
-                base_url="https://api.x.ai/v1"
-            )
-            completion = client.chat.completions.create(
-                model="grok-beta",
-                messages=[
-                    {"role": "system", "content": system_instruction},
-                    {"role": "user", "content": user_prompt}
-                ],
-                temperature=0.7,
-            )
-            return completion.choices[0].message.content
-        except Exception as e:
-            print(f"[AI] XAI lỗi, chuyển sang Together AI: {e}")
-
-    if TOGETHER_API_KEYS:
-        try:
-            client = Groq(
-                api_key=TOGETHER_API_KEYS[current_together_index],
-                base_url="https://api.together.xyz/v1"
-            )
-            completion = client.chat.completions.create(
-                model="meta-llama/Llama-3-70b-chat-hf",
-                messages=[
-                    {"role": "system", "content": system_instruction},
-                    {"role": "user", "content": user_prompt}
-                ],
-                temperature=0.7,
-            )
-            return completion.choices[0].message.content
-        except Exception as e:
-            print(f"[AI] Together AI lỗi: {e}")
-            raise e
-
-    raise Exception("Tất cả các API Key đều không khả dụng!")
 
 def is_bot_or_guild_owner():
     async def predicate(ctx):
@@ -166,7 +112,7 @@ async def on_guild_join(guild):
             color=0xFF69B4
         )
         embed.set_thumbnail(url=bot.user.avatar.url if bot.user.avatar else None)
-        embed.set_footer(text="⚡ Power by XAI (Grok) & Together AI Architecture 🚀")
+        embed.set_footer(text="⚡ Power by Discord Bot Architecture 🚀")
         try:
             await target_channel.send(embed=embed)
         except Exception:
@@ -222,11 +168,11 @@ async def setup(ctx):
         description=(
             f"📌 **Kênh kết nối định mệnh:** {ctx.channel.mention}\n"
             f"🌸 **Nhân cách khởi tạo mặc định:** `{p_info['name']}`\n"
-            "🔮 **Trạng thái kết nối AI:** Hoạt động mượt mà với XAI & Together AI.\n\n"
+            "🔮 **Trạng thái kết nối:** Hoạt động mượt mà.\n\n"
             "╔════════════════════════════════════════╗\n"
             "║        📋 ʙẢɴɢ ʟệɴʜ qᴜảɴ ᴛʀị ɴʜᴀɴʜ        ║\n"
             "╚════════════════════════════════════════╝\n"
-            "🔸 **`.persona <1|2|3>`** ➔ Chuyển đổi linh hoạt giữa 3 nhân cách AI độc đáo.\n"
+            "🔸 **`.persona <1|2|3>`** ➔ Chuyển đổi linh hoạt giữa 3 nhân cách độc đáo.\n"
             "🔸 **`.ghim @user`**      ➔ Khóa mục tiêu trò chuyện riêng tư chỉ định.\n"
             "🔸 **`.stats`**          ➔ Trích xuất bảng thông số chi tiết của máy chủ.\n"
             "🔸 **`.help`**           ➔ Triệu hồi toàn bộ Siêu Menu hướng dẫn hệ thống."
@@ -300,13 +246,13 @@ async def stats(ctx):
             f"👑 **Tối Cao Chủ Sở Hữu:** <@{guild.owner_id}>\n"
             f"👥 **Tổng số công dân (Members):** `{guild.member_count}`\n"
             f"📁 **Tổng hệ thống kênh (Channels):** `{len(guild.channels)}`\n"
-            f"🤖 **Nhân cách AI đang trực chiến:** {p_info['name']}\n"
+            f"🤖 **Nhân cách đang trực chiến:** {p_info['name']}\n"
             f"🛡️ **Trạng thái bảo vệ:** `Anti-Nuke 24/7 Active (Max Security)`"
         ),
         color=p_info['color']
     )
     embed.set_thumbnail(url=guild.icon.url if guild.icon else None)
-    embed.set_footer(text="⚡ Báo cáo thống kê chi tiết từ hệ thống lõi Sun Flower AI")
+    embed.set_footer(text="⚡ Báo cáo thống kê chi tiết từ hệ thống lõi Sun Flower")
     await ctx.send(embed=embed)
 
 @bot.command(name="on")
@@ -396,13 +342,13 @@ async def help_command(ctx):
         name="🛠️ [ HỆ THỐNG LỆNH QUẢN TRỊ & ĐẶC QUYỀN ]",
         value=(
             "• **`.setup`**\n"
-            "  └ *Khởi tạo không gian tương tác AI cao cấp và bảng điều khiển nhanh cho kênh hiện tại.*\n"
+            "  └ *Khởi tạo không gian tương tác cao cấp và bảng điều khiển nhanh cho kênh hiện tại.*\n"
             "• **`.persona <1|2|3>`**\n"
-            "  └ *Thay đổi phong cách giao tiếp và tư duy nhân cách của AI (Sweet Princess, Toxic Roast, Cold Master).*\n"
+            "  └ *Thay đổi phong cách giao tiếp và tư duy nhân cách (Sweet Princess, Toxic Roast, Cold Master).*\n"
             "• **`.ghim @user`**\n"
             "  └ *Khóa cứng bot chỉ trò chuyện riêng với 1 người chỉ định (Gõ `.ghim` trống để tắt chế độ)..*\n"
             "• **`.on` / `.off`**\n"
-            "  └ *Bật hoặc tạm ngắt hoàn toàn hệ thống tiếp nhận phản hồi chat tự động của AI.*\n"
+            "  └ *Bật hoặc tạm ngắt hoàn toàn hệ thống tiếp nhận phản hồi chat tự động.*\n"
             "• **`.ban @user [lý do]`**\n"
             "  └ *Trục xuất khẩn cấp và vĩnh viễn các thành viên phá hoại khỏi máy chủ.*"
         ),
@@ -438,7 +384,7 @@ async def off(ctx):
     global current_persona_id
     current_persona_id = None
     embed = discord.Embed(
-        title="🔌 NGẮT KẾT NỐI HỆ THỐNG AI",
+        title="🔌 NGẮT KẾT NỐI HỆ THỐNG",
         description="Đã tắt toàn bộ tính năng phản hồi trò chuyện của bot. Sử dụng `.on` để khởi động lại.",
         color=0xFF0000
     )
@@ -478,23 +424,23 @@ async def on_message(message):
             try:
                 p_info = PERSONAS[current_persona_id]
                 user_msg = message.content.strip() if message.content else "..."
-                user_prompt = f"Người dùng {message.author.display_name} (ID: {message.author.id}) gửi: '{user_msg}'"
-
-                ai_reply = call_ai_with_rotation(p_info['instruction'], user_prompt)
+                
+                # Phản hồi giả lập cục bộ hoặc phản hồi tĩnh do đã gỡ bỏ API
+                ai_reply = f"Đã nhận phản hồi yêu cầu của bạn: '{user_msg}' theo nhân cách {p_info['name']}."
 
                 embed = discord.Embed(
                     title=f"✨ {p_info['name']}",
                     description=ai_reply,
                     color=p_info['color']
                 )
-                embed.set_footer(text="Sun Flower • XAI & Together AI Engine ⚡")
+                embed.set_footer(text="Sun Flower • Local Engine ⚡")
 
                 await message.reply(embed=embed, mention_author=False)
 
             except Exception as e:
                 error_msg = str(e)
-                print(f"Lỗi AI: {error_msg}")
-                await message.reply(f"❌ `Lỗi xử lý hệ thống AI: {error_msg}`")
+                print(f"Lỗi xử lý: {error_msg}")
+                await message.reply(f"❌ `Lỗi xử lý hệ thống: {error_msg}`")
 
 # ==================== KHỞI CHẠY BOT ====================
 if __name__ == "__main__":
