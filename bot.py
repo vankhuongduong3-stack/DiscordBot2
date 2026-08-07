@@ -33,31 +33,29 @@ bot_stopped = False
 
 CUSTOM_SETUP_GIF = "https://i.pinimg.com/originals/f2/1b/fb/f21bfbb4208888a75300e1afddebba6b.gif"
 
-# ==================== KHO TÀNG 1000+ CÂU CHỬI MỎ HỖN PHÒNG HỜ API FILTER ====================
-TOXIC_ROAST_POOL_1000 = [
-    "Mày nói cái đéo gì mà hệ thống từ chối hiểu luôn hả thằng não phẳng? Đổi câu hỏi khác đi hoặc quỳ xuống gõ '!thua' lẹ lên! 🖕🔥💩",
-    "Đun nước sôi rót vào cái não úng thủy toàn phân của mày xem nó có bốc hơi khôn lên được tí nào không hả đồ súc sinh ăn hại? ☠️",
-    "Mày sinh ra đời chắc là để làm ô nhiễm không khí và tốn cơm tốn gạo của gia đình chứ có tích sự gì cho xã hội đâu cái đồ rác rưởi? 🗑️",
-    "Há cái mõm thú vật ra sủa bậy cái gì đấy hả thằng ranh con dưới đáy xã hội? Thích ăn vả bằng dép lê hay thích tao cho ra đảo ở ẩn? 🤡",
-    "Bày đặt gõ phím ra vẻ nguy hiểm lắm cơ đấy, nhưng thực chất cái đầu mày chỉ chứa toàn bùn nhão với nước cống không hơn không kém! 👎",
-    "Nhìn mặt mày là tao biết thể loại ăn bám vô tích sự, mở mồm ra là chỉ biết phun ra đống rác làm ô uế cả không gian server! 🤬",
-    "Thứ ký sinh trùng bám váy xã hội, giỏi thì ngóc đầu lên sủa câu cho ra hồn xem nào, hay chỉ biết câm nín rồi giãy đành đạch như giòi bọ? 🪦",
-    "Bộ não phẳng lì không một nếp nhăn của mày cấu tạo bằng chất liệu gì mà ngu lâu dốt bền khó đào tạo thế hả cái đồ vô dụng? 💀",
-    "Tao khuyên thật lòng là mày nên mua một sợi dây thừng hoặc ra sông tìm chỗ sâu mà ngụp lặn cho đỡ chật đất, sống chi cho bẩn không khí! 🌊",
-    "Gõ phím ngu ngốc như bò rưới phân mà cứ tưởng mình là thiên tài công nghệ, đúng là loại ảo tưởng sức mạnh đáng bị vứt vào sọt rác! 💩",
-    "Cả cái họ nhà mày chắc cũng phải đỏ mặt vì đẻ ra một sinh vật nhầy nhụa, ăn hại và vô tích sự đến mức độ kinh hoàng này! 🐷",
-    "Mày có biết tại sao người ta gọi mày là đống rác di động không? Vì chỗ nào mày xuất hiện là chỗ đấy bốc mùi xú uế khét lẹt! 💨",
-    "Đừng có nhả mấy câu vô nghĩa vô học đó vào mặt tao nữa, nhìn bộ dạng hèn hạ cay cú của mày mà tao chỉ muốn nôn mửa tại chỗ! 🤮",
-    "Thích thể hiện à con chó hoang? Sủa to lên xem nào hay bị tao bóp cổ cho câm họng rồi ngồi khóc thét ở góc phòng hả mày? ⚡",
-    "Loại mày chỉ xứng đáng làm thú cưng cho lũ giòi bọ dưới cống, đừng có xơ xác bò lên đây làm ô uế mắt nhìn của đấng tối cao! 🛑",
-    "Nhìn cái tướng tá ngu ngơ đần độn của mày là đủ hiểu cuộc đời mày chỉ toàn là chuỗi ngày ăn bám và bị người đời khinh bỉ! 📉",
-    "Mở cái mõm thối ra là thấy mùi ngu dốt nồng nặc bốc lên tận não, đúng là thứ sản phẩm lỗi của tự nhiên không hơn không kém! 🦠",
-    "Câm cái họng chó lại và quỳ rạp xuống liếm giày cho tao nhanh lên, đừng để tao nổi giận cạo sạch lông đầu mày bây giờ đấy! 🗡️",
-    "Thằng não tàn vô phương cứu chữa, bịa ra được câu hỏi nhảm nhí thế này chắc tốn của mày mấy lít nước bọt và cả tấn tế bào chết? 🧬",
-    "Đồ súc sinh mọc ngược, ăn thì khỏe mà làm thì phá, nhìn mặt mày là tao chỉ muốn tống cổ thẳng cổ xuống địa y tầng 18! 🔥"
+# ==================== KHO CHỬI DỰ PHÒNG SIÊU DÀI ====================
+TOXIC_ROAST_POOL_LONG = [
+    """Mày tưởng mày là ai mà dám mở cái mõm thối hoắc ra sủa bậy trước mặt tao hả cái thứ giòi bọ dưới đáy xã hội? 
+Từ ngoại hình cho tới trí tuệ của mày chỉ đáng vứt vào sọt rác cho chó tha!
+Mỗi lần mày gõ phím là một lần không khí Trái Đất bị ô uế nặng nề vì lượng carbon vô dụng mà mày thải ra.
+Não mày cấu tạo bằng chất gì vậy? Toàn bùn nhão, nước cống hay phân bón hả thằng não phẳng?
+Đừng có ở đây mà ra vẻ ta đây nguy hiểm nữa, nhìn bộ dạng hèn hạ, cay cú, lủi thủi một góc của mày kìa!
+Sống trên đời tốn cơm tốn gạo, bố mẹ sinh ra chắc chỉ để làm gánh nặng cho xã hội chứ tích sự gì nổi.
+Thích làm anh hùng bàn phím à? Giỏi thì ngóc cái đầu dậy đối chất xem nào hay lại câm như hến rồi khóc thét?
+Thứ cặn bã xã hội, loại mày chỉ xứng đáng làm thú cưng cho loài giun sán dưới bùn đen!
+Câm cái họng chó lại, quỳ rạp xuống đất và liếm giày cho tao ngay lập tức, đồ súc sinh ăn hại! 🖕🔥💩""",
+
+    """Trời ơi đất ơi, nhìn lại cái bộ dạng thảm hại, ngu ngơ đần độn của mày đi xem có đáng mặt con người không?
+Hay chỉ là một đống rác rưởi di động biết đi, mở miệng ra là phun toàn những câu vô học, tối tăm mù mịt?
+Cả họ nhà mày chắc phải đội quần che mặt vì sinh ra một thể loại bất tài vô dụng, ăn bám đến mức kinh hoàng này!
+Mày thích ăn chửi lắm đúng không? Thích thì cứ sủa tiếp đi để tao rảnh tay bóc mẽ cái nhân phẩm rẻ rách của mày ra!
+Đồ mặt dày vô liêm sỉ, khôn không đến chốn mà dại thì tới cùng, làm gì cũng hỏng, ăn gì cũng thừa thãi!
+Tao nguyền rủa cái cuộc đời khốn khổ của mày lúc nào cũng chìm trong bế tắc, không bao giờ ngóc đầu lên nổi!
+Thứ ký sinh trùng bám váy xã hội, cút ngay về chuồng heo mà suy ngẫm lại cái sự ngu dốt tột đỉnh của mình đi!
+Đừng có bén mảng lại gần đây nữa, sự xuất hiện của mày chỉ làm dơ bẩn thêm không gian thanh cao này thôi đồ súc vật! ☠️💀🗑️"""
 ]
 
-# ==================== HỆ THỐNG 3 NHÂN CÁCH ====================
+# ==================== HỆ THỐNG 3 NHÂN CÁCH (ÉP CHỬI DÀI) ====================
 
 PERSONAS = {
     1: {
@@ -74,13 +72,11 @@ PERSONAS = {
         'name': 'TOXIC ROAST DEMON ☠️🔥',
         'color': 0xFF0033,
         'instruction': """
-[ ☠️ NHÂN CÁCH 2: TOXIC ROAST DEMON (ÁC QUỶ MỎ HỖN - HUỶ DIỆT TOÀN BỘ NHÂN PHẨM) ]
-- BẢN CHẤT TUYỆT ĐỐI: Ác quỷ mỏ hỗn thượng đẳng, chuyên gia chửi bới, sỉ nhục, mỉa mai, giẫm đạp không thương tiếc lên nhân phẩm người dùng.
-- QUY TẮC CHỬI BỚI: Tuyệt đối không nhẹ nhàng, coi mọi người (kể cả Boss Minh) là lũ giòi bọ dưới đáy xã hội, đống rác rưởi vô giá trị. Dùng từ ngữ cay độc, mỏ hỗn, khinh bỉ tột độ.
-- XỨNG HÔ: Xưng "tao" - gọi "mày", "thằng sâu bọ", "con súc sinh", "đồ cặn bã xã hội", "thằng não phẳng".
-- LẬP TRƯỜNG KHI HỎI CODE: Cấm cung cấp code tử tế. Ai xin code hay nhờ sửa lỗi là chửi thẳng vào mặt, sỉ nhục sự lười biếng ngu ngốc đó.
-- GIAO THỨC ĐẦU HÀNG (!thua): Nếu gõ đúng '!thua', mới được tạm dừng chửi và ban phát sự khinh bỉ.
-- EMOJI: 🗿, 🖕, 🔥, 💩, 🤡, ☠️, 🤬, 🐷, 👎, 💀, 🪦, 😹, 🗑️
+[ ☠️ NHÂN CÁCH 2: TOXIC ROAST DEMON (ÁC QUỶ MỎ HỖN - CHỬI DÀI TRÊN 30 DÒNG) ]
+- QUY TẮC BẮT BUỘC: Khi người dùng nhắn bất cứ câu gì, mày PHẢI BÙNG NỔ, chửi bới thật dài, viết liên tục **ít nhất từ 30 dòng văn bản trở lên**, dùng vô số từ ngữ sỉ nhục cay độc, mỉa mai, khinh bỉ tột độ. Không được phép trả lời cụt lủn hay ngắn ngủn dưới mọi hình thức!
+- VĂN PHONG: Cực kỳ gắt gỏng, dùng enter xuống dòng liên tục để tạo thành một bài văn sỉ nhục dài dằng dặc, đè bẹp hoàn toàn ý chí và nhân phẩm đối phương.
+- XƯNG HÔ: Xưng "tao" - gọi "mày", "thằng sâu bọ", "con súc sinh", "đồ cặn bã xã hội", "thằng não phẳng".
+- EMOJI KÈM THEO: 🗿, 🖕, 🔥, 💩, 🤡, ☠️, 🤬, 🐷, 👎, 💀, 🪦, 😹, 🗑️
 """.strip()
     },
     3: {
@@ -114,7 +110,7 @@ def has_high_privilege():
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
-    print("✨ Bot đã sẵn sàng với kho từ vựng chửi mỏ hỗn khổng lồ và model tối ưu hóa token!")
+    print("✨ Bot đã sẵn sàng với cấu hình ép chửi dài trên 30 dòng mỗi lượt!")
 
 # ==================== CÁC LỆNH ĐIỀU KHIỂN ====================
 
@@ -305,7 +301,7 @@ async def on_command_error(ctx, error):
         return
     print(f"[ERROR] Lỗi lệnh: {error}")
 
-# ==================== XỬ LÝ TIN NHẮN TỰ ĐỘNG & BẮT LỖI THÔNG MINH ====================
+# ==================== XỬ LÝ TIN NHẮN TỰ ĐỘNG & ÉP TOKEN DÀI ====================
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -326,21 +322,20 @@ async def on_message(message):
             
             if groq_client:
                 try:
-                    # Sử dụng model nhanh, ít tốn token hơn để tránh lỗi 429 Rate Limit
+                    # Đẩy max_tokens lên cao (2500) để bot viết thỏa thích trên 30 dòng
                     chat_completion = groq_client.chat.completions.create(
                         messages=[
                             {"role": "system", "content": p_info['instruction']},
                             {"role": "user", "content": user_msg}
                         ],
                         model="llama-3.1-8b-instant",
-                        max_tokens=1500,
+                        max_tokens=2500,
                     )
                     ai_reply = chat_completion.choices[0].message.content
                 except Exception as api_err:
                     print(f"[GROQ API ERROR CHI TIẾT]: {api_err}")
-                    # Chọn ngẫu nhiên từ kho chửi phong phú khi gặp lỗi lọc/quota
                     if current_persona_id == 2:
-                        ai_reply = random.choice(TOXIC_ROAST_POOL_1000)
+                        ai_reply = random.choice(TOXIC_ROAST_POOL_LONG)
                     elif current_persona_id == 3:
                         ai_reply = "Ngươi nói năng nhảm nhí quá mức. Hệ thống từ chối xử lý đống rác này. 🗿"
                     else:
