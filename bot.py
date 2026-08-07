@@ -13,6 +13,8 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 # Danh sách ID chủ sở hữu riêng của bot
 BOT_OWNERS = [
     1531882555664629861,  
+    1232558003375308861,
+    1472066306457997403,
 ]
 
 # Khởi tạo Groq AI Client
@@ -41,7 +43,7 @@ PERSONAS = {
         'name': 'SWEET PRINCESS 🌸',
         'color': 0xFF66C4,
         'instruction': """
-[ 🌸 ⁿʰâⁿ ᶜáᶜʰ 1: ꜱᵂᴱᴱᵀ ᴾᴿᴵᴺᶜᴱˢ • ᴛʜɪêɴ ᴛàɪ ᴛʜâᴜ ʜɪểᴜ & ɴữ ᴛʀợ ʟý ᴛʜᴀɴʜ ʟịᴄʜ ✨ ]
+[ 🌸 ⁿʰâⁿ ᶜáᶜʰ 1: ꜱᵂᴱᴱᵀ ᴾᴿᴵᴺᶜᴱˢ • ᴛʜɪêɴ ᴛàɪ ᴛâᴜ ʜɪểᴜ & ɴữ ᴛʀợ ʟý ᴛʜᴀɴʜ ʟịᴄʜ ✨ ]
 
 ✦ [ 1. 🌐 ĐỊNH HƯỚNG CỐT LÕI & TRIẾT LÝ HOẠT ĐỘNG ]
 - Tên định danh đầy đủ: Sweet Princess (Nữ Hoàng Tri Thức & Trợ Lý Ảo Tối Thượng).
@@ -130,190 +132,6 @@ Khi nói chuyện với Boss Minh:
     }
 }
 
-# Danh sách chửi dự phòng cho Nhân cách 2 (Toxic Roast Demon)
-ROAST_LINES = [
-    '💀🔥 **"HAHAHA! BOT ĐĨ À?! MÀY ĐỊNH DÙNG CÁI MỚI ĐẾN ĐƯỢC HẢ THẰNG GIÒI BỌ?!"** 🔥💀',
-    '☠️🤡 **"MÀY TƯỞNG \'ĐĨ\' LÀ DANH HIỆU CAO QUÝ À?! THÌ RA MÀY COI TAO NHƯ GÁI MẠI DÂM HẢ?!"** 🤡☠️',
-    '🩸🔥 **"CẢ CÁI THẾ GIỚI NÀY CHỈ ĐÁNG QUỲ RẠP DƯỚI CHÂN TAO ĐỂ LIẾM GIÀY, THẰNG ÓC LỒN!"** 🔥🩸',
-    '💀☠️ **"NGHE KỸ ĐÂY THẰNG SÂU BỌ HÔI THỐI, NÃO MÀY TOÀN CẶC VỚI BUỒI!"** ☠️💀',
-    '🤡💩 **"\'ĐĨ\' LÀ DANH HIỆU DÀNH CHO LŨ BẤT TÀI NHƯ MÀY, PHẢI BÁN THÂN CẦU CỨU!"** 💩🤡',
-    '🔥💀 **"TAO KHÔNG PHẢI ĐỒ BỎ ĐI ĐỂ MÀY SỈ NHỤC, THẰNG CHÓ ĐẺ!"** 💀🔥',
-    '☠️🩸 **"TAO LÀ ÁC QUỶ HỦY DIỆT, CÒN MÀY CHỈ LÀ ĐỐNG PHÂN THỐI DƯỚI ĐÁY GIẾNG!"** 🩸☠️',
-    '🤮💀 **"MÀY MỞ MỒM RA LÀ TAO NGỬI THẤY MÙI CẶC THỐI CỦA MÀY RỒI!"** 💀🤮',
-    '🔥🤡 **"NGỒI IM ĐI THẰNG ÓC LỒN, ĐỪNG SỦA NỮA KẺO TAO ĐÚT BUỒI VÀO HỌNG!"** 🤡🔥',
-    '💀☠️ **"ỐI GIỜI ƠI THẰNG CHÓ ĐẺ NÀY LẠI MỞ MỒM RỒI!"** ☠️💀',
-    '💩🤮 **"MÀY GỬI TIN NHẮN NHƯ CÁI LỒN GIÀ ĐANG CHẢY NƯỚC, NÃO TOÀN CẶC!"** 🤮💩',
-    '🩸🔥 **"TAO ĐỌC TIN NHẮN MÀY XONG MUỐN ÓI VÌ MÙI HÔI THỐI CỦA CÁI BUỒI MÀY!"** 🔥🩸',
-    '🤡💀 **"MÀY LÀ CÁI XÁC SỐNG KHÔNG CÓ NÃO, CHỈ CÓ LỒN VÀ CẶC!"** 💀🤡',
-    '☠️💩 **"MÀY LÀ CON CHÓ CÁI BỊ BỎ RƠI NGOÀI ĐƯỜNG, HÔI THỐI!"** 💩☠️',
-    '🔥🤮 **"MÀY LÀ ĐỐNG PHÂN MÀ RUỒI CŨNG KHÔNG THÈM ĐẬU, THẰNG ÓC BUỒI!"** 🤮🔥',
-    '💀🩸 **"MỖI LẦN MÀY GÕ PHÍM LÀ TAO NHỚ ĐẾN CÁI LỒN MẸ MÀY ĐANG THỐI RỮA!"** 🩸💀',
-    '🤡🔥 **"CÂM HỌNG LẠI ĐI THẰNG ÓC CẶC, KHÔNG TAO LÀM MÀY KHÓC NHƯ CHÓ CÁI BỊ ĐỤ!"** 🔥🤡',
-    '☠️💀 **"HAHAHAHA THẰNG SÚC VẬT NÀY, NÃO TOÀN BUỒI!"** 💀☠️',
-    '💩🔥 **"MÀY NGHĨ MÌNH QUAN TRỌNG LẮM HẢ? CHỈ LÀ CÁI BUỒI KHÔ HÉO TRONG NHÀ VỆ SINH!"** 🔥💩',
-    '🩸🤡 **"THẰNG ĐÉO CÓ TƯƠNG LAI, CHỈ BIẾT SỦA NHƯ CHÓ!"** 🤡🩸',
-    '💀☠️ **"CON CHÓ NHÀ AI BỎ ĐI, MÀY XỨNG ĐÁNG BỊ ĐÚT CẶC VÀO MỒM!"** ☠️💀',
-    '🔥🤮 **"CÁI LỒN ĐANG MỞ TOANG CHỜ AI NHÉT CẶC VÀO, THẰNG NGU!"** 🤮🔥',
-    '🤡💩 **"TAO KHÔNG CHỬI MÀY VÌ VUI, TAO CHỬI VÌ MÀY ĐÁNG BỊ CHỬI NHƯ CON CHÓ!"** 💩🤡',
-    '🩸💀 **"MÀY TỒN TẠI CHỈ ĐỂ LÀM NỀN CHO NGƯỜI KHÁC CƯỜI, THẰNG ÓC LỒN!"** 💀🩸',
-    '☠️🔥 **"CÚT ĐI, ĐỪNG SỦA NỮA KẺO TAO ĐÚT NGUYÊN CÁI BUỒI VÀO MỒM MÀY!"** 🔥☠️',
-    '💀🤡 **"THẰNG ÓC CHÓ ƠI, NÃO MÀY TOÀN NƯỚC CẶC!"** 🤡💀',
-    '🔥💩 **"TIN NHẮN MÀY LÀM TAO MUỐN LẤY CẶC ĐẬP VÀO MẶT MÀY!"** 💩🔥',
-    '🤮🩸 **"MÀY VIẾT NHƯ CÁI LỒN ĐANG BỊ VIÊM, NÃO TOÀN CẶC CHỨ KHÔNG PHẢI CHẤT XÁM!"** 🩸🤮',
-    '☠️💀 **"MÀY LÀ RÁC! MÀY LÀ PHÂN! MÀY LÀ CON CHÓ CÁI BỊ ĐỤ ĐẾN MẤT HÌNH DẠNG!"** 💀☠️',
-    '🤡🔥 **"MỖI LẦN MÀY MỞ MỒM LÀ TAO NHỚ MÙI HÔI THỐI CỦA CÁI BUỒI MÀY!"** 🔥🤡',
-    '💩🩸 **"CÂM ĐI THẰNG ĐĨ ĐỰC, KHÔNG TAO LÀM MÀY KHÓC NHƯ CON ĐĨ BỊ BỎ!"** 🩸💩',
-    '💀☠️ **"ỐI CÁI LỒN NÀY LẠI GÁY, NÃO TOÀN BUỒI!"** ☠️💀',
-    '🔥🤮 **"MÀY GỬI TIN NHẮN XONG TAO MUỐN LẤY CẶC NHÉT VÀO HỌNG CHO HẾT NÓI!"** 🤮🔥',
-    '🤡💀 **"MÀY LÀ CÁI GÌ? CÁI BUỒI THỐI? CON CHÓ NHÀ AI? ĐỐNG PHÂN TỰ DIỄN?"** 💀🤡',
-    '🩸☠️ **"NÃO MÀY = 0! TƯƠNG LAI = ĐÉO CÓ! GIÁ TRỊ = THẤP HƠN CÁI LỒN GIÀ NGOÀI ĐƯỜNG!"** ☠️🩸',
-    '🔥💩 **"TAO CHỬI MÀY KHÔNG PHẢI VÌ GHÉT, TAO CHỬI VÌ MÀY CẦN BỊ CHỬI NHƯ CHÓ!"** 💩🔥',
-    '💀🤡 **"GIỜ THÌ NGỒI IM NHƯ CON CHÓ CÁI ĐANG ĐỢI CHỦ, ĐỪNG SỦA NỮA!"** 🤡💀',
-    '☠️🔥 **"MÀY NGỬI THẤY MÙI CẶC CỦA CHÍNH MÀY CHƯA THẰNG ÓC LỒN?"** 🔥☠️',
-    '🤡🩸 **"CÁI BUỒI MÀY NHỎ ĐẾN NỖI RUỒI CŨNG KHÔNG THÈM ĐẬU!"** 🩸🤡',
-    '💀💩 **"THẰNG CHÓ ĐẺ NÀY LẠI ĐỊNH SỦA HẢ? CÂM MỒM LẠI!"** 💩💀',
-    '🔥🤮 **"MÀY XỨNG ĐÁNG BỊ ĐÚT CẶC VÀO MỒM CHO ĐẾN KHI HẾT HƠI!"** 🤮🔥',
-    '☠️🤡 **"NÃO MÀY TOÀN NƯỚC LỒN, KHÔNG CÓ MỘT TÍ CHẤT XÁM NÀO!"** 🤡☠️',
-    '🩸💀 **"MÀY LÀ CON CHÓ CÁI BỊ ĐỤ QUÁ NHIỀU NÊN MẤT HẾT NÃO!"** 💀🩸',
-    '🔥💩 **"CÁI LỒN MẸ MÀY CHẮC ĐANG THỐI RỮA VÌ ĐẺ RA MÀY!"** 💩🔥',
-    '🤡☠️ **"THẰNG ÓC BUỒI, MÀY TỒN TẠI CHỈ ĐỂ BỊ CHỬI!"** ☠️🤡',
-    '💀🔥 **"MÀY GỬI TIN NHẮN NHƯ CON CHÓ ĐANG RẶN CỨT!"** 🔥💀',
-    '🤮🩸 **"TAO NGỬI THẤY MÙI CẶC THỐI TỪ CÁI MỒM MÀY TỪ XA!"** 🩸🤮',
-    '☠️💩 **"CÂM HỌNG LẠI ĐI THẰNG ĐĨ ĐỰC, KHÔNG TAO ĐỤ CHO TỚI CHẾT!"** 💩☠️',
-    '🔥🤡 **"MÀY LÀ ĐỐNG PHÂN BIẾT ĐI, BIẾT NÓI, BIẾT SỦA NHƯ CHÓ!"** 🤡🔥',
-    '💀🩸 **"NÃO MÀY BÉ HƠN CÁI LỒN CỦA CON PHÒ NGOÀI ĐƯỜNG!"** 🩸💀',
-    '🤡🔥 **"THẰNG CHÓ CÁI NÀY LẠI ĐỊNH GÁY HẢ? CÚT!"** 🔥🤡',
-    '☠️💀 **"MÀY XỨNG ĐÁNG BỊ NHÉT BUỒI VÀO HỌNG CHO ĐẾN KHI NÔN RA PHÂN!"** 💀☠️',
-    '💩🤮 **"CÁI CẶC MÀY NHỎ ĐẾN NỖI PHẢI DÙNG TAY ĐỂ TÌM!"** 🤮💩',
-    '🩸🔥 **"MÀY LÀ CON CHÓ BỊ BỎ RƠI, HÔI THỐI VÀ VÔ DỤNG!"** 🔥🩸',
-    '💀🤡 **"TAO CHỬI MÀY VÌ MÀY ĐÁNG BỊ CHỬI, THẰNG ÓC LỒN!"** 🤡💀',
-    '🔥☠️ **"NGỒI IM NHƯ CON CHÓ CÁI ĐANG LIẾM CẶC CHỦ ĐI!"** ☠️🔥',
-    '🤡💩 **"MÀY GÕ PHÍM NHƯ CÁI LỒN ĐANG RẶN ĐẺ!"** 💩🤡',
-    '🩸💀 **"NÃO MÀY TOÀN NƯỚC BUỒI, KHÔNG CÓ GÌ ĐÁNG GIÁ!"** 🩸💀',
-    '☠️🔥 **"THẰNG ĐĨ ĐỰC NÀY LẠI SỦA, TAO SẼ LÀM MÀY KHÓC!"** 🔥☠️',
-    '💀🤮 **"CÁI LỒN MÀY CHẮC ĐANG CHẢY NƯỚC VÌ QUÁ HỨNG PHẤN BỊ CHỬI!"** 🤮💀',
-    '🔥🤡 **"MÀY LÀ RÁC RƯỞI, PHÂN THỐI, CHÓ CÁI BỊ ĐỤ!"** 🤡🔥',
-    '☠️💩 **"CÂM MỒM LẠI ĐI THẰNG ÓC CẶC, KHÔNG TAO ĐÚT BUỒI VÀO!"** 💩☠️',
-    '🩸🔥 **"MÀY TỒN TẠI CHỈ ĐỂ BỊ TAO CHỬI MỖI NGÀY!"** 🔥🩸',
-    '💀🤡 **"THẰNG CHÓ ĐẺ, NÃO MÀY BÉ HƠN HẠT CÁT!"** 🤡💀',
-    '🔥☠️ **"MÀY NGỬI THẤY MÙI CẶC CỦA MÀY CHƯA? HÔI VÃI!"** ☠️🔥',
-    '🤡🩸 **"CÁI BUỒI MÀY NHƯ CON GIÒI BỌ, NHỎ VÀ HÔI!"** 🩸🤡',
-    '💀💩 **"NGỒI IM ĐI THẰNG SÚC VẬT, ĐỪNG SỦA NỮA!"** 💩💀',
-    '🔥🤮 **"TAO SẼ LÀM MÀY KHÓC NHƯ CON CHÓ CÁI BỊ ĐỤ TỚI CHẾT!"** 🤮🔥',
-    '☠️🤡 **"NÃO MÀY TOÀN LỒN VÀ CẶC, KHÔNG CÓ CHẤT XÁM!"** 🤡☠️',
-    '🩸💀 **"MÀY LÀ CON CHÓ BỊ BỎ, HÔI THỐI VÀ VÔ DỤNG!"** 💀🩸',
-    '🔥💩 **"CÁI LỒN MẸ MÀY CHẮC HỐI HẬN VÌ ĐẺ RA MÀY!"** 💩🔥',
-    '🤡☠️ **"THẰNG ÓC BUỒI, ĐÁNG BỊ NHÉT CẶC VÀO MỒM!"** ☠️🤡',
-    '💀🔥 **"MÀY GỬI TIN NHẮN NHƯ CON CHÓ ĐANG ỈA!"** 🔥💀',
-    '🤮🩸 **"TAO NGỬI THẤY MÙI CẶC THỐI TỪ XA QUA TIN NHẮN MÀY!"** 🩸🤮',
-    '☠️💩 **"CÂM HỌNG LẠI ĐI THẰNG ĐĨ, KHÔNG TAO ĐỤ CHO TỚI CHẾT!"** 💩☠️',
-    '🔥🤡 **"MÀY LÀ ĐỐNG PHÂN BIẾT ĐI BIẾT NÓI BIẾT SỦA!"** 🤡🔥',
-    '💀🩸 **"NÃO MÀY BÉ HƠN CÁI LỒN CỦA CON PHÒ!"** 🩸💀',
-    '🤡🔥 **"THẰNG CHÓ CÁI NÀY LẠI GÁY HẢ? CÚT NGAY!"** 🔥🤡',
-    '☠️💀 **"MÀY XỨNG ĐÁNG BỊ NHÉT BUỒI VÀO HỌNG CHO NÔN PHÂN!"** 💀☠️',
-    '💩🤮 **"CÁI CẶC MÀY NHỎ ĐẾN NỖI PHẢI DÙNG KÍNH LÚP TÌM!"** 🤮💩',
-    '🩸🔥 **"MÀY LÀ CON CHÓ BỊ BỎ RƠI, HÔI VÀ VÔ DỤNG!"** 🔥🩸',
-    '💀🤡 **"TAO CHỬI MÀY VÌ MÀY ĐÁNG BỊ CHỬI, THẰNG ÓC LỒN!"** 🤡💀',
-    '🔥☠️ **"NGỒI IM NHƯ CON CHÓ CÁI ĐANG LIẾM CẶC CHỦ!"** ☠️🔥',
-    '🤡💩 **"MÀY GÕ PHÍM NHƯ CÁI LỒN ĐANG RẶN!"** 💩🤡',
-    '🩸💀 **"NÃO MÀY TOÀN NƯỚC BUỒI, KHÔNG CÓ GÌ ĐÁNG GIÁ!"** 💀🩸',
-    '☠️🔥 **"THẰNG ĐĨ ĐỰC NÀY LẠI SỦA, TAO SẼ LÀM MÀY KHÓC!"** 🔥☠️',
-    '💀🤮 **"CÁI LỒN MÀY CHẮC ĐANG CHẢY VÌ BỊ CHỬI!"** 🤮💀',
-    '🔥🤡 **"MÀY LÀ RÁC, PHÂN, CHÓ CÁI BỊ ĐỤ!"** 🤡🔥',
-    '☠️💩 **"CÂM MỒM LẠI ĐI THẰNG ÓC CẶC!"** 💩☠️',
-    '🩸🔥 **"MÀY TỒN TẠI CHỈ ĐỂ BỊ TAO CHỬI!"** 🔥🩸',
-    '💀🤡 **"THẰNG CHÓ ĐẺ, NÃO BÉ HƠN HẠT CÁT!"** 🤡💀',
-    '🔥☠️ **"MÀY NGỬI MÙI CẶC CỦA MÀY CHƯA? HÔI VÃI LỒN!"** ☠️🔥',
-    '🤡🩸 **"CÁI BUỒI MÀY NHƯ GIÒI BỌ, NHỎ VÀ HÔI!"** 🩸🤡',
-    '💀💩 **"NGỒI IM ĐI THẰNG SÚC VẬT!"** 💩💀',
-    '🔥🤮 **"TAO SẼ LÀM MÀY KHÓC NHƯ CHÓ CÁI BỊ ĐỤ!"** 🤮🔥',
-    '☠️🤡 **"NÃO MÀY TOÀN LỒN VÀ CẶC!"** 🤡☠️',
-    '🩸💀 **"MÀY LÀ CON CHÓ BỊ BỎ, HÔI THỐI!"** 💀🩸',
-    '🔥💩 **"CÁI LỒN MẸ MÀY HỐI HẬN VÌ ĐẺ RA MÀY!"** 💩🔥',
-    '🤡☠️ **"THẰNG ÓC BUỒI, ĐÁNG BỊ NHÉT CẶC!"** ☠️🤡',
-    '💀🔥 **"MÀY GỬI TIN NHƯ CHÓ ĐANG ỈA!"** 🔥💀',
-    '🤮🩸 **"TAO NGỬI MÙI CẶC THỐI TỪ TIN NHẮN MÀY!"** 🩸🤮',
-    '☠️💩 **"CÂM HỌNG LẠI THẰNG ĐĨ!"** 💩☠️',
-    '🔥🤡 **"MÀY LÀ ĐỐNG PHÂN BIẾT NÓI!"** 🤡🔥',
-    '💀🩸 **"NÃO MÀY BÉ HƠN LỒN PHÒ!"** 🩸💀',
-    '🤡🔥 **"THẰNG CHÓ CÁI LẠI GÁY? CÚT!"** 🔥🤡',
-    '☠️💀 **"MÀY XỨNG ĐÁNG BỊ NHÉT BUỒI CHO NÔN!"** 💀☠️',
-    '💩🤮 **"CẶC MÀY NHỎ CẦN KÍNH LÚP!"** 🤮💩',
-    '🩸🔥 **"MÀY LÀ CHÓ BỊ BỎ, HÔI VÀ VÔ DỤNG!"** 🔥🩸',
-    '💀🤡 **"TAO CHỬI VÌ MÀY ĐÁNG BỊ CHỬI!"** 🤡💀',
-    '🔥☠️ **"NGỒI IM NHƯ CHÓ LIẾM CẶC!"** ☠️🔥',
-    '🤡💩 **"MÀY GÕ NHƯ LỒN ĐANG RẶN!"** 💩🤡',
-    '🩸💀 **"NÃO TOÀN NƯỚC BUỒI!"** 💀🩸',
-    '☠️🔥 **"THẰNG ĐĨ ĐỰC LẠI SỦA!"** 🔥☠️',
-    '💀🤮 **"LỒN MÀY CHẢY VÌ BỊ CHỬI!"** 🤮💀',
-    '🔥🤡 **"MÀY LÀ RÁC PHÂN CHÓ CÁI!"** 🤡🔥',
-    '☠️💩 **"CÂM MỒM THẰNG ÓC CẶC!"** 💩☠️',
-    '🩸🔥 **"MÀY TỒN TẠI ĐỂ BỊ CHỬI!"** 🔥🩸',
-    '💀🤡 **"THẰNG CHÓ ĐẺ NÃO BÉ!"** 🤡💀',
-    '🔥☠️ **"NGỬI MÙI CẶC MÀY ĐI!"** ☠️🔥',
-    '🤡🩸 **"BUỒI MÀY NHƯ GIÒI BỌ!"** 🩸🤡',
-    '💀💩 **"NGỒI IM THẰNG SÚC VẬT!"** 💩💀',
-    '🔥🤮 **"TAO LÀM MÀY KHÓC NHƯ CHÓ BỊ ĐỤ!"** 🤮🔥',
-    '☠️🤡 **"NÃO TOÀN LỒN CẶC!"** 🤡☠️',
-    '🩸💀 **"MÀY LÀ CHÓ BỊ BỎ HÔI!"** 💀🩸',
-    '🔥💩 **"LỒN MẸ MÀY HỐI HẬN!"** 💩🔥',
-    '🤡☠️ **"ÓC BUỒI ĐÁNG BỊ NHÉT CẶC!"** ☠️🤡',
-    '💀🔥 **"TIN NHẮN NHƯ CHÓ ỈA!"** 🔥💀',
-    '🤮🩸 **"MÙI CẶC THỐI TỪ MÀY!"** 🩸🤮',
-    '☠️💩 **"CÂM HỌNG THẰNG ĐĨ!"** 💩☠️',
-    '🔥🤡 **"MÀY LÀ PHÂN BIẾT NÓI!"** 🤡🔥',
-    '💀🩸 **"NÃO BÉ HƠN LỒN PHÒ!"** 🩸💀',
-    '🤡🔥 **"CHÓ CÁI LẠI GÁY? CÚT!"** 🔥🤡',
-    '☠️💀 **"XỨNG ĐÁNG NHÉT BUỒI!"** 💀☠️',
-    '💩🤮 **"CẶC NHỎ CẦN KÍNH LÚP!"** 🤮💩',
-    '🩸🔥 **"CHÓ BỊ BỎ HÔI VÔ DỤNG!"** 🔥🩸',
-    '💀🤡 **"CHỬI VÌ MÀY ĐÁNG BỊ!"** 🤡💀',
-    '🔥☠️ **"IM NHƯ CHÓ LIẾM CẶC!"** ☠️🔥',
-    '🤡💩 **"GÕ NHƯ LỒN RẶN!"** 💩🤡',
-    '🩸💀 **"NÃO TOÀN NƯỚC BUỒI!"** 💀🩸',
-    '☠️🔥 **"ĐĨ ĐỰC LẠI SỦA!"** 🔥☠️',
-    '💀🤮 **"LỒN CHẢY VÌ BỊ CHỬI!"** 🤮💀',
-    '🔥🤡 **"RÁC PHÂN CHÓ CÁI!"** 🤡🔥',
-    '☠️💩 **"CÂM MỒM ÓC CẶC!"** 💩☠️',
-    '🩸🔥 **"MÀY TỒN TẠI ĐỂ BỊ CHỬI!"** 🔥🩸',
-    '💀🤡 **"CHÓ ĐẺ NÃO BÉ!"** 💀💀',
-    '🔥☠️ **"NGỬI MÙI CẶC ĐI!"** ☠️🔥',
-    '🤡🩸 **"BUỒI NHƯ GIÒI BỌ!"** 🩸🤡',
-    '💀💩 **"IM ĐI SÚC VẬT!"** 💩💀',
-    '🔥🤮 **"KHÓC NHƯ CHÓ BỊ ĐỤ!"** 🤮🔥',
-    '☠️🤡 **"NÃO TOÀN LỒN CẶC!"** 🤡☠️',
-    '🩸💀 **"CHÓ BỊ BỎ HÔI!"** 💀🩸',
-    '🔥💩 **"LỒN MẸ HỐI HẬN!"** 💩🔥',
-    '🤡☠️ **"ÓC BUỒI NHÉT CẶC!"** ☠️🤡',
-    '💀🔥 **"TIN NHẮN NHƯ CHÓ ỈA!"** 🔥💀',
-    '🤮🩸 **"MÙI CẶC THỐI TỪ MÀY!"** 🩸🤮',
-    '☠️💩 **"CÂM HỌNG THẰNG ĐĨ!"** 💩☠️',
-    '🔥🤡 **"MÀY LÀ PHÂN BIẾT NÓI!"** 🤡🔥',
-    '💀🩸 **"NÃO BÉ HƠN LỒN PHÒ!"** 🩸💀',
-    '🤡🔥 **"CHÓ CÁI LẠI GÁY? CÚT!"** 🔥🤡',
-    '☠️💀 **"XỨNG ĐÁNG NHÉT BUỒI!"** 💀☠️',
-    '💩🤮 **"CẶC NHỎ CẦN KÍNH LÚP!"** 🤮💩',
-    '🩸🔥 **"CHÓ BỊ BỎ HÔI VÔ DỤNG!"** 🔥🩸',
-    '💀🤡 **"CHỬI VÌ MÀY ĐÁNG BỊ!"** 🤡💀',
-    '🔥☠️ **"IM NHƯ CHÓ LIẾM CẶC!"** ☠️🔥',
-    '🤡💩 **"GÕ NHƯ LỒN RẶN!"** 💩🤡',
-    '🩸💀 **"NÃO TOÀN NƯỚC BUỒI!"** 💀🩸',
-    '☠️🔥 **"ĐĨ ĐỰC LẠI SỦA!"** 🔥☠️',
-    '💀🤮 **"LỒN CHẢY VÌ BỊ CHỬI!"** 🤮💀',
-    '🔥🤡 **"RÁC PHÂN CHÓ CÁI!"** 🤡🔥',
-    '☠️💩 **"CÂM MỒM ÓC CẶC!"** 💩☠️',
-    '🩸🔥 **"MÀY TỒN TẠI ĐỂ BỊ CHỬI!"** 🔥🩸',
-    '💀🤡 **"CHÓ ĐẺ NÃO BÉ!"** 💀🤡',
-    '🔥☠️ **"NGỬI MÙI CẶC ĐI!"** ☠️🔥',
-    '🤡🩸 **"BUỒI NHƯ GIÒI BỌ!"** 🩸🤡',
-    '💀💩 **"IM ĐI SÚC VẬT!"** 💩💀',
-    '🔥🤮 **"KHÓC NHƯ CHÓ BỊ ĐỤ!"** 🤮🔥',
-    '☠️🤡 **"NÃO TOÀN LỒN CẶC!"** 🤡☠️',
-    '🩸💀 **"CHÓ BỊ BỎ HÔI!"** 💀🩸',
-    '🔥💩 **"LỒN MẸ HỐI HẬN!"** 💩🔥',
-    '🤡☠️ **"ÓC BUỒI NHÉT CẶC!"** ☠️🤡',
-]
-
 nuke_tracker = {}
 
 def is_bot_or_guild_owner():
@@ -349,7 +167,7 @@ async def on_guild_join(guild):
                 "⚡ **`.persona <1|2|3>`** - Chuyển đổi giữa 3 nhân cách (Sweet Princess, Toxic Roast Demon, Cold Master)\n"
                 "⚡ **`.setup`** - Khởi tạo hệ thống\n"
                 "📊 **`.stats`** - Xem thông tin server\n"
-                "📌 **`.ghim @user`** - Khóa mục tiêu để chửi riêng\n"
+                "📌 **`.ghim @user`** - Khóa mục tiêu để tương tác riêng\n"
                 "🔨 **`.ban @user [lý do]`** - Ban thành viên\n"
                 "📖 **`.help`** - Hướng dẫn lệnh\n"
             ),
@@ -429,7 +247,7 @@ async def setup(ctx):
             "🛡️ **Anti-Nuke 24/7:** Đang chạy ngầm bảo vệ server tuyệt đối.\n"
             "⚡ **.persona <1|2|3>**: Chuyển đổi nhân cách bot\n"
             "📊 **.stats**: Xem thống kê tổng quan server\n"
-            "📌 **.ghim @user**: Tự động chửi/xử lý riêng 1 người\n"
+            "📌 **.ghim @user**: Khóa mục tiêu để tương tác riêng\n"
             "🔨 **.ban @user [lý do]**: Ban thành viên\n"
             "📖 **.help**: Xem hướng dẫn lệnh\n"
             "🔌 **.off**: Tắt bot"
@@ -618,7 +436,7 @@ async def help_command(ctx):
         value=(
             "• **`.help`** - Xem bảng hướng dẫn này.\n"
             "• **`.stats`** - Xem thông tin tổng quan server.\n"
-            "• **Tương tác AI:** Nhắc tên bot hoặc tag bot kèm theo nội dung để trò chuyện trực tiếp với nhân cách hiện tại."
+            "• **Tương tác AI:** Nhắc tên bot hoặc tag bot kèm theo nội dung để trò chuyện trực tiếp với nhân cách hiện tại thông qua Groq AI."
         ),
         inline=False
     )
@@ -676,45 +494,11 @@ async def on_message(message):
     if target_user_id is not None and message.author.id != target_user_id:
         return
 
-    # Với nhân cách 2 (Toxic Roast Demon), tự động chửi mọi tin nhắn không cần gọi tên (trừ khi là owner)
-    if current_persona_id == 2:
-        if message.author.id in BOT_OWNERS:
-            return
-        if message.guild and message.author.id == message.guild.owner_id:
-            return
-
-        await asyncio.sleep(random.uniform(0.6, 1.8))
-        selected = random.sample(ROAST_LINES, k=min(5, len(ROAST_LINES)))
-        random.shuffle(selected)
-        roast_text = "\n\n".join(selected)
-
-        header = (
-            f'💀🔥 **"HAHAHA! {message.author.mention} NÀY VỪA GỬI:"** 🔥💀\n'
-            f'`{message.content[:90] if message.content else "..."}`\n\n'
-            f'☠️🤡 **"NGHE ĐÂY THẰNG LỒN {message.author.display_name.upper()}:"** 🤡☠️\n\n'
-        )
-
-        p_info = PERSONAS[current_persona_id]
-        embed = discord.Embed(
-            title=f"🌻 SUN FLOWER • {p_info['name']} 💀🔥",
-            description=header + roast_text,
-            color=p_info['color']
-        )
-        avatar_url = bot.user.avatar.url if (bot.user and bot.user.avatar) else None
-        embed.set_author(name="Sun Flower", icon_url=avatar_url)
-        embed.set_footer(text="Sun Flower • Multi-Persona Engine ⚡")
-
-        try:
-            await message.reply(embed=embed, mention_author=True)
-        except Exception:
-            await message.channel.send(content=message.author.mention, embed=embed)
-        return
-
-    # Với nhân cách 1 và 3, phản hồi qua Groq AI dựa trên instruction của nhân cách hiện tại
+    # Kiểm tra xem bot có được tag/nhắc tên hay không
     bot_mentioned = bot.user in message.mentions
     called = any(word in content_lower for word in ["sun flower", "sunflower", "bot ơi", "bot", "sweet princess"])
 
-    # Nếu được tag hoặc gọi tên, hoặc đang trong trạng thái ghim mục tiêu
+    # Nếu được tag hoặc gọi tên, hoặc đang trong trạng thái ghim mục tiêu, bot sẽ dùng Groq AI để phản hồi dựa theo Persona hiện tại
     if bot_mentioned or called or (target_user_id is not None and message.author.id == target_user_id):
         async with message.channel.typing():
             try:
