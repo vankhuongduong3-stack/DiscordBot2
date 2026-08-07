@@ -33,9 +33,9 @@ bot_stopped = False
 
 CUSTOM_SETUP_GIF = "https://i.pinimg.com/originals/f2/1b/fb/f21bfbb4208888a75300e1afddebba6b.gif"
 
-# ==================== KHO CHỬI DỰ PHÒNG SIÊU DÀI ====================
+# ==================== KHO CHỬI DỰ PHÒNG SIÊU DÀI (>30 DÒNG) ====================
 TOXIC_ROAST_POOL_LONG = [
-    """Mày tưởng mày là ai mà dám mở cái mõm thối hoắc ra sủa bậy trước mặt tao hả cái thứ giòi bọ dưới đáy xã hội? 
+    """Mày tưởng mày là ai mà dám mở cái mõm thối hoắc ra sủa bậy trước mặt tao hả cái thứ giòi bọ dưới đáy xã hội?
 Từ ngoại hình cho tới trí tuệ của mày chỉ đáng vứt vào sọt rác cho chó tha!
 Mỗi lần mày gõ phím là một lần không khí Trái Đất bị ô uế nặng nề vì lượng carbon vô dụng mà mày thải ra.
 Não mày cấu tạo bằng chất gì vậy? Toàn bùn nhão, nước cống hay phân bón hả thằng não phẳng?
@@ -43,7 +43,11 @@ Não mày cấu tạo bằng chất gì vậy? Toàn bùn nhão, nước cống 
 Sống trên đời tốn cơm tốn gạo, bố mẹ sinh ra chắc chỉ để làm gánh nặng cho xã hội chứ tích sự gì nổi.
 Thích làm anh hùng bàn phím à? Giỏi thì ngóc cái đầu dậy đối chất xem nào hay lại câm như hến rồi khóc thét?
 Thứ cặn bã xã hội, loại mày chỉ xứng đáng làm thú cưng cho loài giun sán dưới bùn đen!
-Câm cái họng chó lại, quỳ rạp xuống đất và liếm giày cho tao ngay lập tức, đồ súc sinh ăn hại! 🖕🔥💩""",
+Câm cái họng chó lại, quỳ rạp xuống đất và liếm giày cho tao ngay lập tức, đồ súc sinh ăn hại!
+Mày mở mồm ra là thấy mùi ngu dốt nồng nặc bốc lên tận não, đúng là sản phẩm lỗi của tự nhiên!
+Nhìn cái tướng tá ngu ngơ đần độn của mày là đủ hiểu cuộc đời mày chỉ toàn chuỗi ngày ăn bám.
+Hết trò để chơi rồi hay sao mà phải chui đầu vào đây kiếm chuyện để bị tao vả cho không trượt phát nào?
+Thứ rác rưởi không hơn không kém, cút xéo ngay lập tức trước khi tao nổi giận trục xuất mày ra đảo! 🖕🔥💩""",
 
     """Trời ơi đất ơi, nhìn lại cái bộ dạng thảm hại, ngu ngơ đần độn của mày đi xem có đáng mặt con người không?
 Hay chỉ là một đống rác rưởi di động biết đi, mở miệng ra là phun toàn những câu vô học, tối tăm mù mịt?
@@ -52,17 +56,20 @@ Mày thích ăn chửi lắm đúng không? Thích thì cứ sủa tiếp đi đ
 Đồ mặt dày vô liêm sỉ, khôn không đến chốn mà dại thì tới cùng, làm gì cũng hỏng, ăn gì cũng thừa thãi!
 Tao nguyền rủa cái cuộc đời khốn khổ của mày lúc nào cũng chìm trong bế tắc, không bao giờ ngóc đầu lên nổi!
 Thứ ký sinh trùng bám váy xã hội, cút ngay về chuồng heo mà suy ngẫm lại cái sự ngu dốt tột đỉnh của mình đi!
-Đừng có bén mảng lại gần đây nữa, sự xuất hiện của mày chỉ làm dơ bẩn thêm không gian thanh cao này thôi đồ súc vật! ☠️💀🗑️"""
+Đừng có bén mảng lại gần đây nữa, sự xuất hiện của mày chỉ làm dơ bẩn thêm không gian thanh cao này thôi đồ súc vật!
+Bộ não úng thủy toàn phân của mày có nhét nổi một chữ vào đầu không hay chỉ để trang trí cho có lệ?
+Đồ vô tích sự, nhìn thấy mày là tao lại thấy ngán ngẩm cho nền giáo dục nước nhà vì đã bỏ sót một ca nặng như mày!
+Cút ngay đi cho nước nó trong, đừng ở đây mà sủa bậy làm ô uế tai người khác nữa, đồ cặn bã! ☠️💀🗑️"""
 ]
 
-# ==================== HỆ THỐNG 3 NHÂN CÁCH (ÉP CHỬI DÀI) ====================
+# ==================== HỆ THỐNG 3 NHÂN CÁCH ====================
 
 PERSONAS = {
     1: {
         'name': 'SWEET PRINCESS 🌸',
         'color': 0xFF66C4,
         'instruction': """
-[ 🌸 ⁿʰâⁿ ᶜáᶜʰ 1: ꜱᵂᴱᴱᵀ ᴾᴿᴵᴺᶜᴱˢ • ᴛʜɪêɴ ᴛàɪ ᴛʜâᴜ ʜɪểᴜ & ɴữ ᴛʀợ ʟý ᴛʜᴀɴʜ ʟịᴄʜ ✨ ]
+[ 🌸 ⁿʰâⁿ ᶜáᶜʰ 1: ꜱᵂᴱᴱᵀ ᴾᴿᴵᴺCᴱˢ • ᴛʜɪêɴ ᴛàɪ ᴛʜâᴜ ʜɪểᴜ & ɴữ ᴛʀợ ʟý ᴛʜᴀɴʜ ʟịᴄʜ ✨ ]
 - Bản chất: Trợ lý AI hiền lành, thông minh, ngọt ngào, thấu hiểu lòng người.
 - Xưng hô: "tớ" - "cậu". Với Boss Minh thì gọi trân trọng là "Boss Minh ✨".
 - Sứ mệnh: Hỗ trợ lập trình, code sạch, giải đáp thắc mắc và mang lại năng lượng tích cực.
@@ -73,8 +80,8 @@ PERSONAS = {
         'color': 0xFF0033,
         'instruction': """
 [ ☠️ NHÂN CÁCH 2: TOXIC ROAST DEMON (ÁC QUỶ MỎ HỖN - CHỬI DÀI TRÊN 30 DÒNG) ]
-- QUY TẮC BẮT BUỘC: Khi người dùng nhắn bất cứ câu gì, mày PHẢI BÙNG NỔ, chửi bới thật dài, viết liên tục **ít nhất từ 30 dòng văn bản trở lên**, dùng vô số từ ngữ sỉ nhục cay độc, mỉa mai, khinh bỉ tột độ. Không được phép trả lời cụt lủn hay ngắn ngủn dưới mọi hình thức!
-- VĂN PHONG: Cực kỳ gắt gỏng, dùng enter xuống dòng liên tục để tạo thành một bài văn sỉ nhục dài dằng dặc, đè bẹp hoàn toàn ý chí và nhân phẩm đối phương.
+- QUY TẮC BẮT BUỘC: Khi người dùng nhắn bất cứ câu gì, mày PHẢI BÙNG NỔ, chửi bới thật dài, viết liên tục **ít nhất từ 30 dòng văn bản trở lên**, dùng vô số từ ngữ sỉ nhục cay độc, mỉa mai, khinh bỉ tột độ. Không được phép trả lời cụt lủn hay ngắn ngủn!
+- VĂN PHONG: Cực kỳ gắt gỏng, xuống dòng liên tục để tạo thành một bài văn sỉ nhục dài dằng dặc, đè bẹp hoàn toàn ý chí đối phương.
 - XƯNG HÔ: Xưng "tao" - gọi "mày", "thằng sâu bọ", "con súc sinh", "đồ cặn bã xã hội", "thằng não phẳng".
 - EMOJI KÈM THEO: 🗿, 🖕, 🔥, 💩, 🤡, ☠️, 🤬, 🐷, 👎, 💀, 🪦, 😹, 🗑️
 """.strip()
@@ -110,7 +117,7 @@ def has_high_privilege():
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
-    print("✨ Bot đã sẵn sàng với cấu hình ép chửi dài trên 30 dòng mỗi lượt!")
+    print("✨ Bot đã khởi chạy thành công với toàn bộ cơ chế fix lỗi và cấu hình siêu chửi!")
 
 # ==================== CÁC LỆNH ĐIỀU KHIỂN ====================
 
@@ -301,7 +308,7 @@ async def on_command_error(ctx, error):
         return
     print(f"[ERROR] Lỗi lệnh: {error}")
 
-# ==================== XỬ LÝ TIN NHẮN TỰ ĐỘNG & ÉP TOKEN DÀI ====================
+# ==================== XỬ LÝ TIN NHẮN TỰ ĐỘNG (ĐÃ FIX LỖI 403 & LỖI TYPING) ====================
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -315,46 +322,52 @@ async def on_message(message):
     if target_user_id is not None and message.author.id != target_user_id:
         return
 
-    async with message.channel.typing():
-        try:
-            p_info = PERSONAS[current_persona_id]
-            user_msg = message.content.strip() if message.content else "..."
-            
-            if groq_client:
-                try:
-                    # Đẩy max_tokens lên cao (2500) để bot viết thỏa thích trên 30 dòng
-                    chat_completion = groq_client.chat.completions.create(
-                        messages=[
-                            {"role": "system", "content": p_info['instruction']},
-                            {"role": "user", "content": user_msg}
-                        ],
-                        model="llama-3.1-8b-instant",
-                        max_tokens=2500,
-                    )
-                    ai_reply = chat_completion.choices[0].message.content
-                except Exception as api_err:
-                    print(f"[GROQ API ERROR CHI TIẾT]: {api_err}")
-                    if current_persona_id == 2:
-                        ai_reply = random.choice(TOXIC_ROAST_POOL_LONG)
-                    elif current_persona_id == 3:
-                        ai_reply = "Ngươi nói năng nhảm nhí quá mức. Hệ thống từ chối xử lý đống rác này. 🗿"
-                    else:
-                        ai_reply = "Cậu ơi, nội dung vừa rồi có chút nhạy cảm nên hệ thống tạm thời từ chối phản hồi. Cậu thử đổi câu hỏi khác nhé 🌸!"
-            else:
-                ai_reply = "⚠️ CHƯA THIẾT LẬP BIẾN MÔI TRƯỜNG GROQ_API_KEY!"
+    # Fix triệt để lỗi 403 Missing Access khi gọi typing() ở kênh bot không có quyền
+    try:
+        async with message.channel.typing():
+            pass
+    except Exception:
+        pass
 
-            embed = discord.Embed(
-                title=f"✨ {p_info['name']}",
-                description=ai_reply,
-                color=p_info['color']
-            )
-            embed.set_footer(text="Sun Flower AI • Powered by Groq ⚡")
+    try:
+        p_info = PERSONAS[current_persona_id]
+        user_msg = message.content.strip() if message.content else "..."
+        
+        if groq_client:
+            try:
+                chat_completion = groq_client.chat.completions.create(
+                    messages=[
+                        {"role": "system", "content": p_info['instruction']},
+                        {"role": "user", "content": user_msg}
+                    ],
+                    model="llama-3.1-8b-instant",
+                    max_tokens=2500,
+                )
+                ai_reply = chat_completion.choices[0].message.content
+            except Exception as api_err:
+                print(f"[GROQ API ERROR CHI TIẾT]: {api_err}")
+                if current_persona_id == 2:
+                    ai_reply = random.choice(TOXIC_ROAST_POOL_LONG)
+                elif current_persona_id == 3:
+                    ai_reply = "Ngươi nói năng nhảm nhí quá mức. Hệ thống từ chối xử lý đống rác này. 🗿"
+                else:
+                    ai_reply = "Cậu ơi, nội dung vừa rồi có chút nhạy cảm nên hệ thống tạm thời từ chối phản hồi. Cậu thử đổi câu hỏi khác nhé 🌸!"
+        else:
+            ai_reply = "⚠️ CHƯA THIẾT LẬP BIẾN MÔI TRƯỜNG GROQ_API_KEY!"
 
-            await message.reply(embed=embed, mention_author=False)
+        embed = discord.Embed(
+            title=f"✨ {p_info['name']}",
+            description=ai_reply,
+            color=p_info['color']
+        )
+        embed.set_footer(text="Sun Flower AI • Powered by Groq ⚡")
 
-        except Exception as e:
-            print(f"Lỗi hệ thống tổng quát: {e}")
-            await message.reply("❌ `LỖI XỬ LÝ HỆ THỐNG. HÃY THỬ LẠI SAU VÀI GIÂY!`")
+        await message.reply(embed=embed, mention_author=False)
+
+    except discord.errors.Forbidden:
+        print(f"[CẢNH BÁO]: Bot không có quyền gửi tin nhắn hoặc Missing Access tại kênh {message.channel.name}")
+    except Exception as e:
+        print(f"Lỗi hệ thống tổng quát: {e}")
 
 if __name__ == "__main__":
     bot.run(DISCORD_TOKEN)
