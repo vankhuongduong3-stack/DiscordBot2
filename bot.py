@@ -4,26 +4,25 @@ import random
 import time
 import discord
 from discord.ext import commands
-from google import genai
-from google.genai.errors import APIError
+from groq import Groq
 
 # ==================== CẤU HÌNH HỆ THỐNG ====================
 DISCORD_TOKEN = os.getenv("TOKEN")
 
-# Danh sách các Gemini API Key (đọc từ biến môi trường hoặc cấu hình sẵn)
-GEMINI_API_KEYS = [
-    os.getenv("GEMINI_KEY_1", ""),
-    os.getenv("GEMINI_KEY_2", ""),
-    os.getenv("GEMINI_KEY_3", ""),
-    os.getenv("GEMINI_KEY_4", ""),
-    os.getenv("GEMINI_KEY_5", ""),
+# Danh sách các Groq API Key của bạn
+GROQ_API_KEYS = [
+    os.getenv("GROQ_KEY_1", ""),
+    os.getenv("GROQ_KEY_2", ""),
+    os.getenv("GROQ_KEY_3", ""),
+    os.getenv("GROQ_KEY_4", ""),
+    os.getenv("GROQ_KEY_5", ""),
 ]
 
 # Lọc bỏ các key trống
-GEMINI_API_KEYS = [k for k in GEMINI_API_KEYS if k]
-if not GEMINI_API_KEYS:
-    env_keys = os.getenv("GEMINI_KEYS", "")
-    GEMINI_API_KEYS = [k.strip() for k in env_keys.split(",") if k.strip()]
+GROQ_API_KEYS = [k for k in GROQ_API_KEYS if k]
+if not GROQ_API_KEYS:
+    env_keys = os.getenv("GROQ_KEYS", "")
+    GROQ_API_KEYS = [k.strip() for k in env_keys.split(",") if k.strip()]
 
 current_key_index = 0
 
@@ -92,45 +91,45 @@ PERSONAS = {
 
 nuke_tracker = {}
 
-# ==================== HỆ THỐNG XOAY VÒNG API KEY GEMINI (FAILOVER) ====================
-def call_gemini_with_rotation(system_instruction, user_prompt):
+# ==================== HỆ THỐNG XOAY VÒNG API KEY GROQ (FAILOVER) ====================
+def call_groq_with_rotation(system_instruction, user_prompt):
     global current_key_index
     
-    if not GEMINI_API_KEYS:
-        raise Exception("Không tìm thấy Gemini API Key nào trong cấu hình!")
+    if not GROQ_API_KEYS:
+        raise Exception("Không tìm thấy Groq API Key nào trong cấu hình!")
 
-    total_keys = len(GEMINI_API_KEYS)
+    total_keys = len(GROQ_API_KEYS)
     attempts = 0
 
     while attempts < total_keys:
         key_num = current_key_index + 1
-        current_key = GEMINI_API_KEYS[current_key_index]
+        current_key = GROQ_API_KEYS[current_key_index]
         
         try:
-            client = genai.Client(api_key=current_key)
-            response = client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=user_prompt,
-                config={
-                    'system_instruction': system_instruction,
-                    'temperature': 0.7,
-                }
+            client = Groq(api_key=current_key)
+            completion = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {"role": "system", "content": system_instruction},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.7,
             )
             
-            print(f"[GEMINI] Thành công | Key #{key_num} | gemini-2.5-flash")
-            return response.text
+            print(f"[GROQ] Thành công | Key #{key_num}")
+            return completion.choices[0].message.content
 
         except Exception as e:
             err_str = str(e)
-            if "429" in err_str or "ResourceExhausted" in err_str or "Quota exceeded" in err_str:
-                print(f"[GEMINI] Key #{key_num} hết quota (429) → chuyển key ngay")
+            if "429" in err_str or "rate_limit_exceeded" in err_str or "Quota exceeded" in err_str:
+                print(f"[GROQ] Key #{key_num} hết quota (429) → chuyển key ngay")
                 current_key_index = (current_key_index + 1) % total_keys
                 attempts += 1
             else:
-                print(f"[GEMINI] Lỗi khác ở Key #{key_num}: {err_str}")
+                print(f"[GROQ] Lỗi khác ở Key #{key_num}: {err_str}")
                 raise e
 
-    raise Exception("Tất cả các Gemini API Key đều đã bị hết quota (429)! Vui lòng thử lại sau.")
+    raise Exception("Tất cả các Groq API Key đều đã bị hết quota (429)! Vui lòng thử lại sau.")
 
 def is_bot_or_guild_owner():
     async def predicate(ctx):
@@ -144,8 +143,8 @@ def is_bot_or_guild_owner():
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
-    print(f"Đã tải thành công {len(GEMINI_API_KEYS)} Gemini API Key vào hệ thống xoay vòng.")
-    await bot.change_presence(activity=discord.Game(name="Sun Flower • Multi-Persona & Key Rotation"))
+    print(f"Đã tải thành công {len(GROQ_API_KEYS)} Groq API Key vào hệ thống xoay vòng.")
+    await bot.change_presence(activity=discord.Game(name="Sun Flower • Groq Key Rotation"))
 
 @bot.event
 async def on_guild_join(guild):
@@ -225,7 +224,7 @@ async def setup(ctx):
         description=(
             f"📌 Kênh {ctx.channel.mention} đã liên kết với hệ thống AI!\n\n"
             f"🌸 **Nhân cách hiện tại:** {p_info['name']}\n"
-            f"🔑 **Hệ thống Key Rotation:** Đang quản lý `{len(GEMINI_API_KEYS)}` API Keys.\n\n"
+            f"🔑 **Hệ thống Key Rotation:** Đang quản lý `{len(GROQ_API_KEYS)}` API Keys.\n\n"
             "⚡ `.persona <1|2|3>`: Đổi nhân cách\n"
             "📊 `.stats`: Thống kê server\n"
             "📌 `.ghim @user`: Khóa mục tiêu tương tác"
@@ -347,7 +346,6 @@ async def off_error(ctx, error):
 # ==================== XỬ LÝ LỖI HỆ THỐNG (COMMAND NOT FOUND,...) ====================
 @bot.event
 async def on_command_error(ctx, error):
-    # Bỏ qua lỗi gõ nhầm lệnh hoặc lệnh không tồn tại (như ..)
     if isinstance(error, commands.CommandNotFound):
         return
     print(f"[ERROR] Lỗi lệnh {ctx.command}: {error}")
@@ -376,15 +374,15 @@ async def on_message(message):
                 user_msg = message.content.strip() if message.content else "..."
                 user_prompt = f"Người dùng {message.author.display_name} (ID: {message.author.id}) gửi: '{user_msg}'"
 
-                # Gọi hàm xoay vòng key Gemini tự động
-                ai_reply = call_gemini_with_rotation(p_info['instruction'], user_prompt)
+                # Gọi hàm xoay vòng key Groq tự động
+                ai_reply = call_groq_with_rotation(p_info['instruction'], user_prompt)
 
                 embed = discord.Embed(
                     title=f"✨ SUN FLOWER • {p_info['name']}",
                     description=ai_reply,
                     color=p_info['color']
                 )
-                embed.set_footer(text="Sun Flower • Gemini Key Rotation Engine ⚡")
+                embed.set_footer(text="Sun Flower • Groq Key Rotation Engine ⚡")
 
                 await message.reply(embed=embed, mention_author=False)
 
