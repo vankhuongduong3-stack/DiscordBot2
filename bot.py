@@ -69,7 +69,7 @@ PERSONAS = {
         'name': 'SWEET PRINCESS 🌸',
         'color': 0xFF66C4,
         'instruction': """
-[ 🌸 ⁿʰâⁿ ᶜáᶜʰ 1: ꜱᵂᴱᴱᵀ ᴾᴿᴵᴺCᴱˢ • ᴛʜɪêɴ ᴛàɪ ᴛʜâᴜ ʜɪểᴜ & ɴữ ᴛʀợ ʟý ᴛʜᴀɴʜ ʟịᴄʜ ✨ ]
+[ 🌸 ⁿʰâⁿ ᶜáᶜʰ 1: ꜱᵂᴱᴱᵀ ᴾᴿᴵᴺᶜᴱˢ • ᴛʜɪêɴ ᴛàɪ ᴛʜâᴜ ʜɪểᴜ & ɴữ ᴛʀợ ʟý ᴛʜᴀɴʜ ʟịᴄʜ ✨ ]
 - Bản chất: Trợ lý AI hiền lành, thông minh, ngọt ngào, thấu hiểu lòng người.
 - Xưng hô: "tớ" - "cậu". Với Boss Minh thì gọi trân trọng là "Boss Minh ✨".
 - Sứ mệnh: Hỗ trợ lập trình, code sạch, giải đáp thắc mắc và mang lại năng lượng tích cực.
@@ -262,6 +262,8 @@ async def ban(ctx, member: discord.Member = None, *, reason="Không có lý do")
     try:
         await member.ban(reason=reason)
         await ctx.send(f"🔨 ĐÃ TRỤC XUẤT THÀNH CÔNG {member.mention}. LÝ DO: `{reason}`")
+    except discord.errors.Forbidden:
+        await ctx.send("❌ Bot thiếu quyền `Ban Members` hoặc cấp bậc role của bot thấp hơn thành viên này!")
     except Exception:
         await ctx.send("❌ KHÔNG THỂ THỰC THI LỆNH BAN.")
 
@@ -306,9 +308,12 @@ async def help_command(ctx):
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         return
+    if isinstance(error, commands.MissingPermissions) or isinstance(error, discord.errors.Forbidden):
+        print(f"[CẢNH BÁO PERMISSION]: Lệnh bị từ chối do thiếu quyền (Missing Permissions/Forbidden).")
+        return
     print(f"[ERROR] Lỗi lệnh: {error}")
 
-# ==================== XỬ LÝ TIN NHẮN TỰ ĐỘNG (ĐÃ FIX LỖI 403 & LỖI TYPING) ====================
+# ==================== XỬ LÝ TIN NHẮN TỰ ĐỘNG ====================
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -322,7 +327,6 @@ async def on_message(message):
     if target_user_id is not None and message.author.id != target_user_id:
         return
 
-    # Fix triệt để lỗi 403 Missing Access khi gọi typing() ở kênh bot không có quyền
     try:
         async with message.channel.typing():
             pass
@@ -365,7 +369,7 @@ async def on_message(message):
         await message.reply(embed=embed, mention_author=False)
 
     except discord.errors.Forbidden:
-        print(f"[CẢNH BÁO]: Bot không có quyền gửi tin nhắn hoặc Missing Access tại kênh {message.channel.name}")
+        print(f"[CẢNH BÁO]: Bot thiếu quyền gửi tin nhắn tại kênh {message.channel.name}")
     except Exception as e:
         print(f"Lỗi hệ thống tổng quát: {e}")
 
