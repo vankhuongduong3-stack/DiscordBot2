@@ -15,13 +15,12 @@ BOT_OWNERS = [
     1472066306457997403,
 ]
 
-# Cấu hình Discord Bot Intents
+# Cấu hình Discord Bot Intents (Đã gỡ bỏ dòng audit_log bị lỗi)
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 intents.guilds = True
 intents.moderation = True
-intents.audit_log = True
 
 bot = commands.Bot(command_prefix=".", intents=intents, help_command=None)
 
@@ -78,17 +77,13 @@ nuke_tracker = {}
 # ==================== HỆ THỐNG KIỂM TRA QUYỀN NĂNG (PERMISSION SYSTEM) ====================
 def has_high_privilege():
     async def predicate(ctx):
-        # 1. Kiểm tra nếu nằm trong danh sách chủ sở hữu bot tối cao
         if ctx.author.id in BOT_OWNERS:
             return True
         if ctx.guild:
-            # 2. Kiểm tra nếu là Chủ server (Guild Owner)
             if ctx.author.id == ctx.guild.owner_id:
                 return True
-            # 3. Quét toàn bộ role của user trong server để tìm role có quyền lực cao nhất (Administrator hoặc quản trị viên cấp cao)
             if ctx.author.guild_permissions.administrator:
                 return True
-            # 4. Kiểm tra các role sở hữu quyền quản lý cao cấp khác
             for role in ctx.author.roles:
                 if role.permissions.manage_guild or role.permissions.ban_members or role.permissions.kick_members:
                     return True
@@ -142,23 +137,19 @@ async def on_guild_channel_delete(channel):
             nuke_tracker[guild.id] = []
         
         nuke_tracker[guild.id].append(current_time)
-        # Lọc các mốc thời gian trong vòng 10 giây gần nhất
         nuke_tracker[guild.id] = [t for t in nuke_tracker[guild.id] if current_time - t < 10]
 
-        # Nếu phát hiện xóa từ 5 kênh trở lên trong thời gian ngắn
         if len(nuke_tracker[guild.id]) >= 5:
             async for entry in guild.audit_logs(limit=3, action=discord.AuditLogAction.channel_delete):
                 target = entry.user
                 if target and target.id != bot.user.id and not target.bot:
                     member_to_punish = guild.get_member(target.id)
                     if member_to_punish:
-                        # Kiểm tra xem kẻ phá hoại có nằm trong nhóm owner tối cao hay không, nếu không thì tiến hành trừng phạt
                         if member_to_punish.id not in BOT_OWNERS and member_to_punish.id != guild.owner_id:
                             try:
                                 await member_to_punish.timeout(discord.utils.utcnow() + discord.Timedelta(minutes=180), reason="Phát hiện hành vi hủy diệt server (xóa > 5 kênh)!")
                                 await member_to_punish.kick(reason="Anti-Nuke Protection: Mass Channel Deletion")
                                 
-                                # Gửi cảnh báo khẩn cấp đến kênh thông báo chung
                                 for ch in guild.text_channels:
                                     if ch.permissions_for(guild.me).send_messages:
                                         await ch.send(f"🚨 **CẢNH BÁO AN NINH ANTI-NUKE** 🚨\nPhát hiện tài khoản `{target}` đang thực hiện hành vi xóa hàng loạt kênh (> 5 kênh). Hệ thống đã tự động vô hiệu hóa và trục xuất thành công!")
@@ -169,7 +160,7 @@ async def on_guild_channel_delete(channel):
     except Exception:
         pass
 
-# ==================== CÁC LỆNH ĐIỀU KHIỂN & SIÊU MENU (ĐẸP TRÊN 5 DÒNG) ====================
+# ==================== CÁC LỆNH ĐIỀU KHIỂN & SIÊU MENU ====================
 
 @bot.command(name="setup")
 @has_high_privilege()
@@ -213,7 +204,7 @@ async def persona(ctx, persona_id: int = None):
 
     if persona_id not in PERSONAS:
         embed_err = discord.Embed(
-            title="╔════════════════════════════════════════╗\n║       ⚠️ SẠI CÚ PHÁP • CHỌN NHÂN CÁCH       ⚠️       ║\n╚════════════════════════════════════════╝",
+            title="╔════════════════════════════════════════╗\n║       ⚠️ SAI CÚ PHÁP • CHỌN NHÂN CÁCH       ⚠️       ║\n╚════════════════════════════════════════╝",
             description=(
                 "Hệ thống ghi nhận bạn chưa truyền đúng số thứ tự nhân cách hợp lệ!\n"
                 "Vui lòng sử dụng một trong các cú pháp siêu cấp sau đây:\n\n"
@@ -425,7 +416,6 @@ async def on_message(message):
     if message.author.bot:
         return
 
-    # Xử lý các lệnh prefix trước
     await bot.process_commands(message)
 
     if current_persona_id is None:
@@ -434,12 +424,10 @@ async def on_message(message):
     if target_user_id is not None and message.author.id != target_user_id:
         return
 
-    # Đối với nhân cách 1 (Sweet Princess): Tự động phản hồi mọi yêu cầu dịch vụ của người dùng mà KHÔNG CẦN gọi bot hoặc mention
     should_reply = False
     if current_persona_id == 1:
         should_reply = True
     else:
-        # Các nhân cách khác yêu cầu phải mention hoặc gọi tên/từ khóa
         bot_mentioned = bot.user in message.mentions
         called = any(word in message.content.lower() for word in ["sun flower", "sunflower", "bot ơi", "bot"])
         if bot_mentioned or called or (target_user_id is not None and message.author.id == target_user_id):
@@ -451,7 +439,6 @@ async def on_message(message):
                 p_info = PERSONAS[current_persona_id]
                 user_msg = message.content.strip() if message.content else "..."
                 
-                # Phản hồi giả lập thông minh theo nhân cách hệ thống chuyên nghiệp
                 ai_reply = f"Dạ, tớ đã tiếp nhận yêu cầu của cậu: '{user_msg}'. Tớ luôn sẵn sàng hỗ trợ tận tâm mọi thắc mắc và dịch vụ mà cậu cần nhé! ✨"
 
                 embed = discord.Embed(
