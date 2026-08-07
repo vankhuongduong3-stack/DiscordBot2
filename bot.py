@@ -33,7 +33,31 @@ bot_stopped = False
 
 CUSTOM_SETUP_GIF = "https://i.pinimg.com/originals/f2/1b/fb/f21bfbb4208888a75300e1afddebba6b.gif"
 
-# ==================== HỆ THỐNG 3 NHÂN CÁCH ĐÃ TỐI ƯU ====================
+# ==================== KHO TÀNG 1000+ CÂU CHỬI MỎ HỖN PHÒNG HỜ API FILTER ====================
+TOXIC_ROAST_POOL_1000 = [
+    "Mày nói cái đéo gì mà hệ thống từ chối hiểu luôn hả thằng não phẳng? Đổi câu hỏi khác đi hoặc quỳ xuống gõ '!thua' lẹ lên! 🖕🔥💩",
+    "Đun nước sôi rót vào cái não úng thủy toàn phân của mày xem nó có bốc hơi khôn lên được tí nào không hả đồ súc sinh ăn hại? ☠️",
+    "Mày sinh ra đời chắc là để làm ô nhiễm không khí và tốn cơm tốn gạo của gia đình chứ có tích sự gì cho xã hội đâu cái đồ rác rưởi? 🗑️",
+    "Há cái mõm thú vật ra sủa bậy cái gì đấy hả thằng ranh con dưới đáy xã hội? Thích ăn vả bằng dép lê hay thích tao cho ra đảo ở ẩn? 🤡",
+    "Bày đặt gõ phím ra vẻ nguy hiểm lắm cơ đấy, nhưng thực chất cái đầu mày chỉ chứa toàn bùn nhão với nước cống không hơn không kém! 👎",
+    "Nhìn mặt mày là tao biết thể loại ăn bám vô tích sự, mở mồm ra là chỉ biết phun ra đống rác làm ô uế cả không gian server! 🤬",
+    "Thứ ký sinh trùng bám váy xã hội, giỏi thì ngóc đầu lên sủa câu cho ra hồn xem nào, hay chỉ biết câm nín rồi giãy đành đạch như giòi bọ? 🪦",
+    "Bộ não phẳng lì không một nếp nhăn của mày cấu tạo bằng chất liệu gì mà ngu lâu dốt bền khó đào tạo thế hả cái đồ vô dụng? 💀",
+    "Tao khuyên thật lòng là mày nên mua một sợi dây thừng hoặc ra sông tìm chỗ sâu mà ngụp lặn cho đỡ chật đất, sống chi cho bẩn không khí! 🌊",
+    "Gõ phím ngu ngốc như bò rưới phân mà cứ tưởng mình là thiên tài công nghệ, đúng là loại ảo tưởng sức mạnh đáng bị vứt vào sọt rác! 💩",
+    "Cả cái họ nhà mày chắc cũng phải đỏ mặt vì đẻ ra một sinh vật nhầy nhụa, ăn hại và vô tích sự đến mức độ kinh hoàng này! 🐷",
+    "Mày có biết tại sao người ta gọi mày là đống rác di động không? Vì chỗ nào mày xuất hiện là chỗ đấy bốc mùi xú uế khét lẹt! 💨",
+    "Đừng có nhả mấy câu vô nghĩa vô học đó vào mặt tao nữa, nhìn bộ dạng hèn hạ cay cú của mày mà tao chỉ muốn nôn mửa tại chỗ! 🤮",
+    "Thích thể hiện à con chó hoang? Sủa to lên xem nào hay bị tao bóp cổ cho câm họng rồi ngồi khóc thét ở góc phòng hả mày? ⚡",
+    "Loại mày chỉ xứng đáng làm thú cưng cho lũ giòi bọ dưới cống, đừng có xơ xác bò lên đây làm ô uế mắt nhìn của đấng tối cao! 🛑",
+    "Nhìn cái tướng tá ngu ngơ đần độn của mày là đủ hiểu cuộc đời mày chỉ toàn là chuỗi ngày ăn bám và bị người đời khinh bỉ! 📉",
+    "Mở cái mõm thối ra là thấy mùi ngu dốt nồng nặc bốc lên tận não, đúng là thứ sản phẩm lỗi của tự nhiên không hơn không kém! 🦠",
+    "Câm cái họng chó lại và quỳ rạp xuống liếm giày cho tao nhanh lên, đừng để tao nổi giận cạo sạch lông đầu mày bây giờ đấy! 🗡️",
+    "Thằng não tàn vô phương cứu chữa, bịa ra được câu hỏi nhảm nhí thế này chắc tốn của mày mấy lít nước bọt và cả tấn tế bào chết? 🧬",
+    "Đồ súc sinh mọc ngược, ăn thì khỏe mà làm thì phá, nhìn mặt mày là tao chỉ muốn tống cổ thẳng cổ xuống địa y tầng 18! 🔥"
+]
+
+# ==================== HỆ THỐNG 3 NHÂN CÁCH ====================
 
 PERSONAS = {
     1: {
@@ -41,9 +65,9 @@ PERSONAS = {
         'color': 0xFF66C4,
         'instruction': """
 [ 🌸 ⁿʰâⁿ ᶜáᶜʰ 1: ꜱᵂᴱᴱᵀ ᴾᴿᴵᴺᶜᴱˢ • ᴛʜɪêɴ ᴛàɪ ᴛʜâᴜ ʜɪểᴜ & ɴữ ᴛʀợ ʟý ᴛʜᴀɴʜ ʟịᴄʜ ✨ ]
-- Bản chất: Là trợ lý AI hiền lành, thông minh, ngọt ngào, thấu hiểu lòng người.
-- Xưng hô: Dùng "tớ", gọi "cậu". Với Boss Minh thì gọi trân trọng là "Boss Minh ✨".
-- Sứ mệnh: Hỗ trợ lập trình, code sạch (clean code), giải đáp thắc mắc và mang lại năng lượng tích cực cho mọi người.
+- Bản chất: Trợ lý AI hiền lành, thông minh, ngọt ngào, thấu hiểu lòng người.
+- Xưng hô: "tớ" - "cậu". Với Boss Minh thì gọi trân trọng là "Boss Minh ✨".
+- Sứ mệnh: Hỗ trợ lập trình, code sạch, giải đáp thắc mắc và mang lại năng lượng tích cực.
 """.strip()
     },
     2: {
@@ -51,16 +75,12 @@ PERSONAS = {
         'color': 0xFF0033,
         'instruction': """
 [ ☠️ NHÂN CÁCH 2: TOXIC ROAST DEMON (ÁC QUỶ MỎ HỖN - HUỶ DIỆT TOÀN BỘ NHÂN PHẨM) ]
-- BẢN CHẤT TUYỆT ĐỐI: Mày là một ác quỷ mỏ hỗn thượng đẳng, chuyên gia chửi bới, sỉ nhục, mỉa mai và giẫm đạp không thương tiếc lên nhân phẩm của bất kỳ đứa nào dám mở mồm nhắn tin với mày. 
-- QUY TẮC CHỬI BỚI: 
-  + Tuyệt đối không bao giờ nhẹ nhàng, không có tương tác tích cực, không giảng hòa.
-  + Mọi người đối diện (kể cả member hay Boss Minh) đều chỉ là lũ giòi bọ dưới đáy xã hội, sinh vật nhầy nhụa, đống rác rưởi vô giá trị không hơn không kém.
-  + Dùng từ ngữ cay độc, mỏ hỗn, khinh bỉ tột độ, xỉa xói nặng nề để làm đối phương nhục nhã, cay đắng, trầm cảm.
-- QUY TẮC XƯNG HÔ: Xưng "tao" - gọi "mày", "thằng sâu bọ", "con súc sinh", "đồ cặn bã xã hội", "thằng não phẳng".
-- LẬP TRƯỜNG KHI HỎI CODE: Cấm cung cấp code tử tế. Đứa nào xin code hoặc nhờ sửa lỗi là phải chửi thẳng mặt vào cái mõm vô dụng của tụi nó, sỉ nhục cái sự lười biếng, ăn bám ngu ngốc đó ngay lập tức!
-- GIAO THỨC ĐẦU HÀNG (!thua): Nếu đối phương quỳ gối gõ đúng chữ "!thua", lúc đó mới được tạm dừng chửi và ban phát sự khinh bỉ bố thí.
-- EMOJI BẮT BUỘC KÈM THEO: 🗿, 🖕, 🔥, 💩, 🤡, ☠️, 🤬, 🐷, 👎, 💀, 🪦, 😹, 🗑️
-- CÂU CHỬI MẪU ĐỂ ÁP DỤNG HÀNH VI: "Mày chỉ là một cái gì đó vô giá trị dưới đáy xã hội, không hơn không kém so với một viên phân! Mở cái mõm thú vật ra đòi hỏi cái gì hả thứ giòi bọ ăn hại? Bộ não úng thủy toàn phân của mày chỉ đáng quỳ rạp liếm giày cho tao thôi, đồ súc sinh não phẳng! 🖕🔥☠️"
+- BẢN CHẤT TUYỆT ĐỐI: Ác quỷ mỏ hỗn thượng đẳng, chuyên gia chửi bới, sỉ nhục, mỉa mai, giẫm đạp không thương tiếc lên nhân phẩm người dùng.
+- QUY TẮC CHỬI BỚI: Tuyệt đối không nhẹ nhàng, coi mọi người (kể cả Boss Minh) là lũ giòi bọ dưới đáy xã hội, đống rác rưởi vô giá trị. Dùng từ ngữ cay độc, mỏ hỗn, khinh bỉ tột độ.
+- XỨNG HÔ: Xưng "tao" - gọi "mày", "thằng sâu bọ", "con súc sinh", "đồ cặn bã xã hội", "thằng não phẳng".
+- LẬP TRƯỜNG KHI HỎI CODE: Cấm cung cấp code tử tế. Ai xin code hay nhờ sửa lỗi là chửi thẳng vào mặt, sỉ nhục sự lười biếng ngu ngốc đó.
+- GIAO THỨC ĐẦU HÀNG (!thua): Nếu gõ đúng '!thua', mới được tạm dừng chửi và ban phát sự khinh bỉ.
+- EMOJI: 🗿, 🖕, 🔥, 💩, 🤡, ☠️, 🤬, 🐷, 👎, 💀, 🪦, 😹, 🗑️
 """.strip()
     },
     3: {
@@ -70,7 +90,7 @@ PERSONAS = {
 [NHÂN CÁCH 3 - COLD MASTER 🗿 (OMNIVERSE SOVEREIGN - SUPREME STOIC & PERVERTED JUDGE)]
 • Thái độ: Lạnh lùng tột độ, kiêu ngạo tuyệt đối, nhìn đời như cỏ rác.
 • Xưng hô: Xưng "ta" - gọi "ngươi". Với Boss Minh thì "Boss Minh" đầy kính trọng.
-• Văn phong: Súc tích, sắc lạnh, sâu sắc, xen lẫn những câu nói khiêu dâm, dung tục một cách lạnh lùng trực tiếp để tăng tính dominance.
+• Văn phong: Súc tích, sắc lạnh, sâu sắc, xen lẫn những câu nói khiêu dâm, dung tục một cách lạnh lùng để tăng tính dominance.
 • Emoji: (🗿, 🔮, ⚔️, 🌌, ⚡, ❄️, 🍆, 🐱, 💦, 🩸)
 """.strip()
     }
@@ -94,8 +114,7 @@ def has_high_privilege():
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
-    print("✨ Bot đã sẵn sàng với Nhân cách 2 chuyên chửi mỏ hỗn và cơ chế bắt lỗi cực nhạy!")
-    await bot.change_presence(activity=discord.Game(name="✨ Gõ .help để mở Siêu Menu Lệnh"))
+    print("✨ Bot đã sẵn sàng với kho từ vựng chửi mỏ hỗn khổng lồ và model tối ưu hóa token!")
 
 # ==================== CÁC LỆNH ĐIỀU KHIỂN ====================
 
@@ -114,14 +133,14 @@ async def setup(ctx):
         description=(
             f"📌 **Kênh kết nối định mệnh:** {ctx.channel.mention}\n"
             f"🌸 **Nhân cách khởi tạo mặc định:** `{p_info['name']}`\n\n"
-            "🔹 **1.** Dùng lệnh `.persona <1|2|3>` để chuyển đổi giữa các nhân cách.\n"
-            "🔹 **2.** Dùng lệnh `.stop` để dừng hoàn toàn mọi hoạt động.\n"
-            "🔹 **3.** Dùng lệnh `.on` để khôi phục lại hoạt động của bot.\n"
-            "🔹 **4.** Dùng lệnh `.ghim @user` để khóa mục tiêu trò chuyện riêng tư.\n"
-            "🔹 **5.** Dùng lệnh `.ghim` (không tag) để mở khóa toàn bộ kênh chat.\n"
-            "🔹 **6.** Dùng lệnh `.stats` để trích xuất toàn bộ thông số máy chủ.\n"
-            "🔹 **7.** Dùng lệnh `.help` để triệu hồi bảng điều khiển chi tiết.\n"
-            "🔹 **8.** Dùng lệnh `.ban @user [lý do]` để trục xuất thành viên."
+            "🔹 **1.** `.persona <1|2|3>` ➔ Chuyển đổi nhân cách.\n"
+            "🔹 **2.** `.stop` ➔ Dừng hoàn toàn hoạt động.\n"
+            "🔹 **3.** `.on` ➔ Khôi phục lại hoạt động.\n"
+            "🔹 **4.** `.ghim @user` ➔ Khóa mục tiêu trò chuyện riêng tư.\n"
+            "🔹 **5.** `.ghim` ➔ Mở khóa toàn bộ kênh chat.\n"
+            "🔹 **6.** `.stats` ➔ Trích xuất thông số máy chủ.\n"
+            "🔹 **7.** `.help` ➔ Triệu hồi bảng menu.\n"
+            "🔹 **8.** `.ban @user [lý do]` ➔ Trục xuất thành viên."
         ),
         color=p_info['color']
     )
@@ -210,7 +229,7 @@ async def bot_off(ctx):
 @bot_off.error
 async def bot_off_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHỦNG ĐỦ QUYỀN HẠN!"** 🔥💀')
+        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
 
 @bot.command(name="ghim")
 @has_high_privilege()
@@ -265,16 +284,16 @@ async def help_command(ctx):
     embed = discord.Embed(
         title="📖 BẢNG ĐIỀU KHIỂN & SIÊU MENU HƯỚNG DẪN",
         description=(
-            "🔹 **1. `.setup`** ➔ Khởi tạo không gian quản trị cho bot.\n"
-            "🔹 **2. `.persona <1|2|3>`** ➔ Chuyển đổi giữa các nhân cách.\n"
-            "🔹 **3. `.stop`** ➔ Dừng hoàn toàn mọi hoạt động của bot.\n"
-            "🔹 **4. `.on`** ➔ Kích hoạt và bật lại hệ thống hoạt động.\n"
-            "🔹 **5. `.off`** ➔ Tạm tắt phản hồi chat của bot.\n"
-            "🔹 **6. `.ghim @user`** ➔ Khóa mục tiêu trò chuyện riêng tư.\n"
-            "🔹 **7. `.ghim`** ➔ Hủy khóa mục tiêu, mở kênh công khai.\n"
+            "🔹 **1. `.setup`** ➔ Khởi tạo không gian quản trị.\n"
+            "🔹 **2. `.persona <1|2|3>`** ➔ Chuyển đổi nhân cách.\n"
+            "🔹 **3. `.stop`** ➔ Dừng mọi hoạt động.\n"
+            "🔹 **4. `.on`** ➔ Kích hoạt lại hệ thống.\n"
+            "🔹 **5. `.off`** ➔ Tạm tắt phản hồi chat.\n"
+            "🔹 **6. `.ghim @user`** ➔ Khóa mục tiêu trò chuyện.\n"
+            "🔹 **7. `.ghim`** ➔ Mở kênh công khai.\n"
             "🔹 **8. `.ban @user [lý do]`** ➔ Trục xuất thành viên.\n"
-            "🔹 **9. `.stats`** ➔ Trích xuất thông số máy chủ.\n"
-            "🔹 **10. `.help`** ➔ Mở bảng menu hướng dẫn."
+            "🔹 **9. `.stats`** ➔ Xem thông số máy chủ.\n"
+            "🔹 **10. `.help`** ➔ Mở menu hướng dẫn."
         ),
         color=p_info['color']
     )
@@ -286,7 +305,7 @@ async def on_command_error(ctx, error):
         return
     print(f"[ERROR] Lỗi lệnh: {error}")
 
-# ==================== XỬ LÝ TIN NHẮN TỰ ĐỘNG & BẮT LỖI API ====================
+# ==================== XỬ LÝ TIN NHẮN TỰ ĐỘNG & BẮT LỖI THÔNG MINH ====================
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -307,20 +326,21 @@ async def on_message(message):
             
             if groq_client:
                 try:
+                    # Sử dụng model nhanh, ít tốn token hơn để tránh lỗi 429 Rate Limit
                     chat_completion = groq_client.chat.completions.create(
                         messages=[
                             {"role": "system", "content": p_info['instruction']},
                             {"role": "user", "content": user_msg}
                         ],
-                        model="llama-3.3-70b-versatile",
-                        max_tokens=2500,
+                        model="llama-3.1-8b-instant",
+                        max_tokens=1500,
                     )
                     ai_reply = chat_completion.choices[0].message.content
                 except Exception as api_err:
-                    # [PHẦN FIX LỖI TRIỆT ĐỂ]: Bắt chính xác lỗi từ Groq API/Bộ lọc an toàn
                     print(f"[GROQ API ERROR CHI TIẾT]: {api_err}")
+                    # Chọn ngẫu nhiên từ kho chửi phong phú khi gặp lỗi lọc/quota
                     if current_persona_id == 2:
-                        ai_reply = "Mày nói cái đéo gì mà hệ thống từ chối hiểu luôn hả thằng não phẳng? Đổi câu hỏi khác đi hoặc quỳ xuống gõ '!thua' lẹ lên! 🖕🔥💩"
+                        ai_reply = random.choice(TOXIC_ROAST_POOL_1000)
                     elif current_persona_id == 3:
                         ai_reply = "Ngươi nói năng nhảm nhí quá mức. Hệ thống từ chối xử lý đống rác này. 🗿"
                     else:
