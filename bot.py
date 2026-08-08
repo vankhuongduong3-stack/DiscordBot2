@@ -30,11 +30,10 @@ current_persona_id = 1
 last_active_persona_id = 1
 target_user_id = None
 bot_stopped = False
-spam_task_running = None  # Biến quản lý trạng thái vòng lặp spam
+spam_task_running = None
 
 CUSTOM_SETUP_GIF = "https://i.pinimg.com/originals/f2/1b/fb/f21bfbb4208888a75300e1afddebba6b.gif"
 
-# ==================== KHO CHỬI DỰ PHÒNG SIÊU DÀI (>30 DÒNG) ====================
 TOXIC_ROAST_POOL_LONG = [
     """Mày tưởng mày là ai mà dám mở cái mõm thối hoắc ra sủa bậy trước mặt tao hả cái thứ giòi bọ dưới đáy xã hội?
 Từ ngoại hình cho tới trí tuệ của mày chỉ đáng vứt vào sọt rác cho chó tha!
@@ -62,8 +61,6 @@ Bộ não úng thủy toàn phân của mày có nhét nổi một chữ vào đ
 Đồ vô tích sự, nhìn thấy mày là tao lại thấy ngán ngẩm cho nền giáo dục nước nhà vì đã bỏ sót một ca nặng như mày!
 Cút ngay đi cho nước nó trong, đừng ở đây mà sủa bậy làm ô uế tai người khác nữa, đồ cặn bã! ☠️💀🗑️"""
 ]
-
-# ==================== HỆ THỐNG 2 NHÂN CÁCH ====================
 
 PERSONAS = {
     1: {
@@ -107,9 +104,7 @@ def has_high_privilege():
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
-    print("✨ Bot đã khởi chạy thành công! (Tiền tố: ., /, ?, @, # - Nhân cách bỏ qua tin nhắn lệnh)")
-
-# ==================== CÁC LỆNH ĐIỀU KHIỂN ====================
+    print("✨ Bot đã sẵn sàng nhận lệnh và phản hồi!")
 
 @bot.command(name="setup")
 @has_high_privilege()
@@ -127,16 +122,16 @@ async def setup(ctx):
     embed = discord.Embed(
         title="⚡ HỆ THỐNG QUẢN TRỊ SUN FLOWER ĐÃ ĐƯỢC THIẾT LẬP ⚡",
         description=(
-            f"📌 **Kênh kết nối định mệnh:** {ctx.channel.mention}\n"
-            f"🌸 **Nhân cách khởi tạo mặc định:** `{p_info['name']}`\n\n"
-            "🔹 **1.** `.persona <1|2>` ➔ Chuyển đổi nhân cách.\n"
-            "🔹 **2.** `.spam @user` ➔ Tự động spam chửi dạng `# + câu chửi + @user`.\n"
-            "🔹 **3.** `.stop` ➔ Dừng hoàn toàn hoạt động / Dừng spam.\n"
-            "🔹 **4.** `.on` ➔ Khôi phục lại hoạt động.\n"
-            "🔹 **5.** `.ghim @user` ➔ Khóa mục tiêu trò chuyện riêng tư.\n"
-            "🔹 **6.** `.stats` ➔ Trích xuất thông số máy chủ.\n"
-            "🔹 **7.** `.help` ➔ Triệu hồi bảng menu.\n"
-            "🔹 **8.** `.ban @user [lý do]` ➔ Trục xuất thành viên."
+            f"📌 **Kênh kết nối:** {ctx.channel.mention}\n"
+            f"🌸 **Nhân cách mặc định:** `{p_info['name']}`\n\n"
+            "🔹 `.persona <1|2>` ➔ Đổi nhân cách.\n"
+            "🔹 `.spam @user` ➔ Auto spam chửi mục tiêu.\n"
+            "🔹 `.stop` ➔ Dừng mọi hoạt động.\n"
+            "🔹 `.on` ➔ Bật lại hoạt động.\n"
+            "🔹 `.ghim @user` ➔ Khóa mục tiêu trò chuyện.\n"
+            "🔹 `.stats` ➔ Thông số máy chủ.\n"
+            "🔹 `.help` ➔ Bảng hướng dẫn.\n"
+            "🔹 `.ban @user [lý do]` ➔ Ban thành viên."
         ),
         color=p_info['color']
     )
@@ -152,19 +147,16 @@ async def setup_error(ctx, error):
 @has_high_privilege()
 async def persona(ctx, persona_id: int = None):
     global current_persona_id, last_active_persona_id, target_user_id
-
     if persona_id not in PERSONAS:
         await ctx.send("⚠️ VUI LÒNG CHỌN ĐÚNG SỐ NHÂN CÁCH: `.persona 1` HOẶC `.persona 2`")
         return
-
     current_persona_id = persona_id
     last_active_persona_id = persona_id
     target_user_id = None
-
     p_info = PERSONAS[current_persona_id]
     embed = discord.Embed(
         title="✨ ĐÃ CHUYỂN ĐỔI NHÂN CÁCH THÀNH CÔNG",
-        description=f"👑 **{p_info['name']}**\nĐã nạp trọn bộ quy tắc hành vi mới!",
+        description=f"👑 **{p_info['name']}**",
         color=p_info['color']
     )
     await ctx.send(embed=embed)
@@ -174,7 +166,6 @@ async def persona_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
         await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
 
-# ==================== LỆNH SPAM ĐÚNG ĐỊNH DẠNG (# + CHỬI + TAG) ====================
 @bot.command(name="spam")
 @has_high_privilege()
 async def spam(ctx, member: discord.Member = None):
@@ -215,12 +206,7 @@ async def stop_bot(ctx):
     if spam_task_running:
         spam_task_running.cancel()
         spam_task_running = None
-
-    embed = discord.Embed(
-        title="🛑 ĐÃ DỪNG TOÀN BỘ HOẠT ĐỘNG & SPAM CỦA BOT",
-        description="Bot đã ngưng hoàn toàn việc trò chuyện và auto-spam. Gõ lệnh `.on` để bật lại.",
-        color=0xFF0000
-    )
+    embed = discord.Embed(title="🛑 ĐÃ DỪNG HOẠT ĐỘNG & SPAM", color=0xFF0000)
     await ctx.send(embed=embed)
 
 @stop_bot.error
@@ -235,11 +221,7 @@ async def bot_on(ctx):
     bot_stopped = False
     current_persona_id = last_active_persona_id
     p_info = PERSONAS[current_persona_id]
-    embed = discord.Embed(
-        title="🟢 KÍCH HOẠT LẠI HỆ THỐNG THÀNH CÔNG",
-        description=f"Bot đã hoạt động trở lại với nhân cách: **{p_info['name']}**",
-        color=0x00FF00
-    )
+    embed = discord.Embed(title=f"🟢 ĐÃ BẬT LẠI: **{p_info['name']}**", color=0x00FF00)
     await ctx.send(embed=embed)
 
 @bot_on.error
@@ -252,11 +234,7 @@ async def bot_on_error(ctx, error):
 async def bot_off(ctx):
     global current_persona_id
     current_persona_id = None
-    embed = discord.Embed(
-        title="🔌 NGẮT PHẢN HỒI CHAT CỦA BOT",
-        description="Đã tạm tắt phản hồi chat. Gõ `.on` để bật lại.",
-        color=0xFF9900
-    )
+    embed = discord.Embed(title="🔌 ĐÃ TẮT PHẢN HỒI CHAT", color=0xFF9900)
     await ctx.send(embed=embed)
 
 @bot_off.error
@@ -270,13 +248,10 @@ async def ghim(ctx, member: discord.Member = None):
     global target_user_id
     if member is None:
         target_user_id = None
-        embed = discord.Embed(title="🔓 HỦY GHIM MỤC TIÊU", description="Bot mở chat cho tất cả mọi người.", color=0xF1C40F)
-        await ctx.send(embed=embed)
+        await ctx.send(embed=discord.Embed(title="🔓 HỦY GHIM MỤC TIÊU", color=0xF1C40F))
         return
-
     target_user_id = member.id
-    embed = discord.Embed(title="🎯 ĐÃ GHIM MỤC TIÊU", description=f"Bot chỉ tương tác riêng với: {member.mention}", color=0x2ECC71)
-    await ctx.send(embed=embed)
+    await ctx.send(embed=discord.Embed(title=f"🎯 ĐÃ GHIM MỤC TIÊU: {member.mention}", color=0x2ECC71))
 
 @ghim.error
 async def ghim_error(ctx, error):
@@ -291,11 +266,9 @@ async def ban(ctx, member: discord.Member = None, *, reason="Không có lý do")
         return
     try:
         await member.ban(reason=reason)
-        await ctx.send(f"🔨 ĐÃ TRỤC XUẤT THÀNH CÔNG {member.mention}. LÝ DO: `{reason}`")
-    except discord.errors.Forbidden:
-        await ctx.send("❌ Bot thiếu quyền `Ban Members` hoặc cấp bậc role của bot thấp hơn thành viên này!")
+        await ctx.send(f"🔨 ĐÃ TRỤC XUẤT {member.mention}. LÝ DO: `{reason}`")
     except Exception:
-        await ctx.send("❌ KHÔNG THỂ THỰC THI LỆNH BAN.")
+        await ctx.send("❌ KHÔNG THỂ BAN. THIẾU QUYỀN HOẶC ROLE THẤP HƠN.")
 
 @ban.error
 async def ban_error(ctx, error):
@@ -304,11 +277,10 @@ async def ban_error(ctx, error):
 
 @bot.command(name="stats")
 async def stats(ctx):
-    guild = ctx.guild
     p_info = PERSONAS[current_persona_id] if current_persona_id else PERSONAS[1]
     embed = discord.Embed(
-        title="📊 BẢNG THÔNG SỐ KỸ THUẬT MÁY CHỦ",
-        description=f"🏰 Máy chủ: `{guild.name}`\n👥 Thành viên: `{guild.member_count}`\n🤖 Nhân cách: {p_info['name']}\n🛑 Đã dừng (.stop): `{bot_stopped}`",
+        title="📊 THÔNG SỐ",
+        description=f"🏰 Máy chủ: `{ctx.guild.name}`\n👥 Thành viên: `{ctx.guild.member_count}`\n🤖 Nhân cách: {p_info['name']}",
         color=p_info['color']
     )
     await ctx.send(embed=embed)
@@ -317,43 +289,27 @@ async def stats(ctx):
 async def help_command(ctx):
     p_info = PERSONAS[current_persona_id] if current_persona_id else PERSONAS[1]
     embed = discord.Embed(
-        title="📖 BẢNG ĐIỀU KHIỂN & SIÊU MENU HƯỚNG DẪN",
-        description=(
-            "🔹 **1. `.setup`** ➔ Khởi tạo không gian quản trị.\n"
-            "🔹 **2. `.persona <1|2>`** ➔ Chuyển đổi nhân cách.\n"
-            "🔹 **3. `.spam @user`** ➔ Tự động spam chửi mục tiêu.\n"
-            "🔹 **4. `.stop`** ➔ Dừng mọi hoạt động & spam.\n"
-            "🔹 **5. `.on`** ➔ Kích hoạt lại hệ thống.\n"
-            "🔹 **6. `.off`** ➔ Tạm tắt phản hồi chat.\n"
-            "🔹 **7. `.ghim @user`** ➔ Khóa mục tiêu trò chuyện.\n"
-            "🔹 **8. `.ban @user [lý do]`** ➔ Trục xuất thành viên.\n"
-            "🔹 **9. `.stats`** ➔ Xem thông số máy chủ.\n"
-            "🔹 **10. `.help`** ➔ Mở menu hướng dẫn."
-        ),
+        title="📖 BẢNG HƯỚNG DẪN",
+        description="Dùng các lệnh: `.setup`, `.persona <1|2>`, `.spam @user`, `.stop`, `.on`, `.off`, `.ghim @user`, `.ban`, `.stats`",
         color=p_info['color']
     )
     await ctx.send(embed=embed)
 
 @bot.event
 async def on_command_error(ctx, error):
-    if isinstance(error, commands.CommandNotFound):
+    if isinstance(error, (commands.CommandNotFound, commands.MissingPermissions, discord.errors.Forbidden)):
         return
-    if isinstance(error, commands.MissingPermissions) or isinstance(error, discord.errors.Forbidden):
-        print(f"[CẢNH BÁO PERMISSION]: Lệnh bị từ chối do thiếu quyền.")
-        return
-    print(f"[ERROR] Lỗi lệnh: {error}")
+    print(f"[ERROR]: {error}")
 
-# ==================== XỬ LÝ TIN NHẮN TỰ ĐỘNG ====================
 @bot.event
 async def on_message(message):
     if message.author.bot:
         return
 
-    # 1. Cho phép bot nhận diện và xử lý lệnh bình thường (vẫn nhận lệnh)
+    # Xử lý lệnh trước
     await bot.process_commands(message)
 
-    # 2. Kiểm tra nếu tin nhắn bắt đầu bằng các dấu lệnh (., /, ?, @, #)
-    # Thì 2 nhân cách sẽ BỎ QUA, KHÔNG tự động phản hồi chat nữa.
+    # Nếu là tin nhắn lệnh bắt đầu bằng các dấu trên thì bỏ qua, không AI rep
     if message.content.startswith(('.', '/', '?', '@', '#')):
         return
 
@@ -365,16 +321,10 @@ async def on_message(message):
 
     try:
         async with message.channel.typing():
-            pass
-    except Exception:
-        pass
-
-    try:
-        p_info = PERSONAS[current_persona_id]
-        user_msg = message.content.strip() if message.content else "..."
-        
-        if groq_client:
-            try:
+            p_info = PERSONAS[current_persona_id]
+            user_msg = message.content.strip() if message.content else "..."
+            
+            if groq_client:
                 chat_completion = groq_client.chat.completions.create(
                     messages=[
                         {"role": "system", "content": p_info['instruction']},
@@ -384,28 +334,19 @@ async def on_message(message):
                     max_tokens=2500,
                 )
                 ai_reply = chat_completion.choices[0].message.content
-            except Exception as api_err:
-                print(f"[GROQ API ERROR CHI TIẾT]: {api_err}")
-                if current_persona_id == 2:
-                    ai_reply = "Ngươi nói năng nhảm nhí quá mức. Hệ thống từ chối xử lý đống rác này. 🗿"
-                else:
-                    ai_reply = "Cậu ơi, nội dung vừa rồi có chút nhạy cảm nên hệ thống tạm thời từ chối phản hồi. Cậu thử đổi câu hỏi khác nhé 🌸!"
-        else:
-            ai_reply = "⚠️ CHƯA THIẾT LẬP BIẾN MÔI TRƯỜNG GROQ_API_KEY!"
+            else:
+                ai_reply = "⚠️ CHƯA CÓ GROQ_API_KEY!"
 
-        embed = discord.Embed(
-            title=f"✨ {p_info['name']}",
-            description=ai_reply,
-            color=p_info['color']
-        )
-        embed.set_footer(text="Sun Flower AI • Powered by Groq ⚡")
+            embed = discord.Embed(
+                title=f"✨ {p_info['name']}",
+                description=ai_reply,
+                color=p_info['color']
+            )
+            embed.set_footer(text="Sun Flower AI • Powered by Groq ⚡")
+            await message.reply(embed=embed, mention_author=False)
 
-        await message.reply(embed=embed, mention_author=False)
-
-    except discord.errors.Forbidden:
-        print(f"[CẢNH BÁO]: Bot thiếu quyền gửi tin nhắn tại kênh {message.channel.name}")
     except Exception as e:
-        print(f"Lỗi hệ thống tổng quát: {e}")
+        print(f"[GROQ/SEND ERROR CHI TIẾT]: {e}")
 
 if __name__ == "__main__":
     bot.run(DISCORD_TOKEN)
