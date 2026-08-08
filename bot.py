@@ -34,7 +34,7 @@ spam_task_running = None
 
 CUSTOM_SETUP_GIF = "https://i.pinimg.com/originals/f2/1b/fb/f21bfbb4208888a75300e1afddebba6b.gif"
 
-# ==================== KHO SPAM MỚI ĐÃ TÍCH HỢP ====================
+# ==================== KHO SPAM ĐẦY ĐỦ ====================
 ROAST_LINES = [
     '# 💀🔥 "Mày là thằng óc cặc ngu nhất quả đất, não toàn lồn!" 🔥💀 @{username}',
     '# ☠️🤡 "Cái buồi mày nhỏ tí, mẹ mày chắc hối hận vì đẻ ra chó ngu này!" 🤡☠️ @{username}',
@@ -92,7 +92,7 @@ ROAST_LINES = [
     '# 🤮🩸 "Não mày toàn nước cặc, mày ngu vãi!" 🩸🤮 @{username}',
     '# ☠️💩 "Mẹ mày đụ chó mới có mày, thằng buồi thối!" 💩☠️ @{username}',
     '# 🔥🤡 "Lồn mẹ mày rộng, cặc mày bé tí!" 🤡🔥 @{username}',
-    '# 💀🩸 "Chó ngu ơi, não mày bằng cái lồn già!" 🩸💀 @{username}',
+    '# 💀🩸 "Chó ngu ơi, não mày bằng cái lồn già!" 💀🩸 @{username}',
     '# 🤡🔥 "Thằng cặc ngu, buồi mày hôi thối!" 🔥🤡 @{username}',
     '# ☠️💀 "Mày óc buồi, mẹ mày khóc vì đẻ ra chó!" 💀☠️ @{username}',
     '# 💩🤮 "Cặc mày thối, lồn mẹ mày chảy nước!" 🤮💩 @{username}',
@@ -110,7 +110,7 @@ ROAST_LINES = [
     '# 🤮🩸 "Mày óc lồn, cặc thối, buồi bé!" 🩸🤮 @{username}',
     '# ☠️💩 "Thằng chó cái, não toàn nước cặc!" 💩☠️ @{username}',
     '# 🔥🤡 "Lồn mẹ mày chảy vì xấu hổ đẻ ra mày!" 🤡🔥 @{username}',
-    '# 💀🩸 "Buồi mày như giòi, mày ngu như chó!" 🩸💀 @{username}',
+    '# 💀🩸 "Buồi mày như giòi, mày ngu như chó!" 💀🩸 @{username}',
     '# 🤡🔥 "Thằng óc cặc, mẹ mày bán lồn nuôi!" 🔥🤡 @{username}',
     '# ☠️💀 "Cặc mày nhỏ, não mày toàn buồi!" 💀☠️ @{username}',
     '# 💩🤮 "Mày là thằng chó ngu, lồn mẹ thối!" 🤮💩 @{username}',
@@ -146,7 +146,7 @@ ROAST_LINES = [
     '# 🤮🩸 "Thằng ngu lồn, cặc mày hôi như chết!" 🩸🤮 @{username}',
     '# ☠️💩 "Mẹ mày đụ chó, đẻ ra mày óc buồi!" 💩☠️ @{username}',
     '# 🔥🤡 "Cặc mày bé, mày ngu như con chó!" 🤡🔥 @{username}',
-    '# 💀🩸 "Thằng óc cặc, lồn mẹ thối rữa!" 🩸💀 @{username}',
+    '# 💀🩸 "Thằng óc cặc, lồn mẹ thối rữa!" 💀🩸 @{username}',
     '# 🤡🔥 "Buồi mày khô, não toàn nước lồn!" 🔥🤡 @{username}',
     '# ☠️💀 "Chó ngu ơi, mày đáng bị nhét cặc!" 💀☠️ @{username}',
     '# 💩🤮 "Mày là thằng lồn, mẹ mày bán buồi!" 🤮💩 @{username}',
@@ -200,7 +200,7 @@ ROAST_LINES = [
     '# 🤮🩸 "Buồi mày như giòi, cặc thối!" 🩸🤮 @{username}',
     '# ☠️💩 "Óc lồn ơi, chó đẻ!" 💩☠️ @{username}',
     '# 🔥🤡 "Mày tồn tại để bị chửi, thằng cặc!" 🤡🔥 @{username}',
-    '# 💀🩸 "Mẹ mày hối hận, lồn thối!" 🩸💀 @{username}',
+    '# 💀🩸 "Mẹ mày hối hận, lồn thối!" 💀🩸 @{username}',
     '# 🤡🔥 "Cặc mày bé, não ngu vãi!" 🔥🤡 @{username}',
     '# ☠️💀 "Thằng buồi chó, óc toàn lồn!" 💀☠️ @{username}',
     '# 💩🤮 "Mày ngu, cặc hôi, buồi khô!" 🤮💩 @{username}',
@@ -218,7 +218,7 @@ ROAST_LINES = [
     '# 🤮🩸 "Mày là thằng chó đẻ thối!" 🩸🤮 @{username}',
     '# ☠️💩 "Lồn mẹ mày thối rữa!" 💩☠️ @{username}',
     '# 🔥🤡 "Cặc mày nhỏ, buồi hôi!" 🤡🔥 @{username}',
-    '# 💀🩸 "Thằng ngu, mẹ mày hối hận!" 🩸💀 @{username}',
+    '# 💀🩸 "Thằng ngu, mẹ mày hối hận!" 💀🩸 @{username}',
     '# 🤡🔥 "Não mày toàn buồi, chó ơi!" 🔥🤡 @{username}',
     '# ☠️💀 "Mày óc lồn, cặc thối!" 💀☠️ @{username}',
     '# 💩🤮 "Buồi mày như phân, ngu vãi!" 🤮💩 @{username}',
@@ -236,7 +236,7 @@ ROAST_LINES = [
     '# 🤮🩸 "Lồn mẹ mày thối, đẻ ra mày!" 🩸🤮 @{username}',
     '# ☠️💩 "Cặc mày nhỏ, buồi khô!" 💩☠️ @{username}',
     '# 🔥🤡 "Thằng chó đẻ óc lồn!" 🤡🔥 @{username}',
-    '# 💀🩸 "Mẹ mày bán lồn, mày ngu!" 🩸💀 @{username}',
+    '# 💀🩸 "Mẹ mày bán lồn, mày ngu!" 💀🩸 @{username}',
     '# 🤡🔥 "Não mày bằng hạt cát!" 🔥🤡 @{username}',
     '# ☠️💀 "Buồi mày hôi, cặc thối!" 💀☠️ @{username}',
     '# 💩🤮 "Óc cặc, chó ngu vãi!" 🤮💩 @{username}',
@@ -290,7 +290,7 @@ ROAST_LINES = [
     '# 🤮🩸 "Buồi mày hôi như chết!" 🩸🤮 @{username}',
     '# ☠️💩 "Cặc mày nhỏ, não ngu!" 💩☠️ @{username}',
     '# 🔥🤡 "Thằng chó óc lồn!" 🤡🔥 @{username}',
-    '# 💀🩸 "Mẹ mày bán lồn!" 🩸💀 @{username}',
+    '# 💀🩸 "Mẹ mày bán lồn!" 💀🩸 @{username}',
     '# 🤡🔥 "Óc cặc, buồi thối!" 🔥🤡 @{username}',
     '# ☠️💀 "Mày là thằng ngu chó!" 💀☠️ @{username}',
     '# 💩🤮 "Lồn mẹ chảy, cặc bé!" 🤮💩 @{username}',
@@ -308,7 +308,7 @@ ROAST_LINES = [
     '# 🤮🩸 "Thằng chó đẻ thối!" 🩸🤮 @{username}',
     '# ☠️💩 "Buồi mày khô!" 💩☠️ @{username}',
     '# 🔥🤡 "Cặc mày bé, óc ngu!" 🤡🔥 @{username}',
-    '# 💀🩸 "Lồn mẹ thối rữa!" 🩸💀 @{username}',
+    '# 💀🩸 "Lồn mẹ thối rữa!" 💀🩸 @{username}',
     '# 🤡🔥 "Mày là thằng cặc!" 🔥🤡 @{username}',
     '# ☠️💀 "Não toàn nước buồi!" 💀☠️ @{username}',
     '# 💩🤮 "Chó ngu, mẹ hối hận!" 🤮💩 @{username}',
@@ -488,7 +488,7 @@ ROAST_LINES = [
     '# 🤮🩸 "Cặc nhỏ, óc lồn!" 🩸🤮 @{username}',
     '# ☠️💩 "Lồn thối, chó đẻ!" 💩☠️ @{username}',
     '# 🔥🤡 "Não toàn nước cặc!" 🤡🔥 @{username}',
-    '# 💀🩸 "Thằng óc buồi ngu!" 🩸🩸 @{username}',
+    '# 💀🩸 "Thằng óc buồi ngu!" 💀🩸 @{username}',
     '# 🤡🔥 "Mẹ mày bán cặc!" 🔥🤡 @{username}',
     '# ☠️💀 "Buồi như giòi thối!" 💀☠️ @{username}',
     '# 💩🤮 "Cặc hôi, mày ngu!" 🤮💩 @{username}',
@@ -511,7 +511,7 @@ ROAST_LINES = [
     '# ☠️💀 "Cặc hôi, mày ngu!" 💀☠️ @{username}',
     '# 💩🤮 "Thằng buồi đẻ thối!" 🤮💩 @{username}',
     '# 🩸🔥 "Lồn chảy, não bé!" 🔥🩸 @{username}',
-    '# 💀🤡 "Óc lồn, cặc bé!" 🤡💀 @{username}',
+    '# 💀🤡 "Óc lồn, cặc bé!" 💀🤡 @{username}',
     '# 🔥☠️ "Mày là thằng chó thối!" ☠️🔥 @{username}',
     '# 🤡🩸 "Buồi như phân!" 🩸🤡 @{username}',
     '# 💀💩 "Cặc thối, mẹ bán!" 💩💀 @{username}',
@@ -717,7 +717,7 @@ async def spam(ctx, member: discord.Member = None):
     if spam_task_running and not spam_task_running.done():
         spam_task_running.cancel()
 
-    await ctx.send(f"🚨 **BẮT ĐẦU CHIẾN DỊCH SPAM MỤC TIÊU:** {member.mention} 🖕🔥 (Độ trễ: 1 giây)")
+    await ctx.send(f"🚨 **BẮT ĐẦU CHIẾN DỊCH SPAM TỐC ĐỘ CAO (0 GIÂY):** {member.mention} 🖕🔥")
 
     async def spam_loop():
         try:
@@ -725,7 +725,11 @@ async def spam(ctx, member: discord.Member = None):
                 template = random.choice(ROAST_LINES)
                 full_message = template.format(username=member.mention)
                 await ctx.send(full_message)
-                await asyncio.sleep(1)
+                # Đã chỉnh độ trễ thành 0 giây (gửi liên tục tối đa tốc độ)
+                await asyncio.sleep(0)
+        except discord.Forbidden:
+            print("[SPAM ERROR]: Bot bị mất quyền (Missing Access) trong kênh này!")
+            await ctx.send("❌ Bot không có quyền gửi tin nhắn hoặc xem kênh này (Missing Access)!")
         except asyncio.CancelledError:
             pass
         except Exception as e:
