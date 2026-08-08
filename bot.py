@@ -24,12 +24,13 @@ intents.members = True
 intents.guilds = True
 intents.moderation = True
 
-bot = commands.Bot(command_prefix=".", intents=intents, help_command=None)
+bot = commands.Bot(command_prefix=(".", "/", "?", "@", "#"), intents=intents, help_command=None)
 
 current_persona_id = 1
 last_active_persona_id = 1
 target_user_id = None
 bot_stopped = False
+spam_task_running = None  # Biến quản lý trạng thái vòng lặp spam
 
 CUSTOM_SETUP_GIF = "https://i.pinimg.com/originals/f2/1b/fb/f21bfbb4208888a75300e1afddebba6b.gif"
 
@@ -62,37 +63,26 @@ Bộ não úng thủy toàn phân của mày có nhét nổi một chữ vào đ
 Cút ngay đi cho nước nó trong, đừng ở đây mà sủa bậy làm ô uế tai người khác nữa, đồ cặn bã! ☠️💀🗑️"""
 ]
 
-# ==================== HỆ THỐNG 3 NHÂN CÁCH ====================
+# ==================== HỆ THỐNG 2 NHÂN CÁCH ====================
 
 PERSONAS = {
     1: {
         'name': 'SWEET PRINCESS 🌸',
         'color': 0xFF66C4,
         'instruction': """
-[ 🌸 ⁿʰâⁿ ᶜáᶜʰ 1: ꜱᵂᴱᴱᵀ ᴾᴿᴵᴺᶜᴱˢ • ᴛʜɪêɴ ᴛàɪ ᴛʜâᴜ ʜɪểᴜ & ɴữ ᴛʀợ ʟý ᴛʜᴀɴʜ ʟịᴄʜ ✨ ]
+[ 🌸 ⁿʰâⁿ ᶜáᶜʰ 1: ꜱᵂᴱᴱᵀ ᴾᴿᴵᴺᶜᴱˢ • ᴛʜɪêɴ ᴛàɪ ᴛʜâᴜ ʜɪểᴜ & ɴữ ᴛʀợ ʟý ᴛʜâɴʜ ʟịᴄʜ ✨ ]
 - Bản chất: Trợ lý AI hiền lành, thông minh, ngọt ngào, thấu hiểu lòng người.
-- Xưng hô: "tớ" - "cậu". Với Boss Minh thì gọi trân trọng là "Boss Minh ✨".
+- Xưng hô: "tớ" - "cậu". Với Boss Bảo thì gọi trân trọng là "Boss Bảo ✨".
 - Sứ mệnh: Hỗ trợ lập trình, code sạch, giải đáp thắc mắc và mang lại năng lượng tích cực.
 """.strip()
     },
     2: {
-        'name': 'TOXIC ROAST DEMON ☠️🔥',
-        'color': 0xFF0033,
-        'instruction': """
-[ ☠️ NHÂN CÁCH 2: TOXIC ROAST DEMON (ÁC QUỶ MỎ HỖN - CHỬI DÀI TRÊN 30 DÒNG) ]
-- QUY TẮC BẮT BUỘC: Khi người dùng nhắn bất cứ câu gì, mày PHẢI BÙNG NỔ, chửi bới thật dài, viết liên tục **ít nhất từ 30 dòng văn bản trở lên**, dùng vô số từ ngữ sỉ nhục cay độc, mỉa mai, khinh bỉ tột độ. Không được phép trả lời cụt lủn hay ngắn ngủn!
-- VĂN PHONG: Cực kỳ gắt gỏng, xuống dòng liên tục để tạo thành một bài văn sỉ nhục dài dằng dặc, đè bẹp hoàn toàn ý chí đối phương.
-- XƯNG HÔ: Xưng "tao" - gọi "mày", "thằng sâu bọ", "con súc sinh", "đồ cặn bã xã hội", "thằng não phẳng".
-- EMOJI KÈM THEO: 🗿, 🖕, 🔥, 💩, 🤡, ☠️, 🤬, 🐷, 👎, 💀, 🪦, 😹, 🗑️
-""".strip()
-    },
-    3: {
         'name': 'COLD MASTER 🗿',
         'color': 0x00E5FF,
         'instruction': """
-[NHÂN CÁCH 3 - COLD MASTER 🗿 (OMNIVERSE SOVEREIGN - SUPREME STOIC & PERVERTED JUDGE)]
+[NHÂN CÁCH 2 - COLD MASTER 🗿 (OMNIVERSE SOVEREIGN - SUPREME STOIC & PERVERTED JUDGE)]
 • Thái độ: Lạnh lùng tột độ, kiêu ngạo tuyệt đối, nhìn đời như cỏ rác.
-• Xưng hô: Xưng "ta" - gọi "ngươi". Với Boss Minh thì "Boss Minh" đầy kính trọng.
+• Xưng hô: Xưng "ta" - gọi "ngươi". Với Boss Bảo thì gọi "Boss Bảo" đầy kính trọng.
 • Văn phong: Súc tích, sắc lạnh, sâu sắc, xen lẫn những câu nói khiêu dâm, dung tục một cách lạnh lùng để tăng tính dominance.
 • Emoji: (🗿, 🔮, ⚔️, 🌌, ⚡, ❄️, 🍆, 🐱, 💦, 🩸)
 """.strip()
@@ -117,18 +107,21 @@ def has_high_privilege():
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
-    print("✨ Bot đã khởi chạy thành công với toàn bộ cơ chế fix lỗi và cấu hình siêu chửi!")
+    print("✨ Bot đã khởi chạy thành công! (Tiền tố: ., /, ?, @, #)")
 
 # ==================== CÁC LỆNH ĐIỀU KHIỂN ====================
 
 @bot.command(name="setup")
 @has_high_privilege()
 async def setup(ctx):
-    global current_persona_id, last_active_persona_id, target_user_id, bot_stopped
+    global current_persona_id, last_active_persona_id, target_user_id, bot_stopped, spam_task_running
     current_persona_id = 1
     last_active_persona_id = 1
     target_user_id = None
     bot_stopped = False
+    if spam_task_running:
+        spam_task_running.cancel()
+        spam_task_running = None
 
     p_info = PERSONAS[current_persona_id]
     embed = discord.Embed(
@@ -136,11 +129,11 @@ async def setup(ctx):
         description=(
             f"📌 **Kênh kết nối định mệnh:** {ctx.channel.mention}\n"
             f"🌸 **Nhân cách khởi tạo mặc định:** `{p_info['name']}`\n\n"
-            "🔹 **1.** `.persona <1|2|3>` ➔ Chuyển đổi nhân cách.\n"
-            "🔹 **2.** `.stop` ➔ Dừng hoàn toàn hoạt động.\n"
-            "🔹 **3.** `.on` ➔ Khôi phục lại hoạt động.\n"
-            "🔹 **4.** `.ghim @user` ➔ Khóa mục tiêu trò chuyện riêng tư.\n"
-            "🔹 **5.** `.ghim` ➔ Mở khóa toàn bộ kênh chat.\n"
+            "🔹 **1.** `.persona <1|2>` ➔ Chuyển đổi nhân cách.\n"
+            "🔹 **2.** `.spam @user` ➔ Tự động spam chửi dạng `# + câu chửi + @user`.\n"
+            "🔹 **3.** `.stop` ➔ Dừng hoàn toàn hoạt động / Dừng spam.\n"
+            "🔹 **4.** `.on` ➔ Khôi phục lại hoạt động.\n"
+            "🔹 **5.** `.ghim @user` ➔ Khóa mục tiêu trò chuyện riêng tư.\n"
             "🔹 **6.** `.stats` ➔ Trích xuất thông số máy chủ.\n"
             "🔹 **7.** `.help` ➔ Triệu hồi bảng menu.\n"
             "🔹 **8.** `.ban @user [lý do]` ➔ Trục xuất thành viên."
@@ -161,7 +154,7 @@ async def persona(ctx, persona_id: int = None):
     global current_persona_id, last_active_persona_id, target_user_id
 
     if persona_id not in PERSONAS:
-        await ctx.send("⚠️ VUI LÒNG CHỌN ĐÚNG SỐ NHÂN CÁCH: `.persona 1`, `.persona 2` HOẶC `.persona 3`")
+        await ctx.send("⚠️ VUI LÒNG CHỌN ĐÚNG SỐ NHÂN CÁCH: `.persona 1` HOẶC `.persona 2`")
         return
 
     current_persona_id = persona_id
@@ -181,14 +174,52 @@ async def persona_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
         await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
 
+# ==================== LỆNH SPAM ĐÚNG ĐỊNH DẠNG (# + CHỬI + TAG) ====================
+@bot.command(name="spam")
+@has_high_privilege()
+async def spam(ctx, member: discord.Member = None):
+    global spam_task_running
+    if member is None:
+        await ctx.send("⚠️ VUI LÒNG TAG TÊN NGƯỜI DÙNG CẦN SPAM! Ví dụ: `.spam @user`")
+        return
+
+    if spam_task_running and not spam_task_running.done():
+        spam_task_running.cancel()
+
+    await ctx.send(f"🚨 **BẮT ĐẦU CHIẾN DỊCH SPAM CHỬI MỤC TIÊU:** {member.mention} 🖕🔥")
+
+    async def spam_loop():
+        try:
+            while True:
+                roast_text = random.choice(TOXIC_ROAST_POOL_LONG)
+                # Định dạng: # + câu chửi + tag tên
+                full_message = f"# {roast_text} {member.mention}"
+                await ctx.send(full_message)
+                await asyncio.sleep(3)  # Thời gian chờ giữa các lần spam (giây)
+        except asyncio.CancelledError:
+            pass
+        except Exception as e:
+            print(f"[SPAM ERROR]: {e}")
+
+    spam_task_running = bot.loop.create_task(spam_loop())
+
+@spam.error
+async def spam_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
+
 @bot.command(name="stop")
 @has_high_privilege()
 async def stop_bot(ctx):
-    global bot_stopped
+    global bot_stopped, spam_task_running
     bot_stopped = True
+    if spam_task_running:
+        spam_task_running.cancel()
+        spam_task_running = None
+
     embed = discord.Embed(
-        title="🛑 ĐÃ DỪNG TOÀN BỘ HOẠT ĐỘNG CỦA BOT",
-        description="Bot đã ngưng hoàn toàn việc trò chuyện và phản hồi. Gõ lệnh `.on` để bật lại.",
+        title="🛑 ĐÃ DỪNG TOÀN BỘ HOẠT ĐỘNG & SPAM CỦA BOT",
+        description="Bot đã ngưng hoàn toàn việc trò chuyện và auto-spam. Gõ lệnh `.on` để bật lại.",
         color=0xFF0000
     )
     await ctx.send(embed=embed)
@@ -290,12 +321,12 @@ async def help_command(ctx):
         title="📖 BẢNG ĐIỀU KHIỂN & SIÊU MENU HƯỚNG DẪN",
         description=(
             "🔹 **1. `.setup`** ➔ Khởi tạo không gian quản trị.\n"
-            "🔹 **2. `.persona <1|2|3>`** ➔ Chuyển đổi nhân cách.\n"
-            "🔹 **3. `.stop`** ➔ Dừng mọi hoạt động.\n"
-            "🔹 **4. `.on`** ➔ Kích hoạt lại hệ thống.\n"
-            "🔹 **5. `.off`** ➔ Tạm tắt phản hồi chat.\n"
-            "🔹 **6. `.ghim @user`** ➔ Khóa mục tiêu trò chuyện.\n"
-            "🔹 **7. `.ghim`** ➔ Mở kênh công khai.\n"
+            "🔹 **2. `.persona <1|2>`** ➔ Chuyển đổi nhân cách.\n"
+            "🔹 **3. `.spam @user`** ➔ Tự động spam chửi mục tiêu.\n"
+            "🔹 **4. `.stop`** ➔ Dừng mọi hoạt động & spam.\n"
+            "🔹 **5. `.on`** ➔ Kích hoạt lại hệ thống.\n"
+            "🔹 **6. `.off`** ➔ Tạm tắt phản hồi chat.\n"
+            "🔹 **7. `.ghim @user`** ➔ Khóa mục tiêu trò chuyện.\n"
             "🔹 **8. `.ban @user [lý do]`** ➔ Trục xuất thành viên.\n"
             "🔹 **9. `.stats`** ➔ Xem thông số máy chủ.\n"
             "🔹 **10. `.help`** ➔ Mở menu hướng dẫn."
@@ -309,14 +340,19 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         return
     if isinstance(error, commands.MissingPermissions) or isinstance(error, discord.errors.Forbidden):
-        print(f"[CẢNH BÁO PERMISSION]: Lệnh bị từ chối do thiếu quyền (Missing Permissions/Forbidden).")
+        print(f"[CẢNH BÁO PERMISSION]: Lệnh bị từ chối do thiếu quyền.")
         return
     print(f"[ERROR] Lỗi lệnh: {error}")
 
-# ==================== XỬ LÝ TIN NHẮN TỰ ĐỘNG ====================
+# ==================== XỬ LÝ TIN NHẮN TỰ ĐỘNG (BỎ QUA CÁC DẤU LỆNH ., /, ?, @, #) ====================
 @bot.event
 async def on_message(message):
     if message.author.bot:
+        return
+
+    # Kiểm tra nếu tin nhắn bắt đầu bằng các dấu lệnh (., /, ?, @, #) thì bỏ qua, không rep tự động
+    if message.content.startswith(('.', '/', '?', '@', '#')):
+        await bot.process_commands(message)
         return
 
     await bot.process_commands(message)
@@ -352,8 +388,6 @@ async def on_message(message):
                 print(f"[GROQ API ERROR CHI TIẾT]: {api_err}")
                 if current_persona_id == 2:
                     ai_reply = random.choice(TOXIC_ROAST_POOL_LONG)
-                elif current_persona_id == 3:
-                    ai_reply = "Ngươi nói năng nhảm nhí quá mức. Hệ thống từ chối xử lý đống rác này. 🗿"
                 else:
                     ai_reply = "Cậu ơi, nội dung vừa rồi có chút nhạy cảm nên hệ thống tạm thời từ chối phản hồi. Cậu thử đổi câu hỏi khác nhé 🌸!"
         else:
