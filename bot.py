@@ -107,7 +107,7 @@ def has_high_privilege():
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
-    print("✨ Bot đã khởi chạy thành công! (Tiền tố: ., /, ?, @, #)")
+    print("✨ Bot đã khởi chạy thành công! (Tiền tố: ., /, ?, @, # - Nhân cách bỏ qua tin nhắn lệnh)")
 
 # ==================== CÁC LỆNH ĐIỀU KHIỂN ====================
 
@@ -192,10 +192,9 @@ async def spam(ctx, member: discord.Member = None):
         try:
             while True:
                 roast_text = random.choice(TOXIC_ROAST_POOL_LONG)
-                # Định dạng: # + câu chửi + tag tên
                 full_message = f"# {roast_text} {member.mention}"
                 await ctx.send(full_message)
-                await asyncio.sleep(3)  # Thời gian chờ giữa các lần spam (giây)
+                await asyncio.sleep(3)
         except asyncio.CancelledError:
             pass
         except Exception as e:
@@ -344,18 +343,19 @@ async def on_command_error(ctx, error):
         return
     print(f"[ERROR] Lỗi lệnh: {error}")
 
-# ==================== XỬ LÝ TIN NHẮN TỰ ĐỘNG (BỎ QUA CÁC DẤU LỆNH ., /, ?, @, #) ====================
+# ==================== XỬ LÝ TIN NHẮN TỰ ĐỘNG ====================
 @bot.event
 async def on_message(message):
     if message.author.bot:
         return
 
-    # Kiểm tra nếu tin nhắn bắt đầu bằng các dấu lệnh (., /, ?, @, #) thì bỏ qua, không rep tự động
-    if message.content.startswith(('.', '/', '?', '@', '#')):
-        await bot.process_commands(message)
-        return
-
+    # 1. Cho phép bot nhận diện và xử lý lệnh bình thường (vẫn nhận lệnh)
     await bot.process_commands(message)
+
+    # 2. Kiểm tra nếu tin nhắn bắt đầu bằng các dấu lệnh (., /, ?, @, #)
+    # Thì 2 nhân cách sẽ BỎ QUA, KHÔNG tự động phản hồi chat nữa.
+    if message.content.startswith(('.', '/', '?', '@', '#')):
+        return
 
     if bot_stopped or current_persona_id is None:
         return
@@ -387,7 +387,7 @@ async def on_message(message):
             except Exception as api_err:
                 print(f"[GROQ API ERROR CHI TIẾT]: {api_err}")
                 if current_persona_id == 2:
-                    ai_reply = random.choice(TOXIC_ROAST_POOL_LONG)
+                    ai_reply = "Ngươi nói năng nhảm nhí quá mức. Hệ thống từ chối xử lý đống rác này. 🗿"
                 else:
                     ai_reply = "Cậu ơi, nội dung vừa rồi có chút nhạy cảm nên hệ thống tạm thời từ chối phản hồi. Cậu thử đổi câu hỏi khác nhé 🌸!"
         else:
