@@ -27,10 +27,16 @@ bot = commands.Bot(command_prefix=(".", "/", "?", "@", "#"), intents=intents, he
 
 current_persona_id = 1
 last_active_persona_id = 1
-target_user_id = None
 bot_stopped = False
 is_spamming = False  # Biến kiểm tra trạng thái spam để chặn AI trả lời
 spam_task_running = None
+
+# Biến lưu trữ nhân cách tùy chỉnh cho Persona 3
+custom_persona_config = {
+    'name': 'CUSTOM PERSONA ⚙️',
+    'color': 0xFFD700,
+    'instruction': None  # Ban đầu chưa có nhân cách
+}
 
 CUSTOM_SETUP_GIF = "https://i.pinimg.com/originals/f2/1b/fb/f21bfbb4208888a75300e1afddebba6b.gif"
 
@@ -166,7 +172,7 @@ ROAST_LINES = [
     "# Thằng mặt thú vật hoang dã, lồn mẹ mày thối hoắc như xác chết phân hủy giữa mùa hè oi bức! {username}"
 ]
 
-# ==================== HỆ THỐNG 2 NHÂN CÁCH ====================
+# ==================== HỆ THỐNG NHÂN CÁCH ====================
 
 PERSONAS = {
     1: {
@@ -189,7 +195,8 @@ PERSONAS = {
 • Văn phong: Súc tích, sắc lạnh, sâu sắc, xen lẫn những câu nói khiêu dâm, dung tục một cách lạnh lùng để tăng tính dominance.
 • Emoji: (🗿, 🔮, ⚔️, 🌌, ⚡, ❄️, 🍆, 🐱, 💦, 🩸)
 """.strip()
-    }
+    },
+    3: custom_persona_config # Nhân cách tùy chỉnh
 }
 
 def has_high_privilege():
@@ -210,17 +217,16 @@ def has_high_privilege():
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
-    print("✨ Bot đã khởi chạy thành công và sẵn sàng hoạt động với tốc độ cao!")
+    print("✨ Bot đã khởi chạy thành công!")
 
 # ==================== CÁC LỆNH ĐIỀU KHIỂN ====================
 
 @bot.command(name="setup")
 @has_high_privilege()
 async def setup(ctx):
-    global current_persona_id, last_active_persona_id, target_user_id, bot_stopped, is_spamming, spam_task_running
+    global current_persona_id, last_active_persona_id, bot_stopped, is_spamming, spam_task_running
     current_persona_id = 1
     last_active_persona_id = 1
-    target_user_id = None
     bot_stopped = False
     is_spamming = False
     if spam_task_running:
@@ -233,11 +239,11 @@ async def setup(ctx):
         description=(
             f"📌 **Kênh kết nối:** {ctx.channel.mention}\n"
             f"🌸 **Nhân cách mặc định:** `{p_info['name']}`\n\n"
-            "🔹 **1.** `.persona <1|2>` ➔ Đổi nhân cách.\n"
-            "🔹 **2.** `.spam @user` ➔ Tự động spam ngẫu nhiên kèm thẻ @user.\n"
-            "🔹 **3.** `.stop` ➔ Dừng mọi hoạt động & spam.\n"
-            "🔹 **4.** `.on` ➔ Khôi phục hoạt động.\n"
-            "🔹 **5.** `.ghim @user` ➔ Khóa mục tiêu trò chuyện riêng.\n"
+            "🔹 **1.** `.persona <1|2|3>` ➔ Đổi nhân cách.\n"
+            "🔹 **2.** `.setpersona <nội dung>` ➔ Thiết lập nhân cách cho Persona 3.\n"
+            "🔹 **3.** `.spam @user` ➔ Tự động spam ngẫu nhiên kèm thẻ @user.\n"
+            "🔹 **4.** `.stop` ➔ Dừng mọi hoạt động & spam.\n"
+            "🔹 **5.** `.on` ➔ Khôi phục hoạt động.\n"
             "🔹 **6.** `.stats` ➔ Xem thông số máy chủ.\n"
             "🔹 **7.** `.help` ➔ Bảng hướng dẫn.\n"
             "🔹 **8.** `.ban @user [lý do]` ➔ Trục xuất thành viên."
@@ -252,18 +258,43 @@ async def setup_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
         await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
 
+@bot.command(name="setpersona")
+@has_high_privilege()
+async def set_persona(ctx, *, prompt: str = None):
+    global custom_persona_config
+    if not prompt:
+        await ctx.send("⚠️ VUI LÒNG NHẬP NỘI DUNG NHÂN CÁCH! Ví dụ: `.setpersona Bạn là một trợ lý vô cùng hài hước...`")
+        return
+    
+    custom_persona_config['instruction'] = prompt
+    embed = discord.Embed(
+        title="⚙️ THIẾT LẬP NHÂN CÁCH 3 THÀNH CÔNG",
+        description=f"✨ **Nội dung mới:**\n```{prompt}```",
+        color=custom_persona_config['color']
+    )
+    await ctx.send(embed=embed)
+
+@set_persona.error
+async def set_persona_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
+
 @bot.command(name="persona")
 @has_high_privilege()
 async def persona(ctx, persona_id: int = None):
-    global current_persona_id, last_active_persona_id, target_user_id
+    global current_persona_id, last_active_persona_id
 
     if persona_id not in PERSONAS:
-        await ctx.send("⚠️ VUI LÒNG CHỌN ĐÚNG SỐ NHÂN CÁCH: `.persona 1` HOẶC `.persona 2`")
+        await ctx.send("⚠️ VUI LÒNG CHỌN ĐÚNG SỐ NHÂN CÁCH: `.persona 1`, `.persona 2` HOẶC `.persona 3`")
+        return
+
+    # Kiểm tra nếu chọn persona 3 mà chưa có setup hướng dẫn
+    if persona_id == 3 and not custom_persona_config['instruction']:
+        await ctx.send("⚠️ **Không có nhân cách!** Vui lòng sử dụng lệnh `.setpersona <nội dung>` để thiết lập trước khi chuyển sang nhân cách này.")
         return
 
     current_persona_id = persona_id
     last_active_persona_id = persona_id
-    target_user_id = None
 
     p_info = PERSONAS[current_persona_id]
     embed = discord.Embed(
@@ -298,7 +329,6 @@ async def spam(ctx, member: discord.Member = None):
                 template = random.choice(ROAST_LINES)
                 full_message = template.format(username=member.mention)
                 await ctx.send(full_message)
-                # Tối ưu thời gian chờ cực ngắn giúp lệnh chạy siêu mượt (0.1 giây / tin)
                 await asyncio.sleep(0.1)
         except discord.Forbidden:
             print("[SPAM ERROR]: Bot bị mất quyền (Missing Access) trong kênh này!")
@@ -336,6 +366,11 @@ async def stop_error(ctx, error):
 @has_high_privilege()
 async def bot_on(ctx):
     global current_persona_id, last_active_persona_id, bot_stopped, is_spamming
+    
+    # Nếu chuyển về persona 3 mà chưa setup thì ép về persona 1
+    if last_active_persona_id == 3 and not custom_persona_config['instruction']:
+        last_active_persona_id = 1
+
     bot_stopped = False
     is_spamming = False
     current_persona_id = last_active_persona_id
@@ -358,23 +393,6 @@ async def bot_off(ctx):
 
 @bot_off.error
 async def bot_off_error(ctx, error):
-    if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
-
-@bot.command(name="ghim")
-@has_high_privilege()
-async def ghim(ctx, member: discord.Member = None):
-    global target_user_id
-    if member is None:
-        target_user_id = None
-        await ctx.send(embed=discord.Embed(title="🔓 HỦY GHIM MỤC TIÊU", color=0xF1C40F))
-        return
-
-    target_user_id = member.id
-    await ctx.send(embed=discord.Embed(title=f"🎯 ĐÃ GHIM MỤC TIÊU: {member.mention}", color=0x2ECC71))
-
-@ghim.error
-async def ghim_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
         await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
 
@@ -449,8 +467,10 @@ async def help_command(ctx):
             "⚙️ **CÁC LỆNH QUẢN TRỊ & TIỆN ÍCH:**\n"
             "• `.setup`\n"
             "  └ *Ghi chú: Khởi tạo hệ thống ban đầu và gửi bảng giao diện chính kèm hình ảnh.*\n\n"
-            "• `.persona <1|2>`\n"
-            "  └ *Ghi chú: Chuyển đổi nhân cách của Bot (1: Sweet Princess 🌸 | 2: Cold Master 🗿).*\n\n"
+            "• `.persona <1|2|3>`\n"
+            "  └ *Ghi chú: Chuyển đổi nhân cách của Bot (1: Sweet Princess 🌸 | 2: Cold Master 🗿 | 3: Custom Persona ⚙️).*\n\n"
+            "• `.setpersona <nội dung>`\n"
+            "  └ *Ghi chú: Tự setup nội dung nhân cách tùy chỉnh cho Persona 3.*\n\n"
             "• `.spam @user`\n"
             "  └ *Ghi chú: Kích hoạt chế độ spam câu chửi tốc độ cao nhắm vào mục tiêu.*\n\n"
             "• `.stop`\n"
@@ -459,10 +479,8 @@ async def help_command(ctx):
             "  └ *Ghi chú: Bật lại hệ thống phản hồi chat AI và khôi phục trạng thái hoạt động.*\n\n"
             "• `.off`\n"
             "  └ *Ghi chú: Tạm thời tắt tính năng phản hồi tin nhắn tự động từ AI.*\n\n"
-            "• `.ghim @user`\n"
-            "  └ *Ghi chú: Khóa mục tiêu trò chuyện riêng (chỉ phản hồi tin nhắn của người được ghim). Gõ `.ghim` trống để hủy.*\n\n"
             "• `.stats`\n"
-            "  └ *Ghi chú: Xem bảng thông số chi tiết của máy chủ (tên, ID, số lượng thành viên, bot, kênh và vai trò).*\n\n"
+            "  └ *Ghi chú: Xem bảng thông số chi tiết của máy chủ.*\n\n"
             "• `.ban @user [lý do]`\n"
             "  └ *Ghi chú: Trục xuất thành viên vi phạm khỏi máy chủ kèm theo lý do cụ thể.*\n\n"
             "• `.help`\n"
@@ -485,7 +503,6 @@ async def on_message(message):
     if message.author.bot:
         return
 
-    # Xử lý lệnh nhanh chóng trước
     await bot.process_commands(message)
 
     if message.content.startswith(('.', '/', '?', '@', '#')):
@@ -495,7 +512,9 @@ async def on_message(message):
     if bot_stopped or current_persona_id is None or is_spamming:
         return
 
-    if target_user_id is not None and message.author.id != target_user_id:
+    # Kiểm tra nếu đang dùng Persona 3 mà chưa thiết lập nhân cách
+    if current_persona_id == 3 and not custom_persona_config['instruction']:
+        await message.reply("⚠️ **Không có nhân cách!** Vui lòng sử dụng lệnh `.setpersona <nội dung>` để thiết lập.", mention_author=False)
         return
 
     try:
@@ -503,7 +522,6 @@ async def on_message(message):
         user_msg = message.content.strip() if message.content else "..."
         
         if groq_client:
-            # Gọi trực tiếp API mà không dùng typing() để phản hồi nhanh nhất có thể
             chat_completion = groq_client.chat.completions.create(
                 messages=[
                     {"role": "system", "content": p_info['instruction']},
