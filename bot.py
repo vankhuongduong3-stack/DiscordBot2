@@ -31,13 +31,6 @@ bot_stopped = False
 is_spamming = False  # Biến kiểm tra trạng thái spam để chặn AI trả lời
 spam_task_running = None
 
-# Biến lưu trữ nhân cách tùy chỉnh cho Persona 3
-custom_persona_config = {
-    'name': 'CUSTOM PERSONA ⚙️',
-    'color': 0xFFD700,
-    'instruction': None  # Ban đầu chưa có nhân cách
-}
-
 CUSTOM_SETUP_GIF = "https://i.pinimg.com/originals/f2/1b/fb/f21bfbb4208888a75300e1afddebba6b.gif"
 
 # ==================== KHO SPAM ĐẦY ĐỦ (209 CÂU CÓ DẤU #) ====================
@@ -172,7 +165,7 @@ ROAST_LINES = [
     "# Thằng mặt thú vật hoang dã, lồn mẹ mày thối hoắc như xác chết phân hủy giữa mùa hè oi bức! {username}"
 ]
 
-# ==================== HỆ THỐNG NHÂN CÁCH ====================
+# ==================== HỆ THỐNG NHÂN CÁCH (CHỈ CÒN 1 VÀ 2) ====================
 
 PERSONAS = {
     1: {
@@ -195,8 +188,7 @@ PERSONAS = {
 • Văn phong: Súc tích, sắc lạnh, sâu sắc, xen lẫn những câu nói khiêu dâm, dung tục một cách lạnh lùng để tăng tính dominance.
 • Emoji: (🗿, 🔮, ⚔️, 🌌, ⚡, ❄️, 🍆, 🐱, 💦, 🩸)
 """.strip()
-    },
-    3: custom_persona_config # Nhân cách tùy chỉnh
+    }
 }
 
 def has_high_privilege():
@@ -239,14 +231,13 @@ async def setup(ctx):
         description=(
             f"📌 **Kênh kết nối:** {ctx.channel.mention}\n"
             f"🌸 **Nhân cách mặc định:** `{p_info['name']}`\n\n"
-            "🔹 **1.** `.persona <1|2|3>` ➔ Đổi nhân cách.\n"
-            "🔹 **2.** `.setpersona <nội dung>` ➔ Thiết lập nhân cách cho Persona 3.\n"
-            "🔹 **3.** `.spam @user` ➔ Tự động spam ngẫu nhiên kèm thẻ @user.\n"
-            "🔹 **4.** `.stop` ➔ Dừng mọi hoạt động & spam.\n"
-            "🔹 **5.** `.on` ➔ Khôi phục hoạt động.\n"
-            "🔹 **6.** `.stats` ➔ Xem thông số máy chủ.\n"
-            "🔹 **7.** `.help` ➔ Bảng hướng dẫn.\n"
-            "🔹 **8.** `.ban @user [lý do]` ➔ Trục xuất thành viên."
+            "🔹 **1.** `.persona <1|2>` ➔ Đổi nhân cách.\n"
+            "🔹 **2.** `.spam @user` ➔ Tự động spam ngẫu nhiên kèm thẻ @user.\n"
+            "🔹 **3.** `.stop` ➔ Dừng mọi hoạt động & spam.\n"
+            "🔹 **4.** `.on` ➔ Khôi phục hoạt động.\n"
+            "🔹 **5.** `.stats` ➔ Xem thông số máy chủ.\n"
+            "🔹 **6.** `.help` ➔ Bảng hướng dẫn.\n"
+            "🔹 **7.** `.ban @user [lý do]` ➔ Trục xuất thành viên."
         ),
         color=p_info['color']
     )
@@ -258,38 +249,13 @@ async def setup_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
         await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
 
-@bot.command(name="setpersona")
-@has_high_privilege()
-async def set_persona(ctx, *, prompt: str = None):
-    global custom_persona_config
-    if not prompt:
-        await ctx.send("⚠️ VUI LÒNG NHẬP NỘI DUNG NHÂN CÁCH! Ví dụ: `.setpersona Bạn là một trợ lý vô cùng hài hước...`")
-        return
-    
-    custom_persona_config['instruction'] = prompt
-    embed = discord.Embed(
-        title="⚙️ THIẾT LẬP NHÂN CÁCH 3 THÀNH CÔNG",
-        description=f"✨ **Nội dung mới:**\n```{prompt}```",
-        color=custom_persona_config['color']
-    )
-    await ctx.send(embed=embed)
-
-@set_persona.error
-async def set_persona_error(ctx, error):
-    if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
-
 @bot.command(name="persona")
 @has_high_privilege()
 async def persona(ctx, persona_id: int = None):
     global current_persona_id, last_active_persona_id
 
     if persona_id not in PERSONAS:
-        await ctx.send("⚠️ VUI LÒNG CHỌN ĐÚNG SỐ NHÂN CÁCH: `.persona 1`, `.persona 2` HOẶC `.persona 3`")
-        return
-
-    if persona_id == 3 and not custom_persona_config['instruction']:
-        await ctx.send("⚠️ **Không có nhân cách!** Vui lòng sử dụng lệnh `.setpersona <nội dung>` để thiết lập trước khi chuyển sang nhân cách này.")
+        await ctx.send("⚠️ VUI LÒNG CHỌN ĐÚNG SỐ NHÂN CÁCH: `.persona 1` HOẶC `.persona 2`")
         return
 
     current_persona_id = persona_id
@@ -328,7 +294,6 @@ async def spam(ctx, member: discord.Member = None):
                 template = random.choice(ROAST_LINES)
                 full_message = template.format(username=member.mention)
                 await ctx.send(full_message)
-                # Đã tối ưu sleep thành 0 để tránh khựng tiến trình, tăng tốc độ gửi tin nhắn tối đa
                 await asyncio.sleep(0)
         except discord.Forbidden:
             print("[SPAM ERROR]: Bot bị mất quyền (Missing Access) trong kênh này!")
@@ -367,9 +332,6 @@ async def stop_error(ctx, error):
 async def bot_on(ctx):
     global current_persona_id, last_active_persona_id, bot_stopped, is_spamming
     
-    if last_active_persona_id == 3 and not custom_persona_config['instruction']:
-        last_active_persona_id = 1
-
     bot_stopped = False
     is_spamming = False
     current_persona_id = last_active_persona_id
@@ -466,10 +428,8 @@ async def help_command(ctx):
             "⚙️ **CÁC LỆNH QUẢN TRỊ & TIỆN ÍCH:**\n"
             "• `.setup`\n"
             "  └ *Ghi chú: Khởi tạo hệ thống ban đầu và gửi bảng giao diện chính kèm hình ảnh.*\n\n"
-            "• `.persona <1|2|3>`\n"
-            "  └ *Ghi chú: Chuyển đổi nhân cách của Bot (1: Sweet Princess 🌸 | 2: Cold Master 🗿 | 3: Custom Persona ⚙️).*\n\n"
-            "• `.setpersona <nội dung>`\n"
-            "  └ *Ghi chú: Tự setup nội dung nhân cách tùy chỉnh cho Persona 3.*\n\n"
+            "• `.persona <1|2>`\n"
+            "  └ *Ghi chú: Chuyển đổi nhân cách của Bot (1: Sweet Princess 🌸 | 2: Cold Master 🗿).*\n\n"
             "• `.spam @user`\n"
             "  └ *Ghi chú: Kích hoạt chế độ spam câu chửi tốc độ cao nhắm vào mục tiêu.*\n\n"
             "• `.stop`\n"
@@ -508,10 +468,6 @@ async def on_message(message):
         return
 
     if bot_stopped or current_persona_id is None or is_spamming:
-        return
-
-    if current_persona_id == 3 and not custom_persona_config['instruction']:
-        await message.reply("⚠️ **Không có nhân cách!** Vui lòng sử dụng lệnh `.setpersona <nội dung>` để thiết lập.", mention_author=False)
         return
 
     try:
