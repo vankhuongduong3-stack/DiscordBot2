@@ -294,7 +294,8 @@ async def spam(ctx, member: discord.Member = None):
                 template = random.choice(ROAST_LINES)
                 full_message = template.format(username=member.mention)
                 await ctx.send(full_message)
-                await asyncio.sleep(0)
+                # Đã thêm độ trễ 1.2 giây để tránh bị Discord giới hạn tốc độ (Rate Limit) làm khựng bot
+                await asyncio.sleep(1.2)
         except discord.Forbidden:
             print("[SPAM ERROR]: Bot bị mất quyền (Missing Access) trong kênh này!")
         except asyncio.CancelledError:
