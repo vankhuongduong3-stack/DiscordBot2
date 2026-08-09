@@ -71,7 +71,7 @@ ROAST_LINES = [
     "# Cặc teo như con giòi thối, địt mẹ cái thằng ngu óc phân bò! {username}",
     "# Đụ má thằng mặt thú vật, mẹ mày bú cặc chó đồng + nuốt tinh trùng! {username}",
     "# Mày chết mẹ mày đi cho sạch đường, lồn to đùng chứa cả xô tinh trùng thối rữa + máu mủ + nước tiểu chó! {username}",
-    "# Lồn rộng như biển phân, đụ má thằng khốn nạn này óc cứt thối! {username}",
+    "# Lồn rộng như biển phân, đụ má thằng khốn nạn óc cứt thối! {username}",
     "# Chửi đổng cái lồn thối, cút xéo thằng chó đẻ bú cặc thú vật đi! {username}",
     "# Thằng óc phân thối, mặt giống lỗ đít thối tha đầy phân + tinh trùng! {username}",
     "# Đụ con đĩ già thối tha, cặc mày hôi như xác chết 10 ngày + phân bò phơi nắng! {username}",
@@ -210,7 +210,7 @@ def has_high_privilege():
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} (ID: {bot.user.id})")
-    print("✨ Bot đã khởi chạy thành công và sẵn sàng tự động trả lời tin nhắn!")
+    print("✨ Bot đã khởi chạy thành công và sẵn sàng hoạt động với tốc độ cao!")
 
 # ==================== CÁC LỆNH ĐIỀU KHIỂN ====================
 
@@ -290,7 +290,7 @@ async def spam(ctx, member: discord.Member = None):
         spam_task_running.cancel()
 
     is_spamming = True  # Bật cờ spam để chặn tuyệt đối AI trả lời tin nhắn
-    await ctx.send(f"🚨 **BẮT ĐẦU CHIẾN DỊCH SPAM (4 TIN NHẮN/GIÂY):** {member.mention} 🖕🔥")
+    await ctx.send(f"🚨 **BẮT ĐẦU CHIẾN DỊCH SPAM TỐC ĐỘ CAO:** {member.mention} 🖕🔥")
 
     async def spam_loop():
         try:
@@ -298,11 +298,10 @@ async def spam(ctx, member: discord.Member = None):
                 template = random.choice(ROAST_LINES)
                 full_message = template.format(username=member.mention)
                 await ctx.send(full_message)
-                # Tốc độ chính xác 4 tin nhắn / giây (0.25 giây / tin nhắn)
-                await asyncio.sleep(0.25)
+                # Tối ưu thời gian chờ cực ngắn giúp lệnh chạy siêu mượt (0.1 giây / tin)
+                await asyncio.sleep(0.1)
         except discord.Forbidden:
             print("[SPAM ERROR]: Bot bị mất quyền (Missing Access) trong kênh này!")
-            await ctx.send("❌ Bot không có quyền gửi tin nhắn hoặc xem kênh này (Missing Access)!")
         except asyncio.CancelledError:
             pass
         except Exception as e:
@@ -453,7 +452,7 @@ async def help_command(ctx):
             "• `.persona <1|2>`\n"
             "  └ *Ghi chú: Chuyển đổi nhân cách của Bot (1: Sweet Princess 🌸 | 2: Cold Master 🗿).*\n\n"
             "• `.spam @user`\n"
-            "  └ *Ghi chú: Kích hoạt chế độ spam câu chửi tốc độ cao (4 tin nhắn/giây) nhắm vào mục tiêu.*\n\n"
+            "  └ *Ghi chú: Kích hoạt chế độ spam câu chửi tốc độ cao nhắm vào mục tiêu.*\n\n"
             "• `.stop`\n"
             "  └ *Ghi chú: Dừng ngay lập tức mọi hoạt động phản hồi chat tự động và các tác vụ spam đang chạy.*\n\n"
             "• `.on`\n"
@@ -486,12 +485,13 @@ async def on_message(message):
     if message.author.bot:
         return
 
+    # Xử lý lệnh nhanh chóng trước
     await bot.process_commands(message)
 
     if message.content.startswith(('.', '/', '?', '@', '#')):
         return
 
-    # Nếu bot đang dừng, tắt chat, hoặc đang trong chế độ SPAM thì tuyệt đối không phản hồi AI
+    # Nếu bot đang dừng, tắt chat, hoặc đang trong chế độ SPAM thì bỏ qua hoàn toàn
     if bot_stopped or current_persona_id is None or is_spamming:
         return
 
@@ -499,31 +499,31 @@ async def on_message(message):
         return
 
     try:
-        async with message.channel.typing():
-            p_info = PERSONAS[current_persona_id]
-            user_msg = message.content.strip() if message.content else "..."
-            
-            if groq_client:
-                chat_completion = groq_client.chat.completions.create(
-                    messages=[
-                        {"role": "system", "content": p_info['instruction']},
-                        {"role": "user", "content": user_msg}
-                    ],
-                    model="llama-3.1-8b-instant",
-                    max_tokens=2500,
-                )
-                ai_reply = chat_completion.choices[0].message.content
-            else:
-                ai_reply = "⚠️ CHƯA THIẾT LẬP GROQ_API_KEY TRONG BIẾN MÔI TRƯỜNG!"
-
-            embed = discord.Embed(
-                title=f"✨ {p_info['name']}",
-                description=ai_reply,
-                color=p_info['color']
+        p_info = PERSONAS[current_persona_id]
+        user_msg = message.content.strip() if message.content else "..."
+        
+        if groq_client:
+            # Gọi trực tiếp API mà không dùng typing() để phản hồi nhanh nhất có thể
+            chat_completion = groq_client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": p_info['instruction']},
+                    {"role": "user", "content": user_msg}
+                ],
+                model="llama-3.1-8b-instant",
+                max_tokens=2500,
             )
-            embed.set_footer(text="Sun Flower AI • Powered by Groq ⚡")
+            ai_reply = chat_completion.choices[0].message.content
+        else:
+            ai_reply = "⚠️ CHƯA THIẾT LẬP GROQ_API_KEY TRONG BIẾN MÔI TRƯỜNG!"
 
-            await message.reply(embed=embed, mention_author=False)
+        embed = discord.Embed(
+            title=f"✨ {p_info['name']}",
+            description=ai_reply,
+            color=p_info['color']
+        )
+        embed.set_footer(text="Sun Flower AI • Powered by Groq ⚡")
+
+        await message.reply(embed=embed, mention_author=False)
 
     except Exception as e:
         print(f"[GROQ API ERROR]: {e}")
