@@ -33,7 +33,7 @@ spam_task_running = None
 
 CUSTOM_SETUP_GIF = "https://i.pinimg.com/originals/f2/1b/fb/f21bfbb4208888a75300e1afddebba6b.gif"
 
-# ==================== KHO SPAM ĐẦY ĐỦ ====================
+# ==================== KHO SPAM ĐẦY ĐỦ (209 CÂU CÓ DẤU #) ====================
 ROAST_LINES = [
     "# Lồn mẹ mày nát bét như tương, bị địt đến không còn + chảy lênh! {username}",
     "# Đéo biết xấu hổ, lồn mẹ mày thối như cứt + xác chết đầy dòi bọ! {username}",
@@ -287,7 +287,7 @@ async def spam(ctx, member: discord.Member = None):
     if spam_task_running and not spam_task_running.done():
         spam_task_running.cancel()
 
-    await ctx.send(f"🚨 **BẮT ĐẦU CHIẾN DỊCH SPAM TỐC ĐỘ CAO (0 GIÂY):** {member.mention} 🖕🔥")
+    await ctx.send(f"🚨 **BẮT ĐẦU CHIẾN DỊCH SPAM (4 TIN NHẮN/GIÂY):** {member.mention} 🖕🔥")
 
     async def spam_loop():
         try:
@@ -295,7 +295,8 @@ async def spam(ctx, member: discord.Member = None):
                 template = random.choice(ROAST_LINES)
                 full_message = template.format(username=member.mention)
                 await ctx.send(full_message)
-                await asyncio.sleep(0)
+                # Tốc độ 4 tin nhắn / giây (1 giây chia cho 4 = 0.25 giây)
+                await asyncio.sleep(0.25)
         except discord.Forbidden:
             print("[SPAM ERROR]: Bot bị mất quyền (Missing Access) trong kênh này!")
             await ctx.send("❌ Bot không có quyền gửi tin nhắn hoặc xem kênh này (Missing Access)!")
@@ -392,22 +393,80 @@ async def ban_error(ctx, error):
 
 @bot.command(name="stats")
 async def stats(ctx):
+    guild = ctx.guild
     p_info = PERSONAS[current_persona_id] if current_persona_id else PERSONAS[1]
+    
+    total_members = guild.member_count
+    bots = sum(1 for m in guild.members if m.bot)
+    humans = total_members - bots
+    
+    text_channels = len(guild.text_channels)
+    voice_channels = len(guild.voice_channels)
+    categories = len(guild.categories)
+    total_channels = len(guild.channels)
+    
+    roles_count = len(guild.roles)
+    owner = guild.owner.mention if guild.owner else "Không rõ"
+    
     embed = discord.Embed(
-        title="📊 BẢNG THÔNG SỐ",
-        description=f"🏰 Máy chủ: `{ctx.guild.name}`\n👥 Thành viên: `{ctx.guild.member_count}`\n🤖 Nhân cách: {p_info['name']}",
+        title=f"📊 THÔNG SỐ CHI TIẾT MÁY CHỦ",
+        description=f"🏰 **Tên máy chủ:** `{guild.name}`\n🆔 **ID máy chủ:** `{guild.id}`\n👑 **Chủ sở hữu:** {owner}",
         color=p_info['color']
     )
+    
+    embed.add_field(
+        name="👥 Thành viên",
+        value=f"• Tổng số: `{total_members}`\n• Người: `{humans}`\n• Bot: `{bots}`",
+        inline=True
+    )
+    
+    embed.add_field(
+        name="📁 Kênh & Vai trò",
+        value=f"• Tổng kênh: `{total_channels}`\n• Kênh chữ: `{text_channels}`\n• Kênh thoại: `{voice_channels}`\n• Danh mục: `{categories}`\n• Vai trò: `{roles_count}`",
+        inline=True
+    )
+    
+    if guild.icon:
+        embed.set_thumbnail(url=guild.icon.url)
+        
+    embed.set_footer(text=f"Yêu cầu bởi {ctx.author.name} • Sun Flower AI ⚡", icon_url=ctx.author.display_avatar.url)
+    
     await ctx.send(embed=embed)
 
 @bot.command(name="help")
 async def help_command(ctx):
     p_info = PERSONAS[current_persona_id] if current_persona_id else PERSONAS[1]
+    
     embed = discord.Embed(
-        title="📖 BẢNG HƯỚNG DẪN LỆNH",
-        description="Các lệnh hỗ trợ: `.setup`, `.persona <1|2>`, `.spam @user`, `.stop`, `.on`, `.off`, `.ghim @user`, `.ban`, `.stats`",
+        title="📖 BẢNG HƯỚNG DẪN HỆ THỐNG - SUN FLOWER AI",
+        description=(
+            "Chào mừng bạn đến với bảng điều khiển lệnh của **Sun Flower AI**. "
+            "Dưới đây là danh sách toàn bộ các tính năng và lệnh hỗ trợ quản trị:\n\n"
+            "⚙️ **CÁC LỆNH QUẢN TRỊ & TIỆN ÍCH:**\n"
+            "• `.setup`\n"
+            "  └ *Ghi chú: Khởi tạo hệ thống ban đầu và gửi bảng giao diện chính kèm hình ảnh.*\n\n"
+            "• `.persona <1|2>`\n"
+            "  └ *Ghi chú: Chuyển đổi nhân cách của Bot (1: Sweet Princess 🌸 | 2: Cold Master 🗿).*\n\n"
+            "• `.spam @user`\n"
+            "  └ *Ghi chú: Kích hoạt chế độ spam câu chửi tốc độ cao (4 tin nhắn/giây) nhắm vào mục tiêu.*\n\n"
+            "• `.stop`\n"
+            "  └ *Ghi chú: Dừng ngay lập tức mọi hoạt động phản hồi chat tự động và các tác vụ spam đang chạy.*\n\n"
+            "• `.on`\n"
+            "  └ *Ghi chú: Bật lại hệ thống phản hồi chat AI và khôi phục trạng thái hoạt động.*\n\n"
+            "• `.off`\n"
+            "  └ *Ghi chú: Tạm thời tắt tính năng phản hồi tin nhắn tự động từ AI.*\n\n"
+            "• `.ghim @user`\n"
+            "  └ *Ghi chú: Khóa mục tiêu trò chuyện riêng (chỉ phản hồi tin nhắn của người được ghim). Gõ `.ghim` trống để hủy.*\n\n"
+            "• `.stats`\n"
+            "  └ *Ghi chú: Xem bảng thông số chi tiết của máy chủ (tên, ID, số lượng thành viên, bot, kênh và vai trò).*\n\n"
+            "• `.ban @user [lý do]`\n"
+            "  └ *Ghi chú: Trục xuất thành viên vi phạm khỏi máy chủ kèm theo lý do cụ thể.*\n\n"
+            "• `.help`\n"
+            "  └ *Ghi chú: Hiển thị bảng hướng dẫn chi tiết toàn bộ danh mục lệnh của bot.*"
+        ),
         color=p_info['color']
     )
+    embed.set_footer(text="Sun Flower AI • Powered by Groq ⚡", icon_url=bot.user.display_avatar.url)
     await ctx.send(embed=embed)
 
 @bot.event
