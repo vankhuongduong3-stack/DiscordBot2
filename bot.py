@@ -288,7 +288,6 @@ async def persona(ctx, persona_id: int = None):
         await ctx.send("⚠️ VUI LÒNG CHỌN ĐÚNG SỐ NHÂN CÁCH: `.persona 1`, `.persona 2` HOẶC `.persona 3`")
         return
 
-    # Kiểm tra nếu chọn persona 3 mà chưa có setup hướng dẫn
     if persona_id == 3 and not custom_persona_config['instruction']:
         await ctx.send("⚠️ **Không có nhân cách!** Vui lòng sử dụng lệnh `.setpersona <nội dung>` để thiết lập trước khi chuyển sang nhân cách này.")
         return
@@ -320,7 +319,7 @@ async def spam(ctx, member: discord.Member = None):
     if spam_task_running and not spam_task_running.done():
         spam_task_running.cancel()
 
-    is_spamming = True  # Bật cờ spam để chặn tuyệt đối AI trả lời tin nhắn
+    is_spamming = True  
     await ctx.send(f"🚨 **BẮT ĐẦU CHIẾN DỊCH SPAM TỐC ĐỘ CAO:** {member.mention} 🖕🔥")
 
     async def spam_loop():
@@ -329,7 +328,8 @@ async def spam(ctx, member: discord.Member = None):
                 template = random.choice(ROAST_LINES)
                 full_message = template.format(username=member.mention)
                 await ctx.send(full_message)
-                await asyncio.sleep(0.1)
+                # Đã tối ưu sleep thành 0 để tránh khựng tiến trình, tăng tốc độ gửi tin nhắn tối đa
+                await asyncio.sleep(0)
         except discord.Forbidden:
             print("[SPAM ERROR]: Bot bị mất quyền (Missing Access) trong kênh này!")
         except asyncio.CancelledError:
@@ -349,7 +349,7 @@ async def spam_error(ctx, error):
 async def stop_bot(ctx):
     global bot_stopped, is_spamming, spam_task_running
     bot_stopped = True
-    is_spamming = False  # Tắt trạng thái spam
+    is_spamming = False  
     if spam_task_running:
         spam_task_running.cancel()
         spam_task_running = None
@@ -367,7 +367,6 @@ async def stop_error(ctx, error):
 async def bot_on(ctx):
     global current_persona_id, last_active_persona_id, bot_stopped, is_spamming
     
-    # Nếu chuyển về persona 3 mà chưa setup thì ép về persona 1
     if last_active_persona_id == 3 and not custom_persona_config['instruction']:
         last_active_persona_id = 1
 
@@ -508,11 +507,9 @@ async def on_message(message):
     if message.content.startswith(('.', '/', '?', '@', '#')):
         return
 
-    # Nếu bot đang dừng, tắt chat, hoặc đang trong chế độ SPAM thì bỏ qua hoàn toàn
     if bot_stopped or current_persona_id is None or is_spamming:
         return
 
-    # Kiểm tra nếu đang dùng Persona 3 mà chưa thiết lập nhân cách
     if current_persona_id == 3 and not custom_persona_config['instruction']:
         await message.reply("⚠️ **Không có nhân cách!** Vui lòng sử dụng lệnh `.setpersona <nội dung>` để thiết lập.", mention_author=False)
         return
