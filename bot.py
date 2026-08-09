@@ -29,6 +29,7 @@ current_persona_id = 1
 last_active_persona_id = 1
 target_user_id = None
 bot_stopped = False
+is_spamming = False  # Biến kiểm tra trạng thái spam để chặn AI trả lời
 spam_task_running = None
 
 CUSTOM_SETUP_GIF = "https://i.pinimg.com/originals/f2/1b/fb/f21bfbb4208888a75300e1afddebba6b.gif"
@@ -216,11 +217,12 @@ async def on_ready():
 @bot.command(name="setup")
 @has_high_privilege()
 async def setup(ctx):
-    global current_persona_id, last_active_persona_id, target_user_id, bot_stopped, spam_task_running
+    global current_persona_id, last_active_persona_id, target_user_id, bot_stopped, is_spamming, spam_task_running
     current_persona_id = 1
     last_active_persona_id = 1
     target_user_id = None
     bot_stopped = False
+    is_spamming = False
     if spam_task_running:
         spam_task_running.cancel()
         spam_task_running = None
@@ -279,7 +281,7 @@ async def persona_error(ctx, error):
 @bot.command(name="spam")
 @has_high_privilege()
 async def spam(ctx, member: discord.Member = None):
-    global spam_task_running
+    global spam_task_running, is_spamming
     if member is None:
         await ctx.send("⚠️ VUI LÒNG TAG TÊN NGƯỜI DÙNG CẦN SPAM! Ví dụ: `.spam @user`")
         return
@@ -287,6 +289,7 @@ async def spam(ctx, member: discord.Member = None):
     if spam_task_running and not spam_task_running.done():
         spam_task_running.cancel()
 
+    is_spamming = True  # Bật cờ spam để chặn tuyệt đối AI trả lời tin nhắn
     await ctx.send(f"🚨 **BẮT ĐẦU CHIẾN DỊCH SPAM (4 TIN NHẮN/GIÂY):** {member.mention} 🖕🔥")
 
     async def spam_loop():
@@ -295,7 +298,7 @@ async def spam(ctx, member: discord.Member = None):
                 template = random.choice(ROAST_LINES)
                 full_message = template.format(username=member.mention)
                 await ctx.send(full_message)
-                # Tốc độ 4 tin nhắn / giây (1 giây chia cho 4 = 0.25 giây)
+                # Tốc độ chính xác 4 tin nhắn / giây (0.25 giây / tin nhắn)
                 await asyncio.sleep(0.25)
         except discord.Forbidden:
             print("[SPAM ERROR]: Bot bị mất quyền (Missing Access) trong kênh này!")
@@ -315,8 +318,9 @@ async def spam_error(ctx, error):
 @bot.command(name="stop")
 @has_high_privilege()
 async def stop_bot(ctx):
-    global bot_stopped, spam_task_running
+    global bot_stopped, is_spamming, spam_task_running
     bot_stopped = True
+    is_spamming = False  # Tắt trạng thái spam
     if spam_task_running:
         spam_task_running.cancel()
         spam_task_running = None
@@ -332,8 +336,9 @@ async def stop_error(ctx, error):
 @bot.command(name="on")
 @has_high_privilege()
 async def bot_on(ctx):
-    global current_persona_id, last_active_persona_id, bot_stopped
+    global current_persona_id, last_active_persona_id, bot_stopped, is_spamming
     bot_stopped = False
+    is_spamming = False
     current_persona_id = last_active_persona_id
     p_info = PERSONAS[current_persona_id]
     embed = discord.Embed(title=f"🟢 ĐÃ BẬT LẠI HỆ THỐNG: **{p_info['name']}**", color=0x00FF00)
@@ -486,7 +491,8 @@ async def on_message(message):
     if message.content.startswith(('.', '/', '?', '@', '#')):
         return
 
-    if bot_stopped or current_persona_id is None:
+    # Nếu bot đang dừng, tắt chat, hoặc đang trong chế độ SPAM thì tuyệt đối không phản hồi AI
+    if bot_stopped or current_persona_id is None or is_spamming:
         return
 
     if target_user_id is not None and message.author.id != target_user_id:
