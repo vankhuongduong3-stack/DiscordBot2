@@ -165,7 +165,7 @@ ROAST_LINES = [
     "# Thằng mặt thú vật hoang dã, lồn mẹ mày thối hoắc như xác chết phân hủy giữa mùa hè oi bức! {username}"
 ]
 
-# ==================== HỆ THỐNG NHÂN CÁCH (CHỈ CÒN 1 VÀ 2) ====================
+# ==================== HỆ THỐNG NHÂN CÁCH ====================
 
 PERSONAS = {
     1: {
@@ -191,19 +191,10 @@ PERSONAS = {
     }
 }
 
-def has_high_privilege():
+# CHỈ DUY NHẤT 2 ID OWNER MỚI CÓ QUYỀN ĐIỀU KHIỂN BOT
+def is_bot_owner():
     async def predicate(ctx):
-        if ctx.author.id in BOT_OWNERS:
-            return True
-        if ctx.guild:
-            if ctx.author.id == ctx.guild.owner_id:
-                return True
-            if ctx.author.guild_permissions.administrator:
-                return True
-            for role in ctx.author.roles:
-                if role.permissions.manage_guild or role.permissions.ban_members or role.permissions.kick_members:
-                    return True
-        return False
+        return ctx.author.id in BOT_OWNERS
     return commands.check(predicate)
 
 @bot.event
@@ -214,7 +205,7 @@ async def on_ready():
 # ==================== CÁC LỆNH ĐIỀU KHIỂN ====================
 
 @bot.command(name="setup")
-@has_high_privilege()
+@is_bot_owner()
 async def setup(ctx):
     global current_persona_id, last_active_persona_id, bot_stopped, is_spamming, spam_task_running
     current_persona_id = 1
@@ -232,7 +223,7 @@ async def setup(ctx):
             f"📌 **Kênh kết nối:** {ctx.channel.mention}\n"
             f"🌸 **Nhân cách mặc định:** `{p_info['name']}`\n\n"
             "🔹 **1.** `.persona <1|2>` ➔ Đổi nhân cách.\n"
-            "🔹 **2.** `.spam @user` ➔ Tự động spam ngẫu nhiên kèm thẻ @user.\n"
+            "🔹 **2.** `.spam @user [nội dung tùy chỉnh]` ➔ Spam 3 câu/giây (Dùng câu tùy chỉnh hoặc ngẫu nhiên kho 209 câu).\n"
             "🔹 **3.** `.stop` ➔ Dừng mọi hoạt động & spam.\n"
             "🔹 **4.** `.on` ➔ Khôi phục hoạt động.\n"
             "🔹 **5.** `.stats` ➔ Xem thông số máy chủ.\n"
@@ -247,10 +238,10 @@ async def setup(ctx):
 @setup.error
 async def setup_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
+        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG PHẢI CHỦ SỞ HỮU (OWNER) CỦA BOT!"** 🔥💀')
 
 @bot.command(name="persona")
-@has_high_privilege()
+@is_bot_owner()
 async def persona(ctx, persona_id: int = None):
     global current_persona_id, last_active_persona_id
 
@@ -272,30 +263,42 @@ async def persona(ctx, persona_id: int = None):
 @persona.error
 async def persona_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
+        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG PHẢI CHỦ SỞ HỮU (OWNER) CỦA BOT!"** 🔥💀')
 
 @bot.command(name="spam")
-@has_high_privilege()
-async def spam(ctx, member: discord.Member = None):
+@is_bot_owner()
+async def spam(ctx, member: discord.Member = None, *, custom_text: str = None):
     global spam_task_running, is_spamming
     if member is None:
-        await ctx.send("⚠️ VUI LÒNG TAG TÊN NGƯỜI DÙNG CẦN SPAM! Ví dụ: `.spam @user`")
+        await ctx.send("⚠️ VUI LÒNG TAG TÊN NGƯỜI DÙNG CẦN SPAM! Ví dụ: `.spam @user thg ngu`")
         return
 
     if spam_task_running and not spam_task_running.done():
         spam_task_running.cancel()
 
     is_spamming = True  
-    await ctx.send(f"🚨 **BẮT ĐẦU CHIẾN DỊCH SPAM TỐC ĐỘ CAO:** {member.mention} 🖕🔥")
+    await ctx.send(f"🚨 **BẮT ĐẦU CHIẾN DỊCH SPAM 3 CÂU/GIÂY:** {member.mention} 🖕🔥")
 
     async def spam_loop():
         try:
             while True:
-                template = random.choice(ROAST_LINES)
-                full_message = template.format(username=member.mention)
-                await ctx.send(full_message)
-                # Đã thêm độ trễ 1.2 giây để tránh bị Discord giới hạn tốc độ (Rate Limit) làm khựng bot
-                await asyncio.sleep(1.2)
+                # Gửi 3 câu mỗi lượt (mỗi vòng lặp)
+                messages_to_send = []
+                for _ in range(3):
+                    if custom_text:
+                        # Nếu có nhập nội dung tùy chỉnh (ví dụ: thg ngu)
+                        messages_to_send.append(f"{member.mention} {custom_text}")
+                    else:
+                        # Nếu không nhập, lấy ngẫu nhiên từ 209 câu chửi
+                        template = random.choice(ROAST_LINES)
+                        messages_to_send.append(template.format(username=member.mention))
+                
+                # Gửi tuần tự 3 câu trong 1 lượt
+                for msg in messages_to_send:
+                    await ctx.send(msg)
+                
+                # Độ trễ 0.9 giây cho 1 lượt 3 câu (đảm bảo tốc độ nhanh và hạn chế tối đa rate limit)
+                await asyncio.sleep(0.9)
         except discord.Forbidden:
             print("[SPAM ERROR]: Bot bị mất quyền (Missing Access) trong kênh này!")
         except asyncio.CancelledError:
@@ -308,10 +311,10 @@ async def spam(ctx, member: discord.Member = None):
 @spam.error
 async def spam_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
+        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG PHẢI CHỦ SỞ HỮU (OWNER) CỦA BOT!"** 🔥💀')
 
 @bot.command(name="stop")
-@has_high_privilege()
+@is_bot_owner()
 async def stop_bot(ctx):
     global bot_stopped, is_spamming, spam_task_running
     bot_stopped = True
@@ -326,10 +329,10 @@ async def stop_bot(ctx):
 @stop_bot.error
 async def stop_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
+        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG PHẢI CHỦ SỞ HỮU (OWNER) CỦA BOT!"** 🔥💀')
 
 @bot.command(name="on")
-@has_high_privilege()
+@is_bot_owner()
 async def bot_on(ctx):
     global current_persona_id, last_active_persona_id, bot_stopped, is_spamming
     
@@ -343,10 +346,10 @@ async def bot_on(ctx):
 @bot_on.error
 async def bot_on_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
+        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG PHẢI CHỦ SỞ HỮU (OWNER) CỦA BOT!"** 🔥💀')
 
 @bot.command(name="off")
-@has_high_privilege()
+@is_bot_owner()
 async def bot_off(ctx):
     global current_persona_id
     current_persona_id = None
@@ -356,10 +359,10 @@ async def bot_off(ctx):
 @bot_off.error
 async def bot_off_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
+        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG PHẢI CHỦ SỞ HỮU (OWNER) CỦA BOT!"** 🔥💀')
 
 @bot.command(name="ban")
-@has_high_privilege()
+@is_bot_owner()
 async def ban(ctx, member: discord.Member = None, *, reason="Không có lý do"):
     if member is None:
         await ctx.send("⚠️ VUI LÒNG TAG THÀNH VIÊN CẦN BAN!")
@@ -373,7 +376,7 @@ async def ban(ctx, member: discord.Member = None, *, reason="Không có lý do")
 @ban.error
 async def ban_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
-        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG ĐỦ QUYỀN HẠN!"** 🔥💀')
+        await ctx.send('💀🔥 **"LỆNH BỊ TỪ CHỐI! BẠN KHÔNG PHẢI CHỦ SỞ HỮU (OWNER) CỦA BOT!"** 🔥💀')
 
 @bot.command(name="stats")
 async def stats(ctx):
@@ -425,14 +428,14 @@ async def help_command(ctx):
         title="📖 BẢNG HƯỚNG DẪN HỆ THỐNG - SUN FLOWER AI",
         description=(
             "Chào mừng bạn đến với bảng điều khiển lệnh của **Sun Flower AI**. "
-            "Dưới đây là danh sách toàn bộ các tính năng và lệnh hỗ trợ quản trị:\n\n"
+            "Dưới đây là danh sách toàn bộ các tính năng và lệnh hỗ trợ (Chỉ Owner Bot mới có quyền thực thi):\n\n"
             "⚙️ **CÁC LỆNH QUẢN TRỊ & TIỆN ÍCH:**\n"
             "• `.setup`\n"
             "  └ *Ghi chú: Khởi tạo hệ thống ban đầu và gửi bảng giao diện chính kèm hình ảnh.*\n\n"
             "• `.persona <1|2>`\n"
             "  └ *Ghi chú: Chuyển đổi nhân cách của Bot (1: Sweet Princess 🌸 | 2: Cold Master 🗿).*\n\n"
-            "• `.spam @user`\n"
-            "  └ *Ghi chú: Kích hoạt chế độ spam câu chửi tốc độ cao nhắm vào mục tiêu.*\n\n"
+            "• `.spam @user [nội dung tùy chỉnh]`\n"
+            "  └ *Ghi chú: Kích hoạt chế độ spam tốc độ cao 3 câu/giây (Dùng nội dung riêng hoặc tự động bốc ngẫu nhiên từ kho 209 câu chửi).*\n\n"
             "• `.stop`\n"
             "  └ *Ghi chú: Dừng ngay lập tức mọi hoạt động phản hồi chat tự động và các tác vụ spam đang chạy.*\n\n"
             "• `.on`\n"
@@ -453,7 +456,7 @@ async def help_command(ctx):
 
 @bot.event
 async def on_command_error(ctx, error):
-    if isinstance(error, (commands.CommandNotFound, commands.MissingPermissions, discord.errors.Forbidden)):
+    if isinstance(error, (commands.CommandNotFound, discord.errors.Forbidden)):
         return
     print(f"[ERROR]: {error}")
 
