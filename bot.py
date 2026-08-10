@@ -191,7 +191,6 @@ PERSONAS = {
     }
 }
 
-# CHỈ DUY NHẤT 2 ID OWNER MỚI CÓ QUYỀN ĐIỀU KHIỂN BOT
 def is_bot_owner():
     async def predicate(ctx):
         return ctx.author.id in BOT_OWNERS
@@ -223,7 +222,7 @@ async def setup(ctx):
             f"📌 **Kênh kết nối:** {ctx.channel.mention}\n"
             f"🌸 **Nhân cách mặc định:** `{p_info['name']}`\n\n"
             "🔹 **1.** `.persona <1|2>` ➔ Đổi nhân cách.\n"
-            "🔹 **2.** `.spam thằng ngu @user [nội dung tùy chỉnh]` ➔ Spam 1 câu mỗi 600ms (Dùng câu tùy chỉnh hoặc ngẫu nhiên kho 209 câu).\n"
+            "🔹 **2.** `.spam @user [câu chửi tùy chỉnh]` ➔ Spam tốc độ 600ms/câu (Dùng câu tùy chỉnh hoặc ngẫu nhiên kho 209 câu).\n"
             "🔹 **3.** `.stop` ➔ Dừng mọi hoạt động & spam.\n"
             "🔹 **4.** `.on` ➔ Khôi phục hoạt động.\n"
             "🔹 **5.** `.stats` ➔ Xem thông số máy chủ.\n"
@@ -267,14 +266,11 @@ async def persona_error(ctx, error):
 
 @bot.command(name="spam")
 @is_bot_owner()
-async def spam(ctx, keyword: str = None, member: discord.Member = None, *, custom_text: str = None):
+async def spam(ctx, member: discord.Member = None, *, custom_text: str = None):
     global spam_task_running, is_spamming
     
-    # Kiểm tra cú pháp: .spam thằng ngu @user [nội dung]
-    if keyword != "thằng" or member is None:
-        # Trường hợp người dùng nhập thiếu hoặc sai cú pháp cơ bản
-        # Thử kiểm tra nếu họ nhập .spam @user (thiếu keyword) thì hỗ trợ linh hoạt luôn hoặc báo lỗi
-        await ctx.send("⚠️ CÚ PHÁP ĐÚNG: `.spam thằng ngu @user [nội dung tùy chỉnh]`")
+    if member is None:
+        await ctx.send("⚠️ VUI LÒNG TAG TÊN NGƯỜI DÙNG! Ví dụ: `.spam @user thằng ngu`")
         return
 
     if spam_task_running and not spam_task_running.done():
@@ -294,7 +290,7 @@ async def spam(ctx, keyword: str = None, member: discord.Member = None, *, custo
                 
                 await ctx.send(msg)
                 
-                # Độ trễ 600 ms (0.6 giây) cho mỗi câu
+                # Tốc độ 600 ms (0.6 giây) cho mỗi câu
                 await asyncio.sleep(0.6)
         except discord.Forbidden:
             print("[SPAM ERROR]: Bot bị mất quyền (Missing Access) trong kênh này!")
@@ -431,7 +427,7 @@ async def help_command(ctx):
             "  └ *Ghi chú: Khởi tạo hệ thống ban đầu và gửi bảng giao diện chính kèm hình ảnh.*\n\n"
             "• `.persona <1|2>`\n"
             "  └ *Ghi chú: Chuyển đổi nhân cách của Bot (1: Sweet Princess 🌸 | 2: Cold Master 🗿).*\n\n"
-            "• `.spam thằng ngu @user [nội dung tùy chỉnh]`\n"
+            "• `.spam @user [câu chửi tùy chỉnh]`\n"
             "  └ *Ghi chú: Kích hoạt chế độ spam tốc độ 600ms/câu (Dùng nội dung riêng hoặc tự động bốc ngẫu nhiên từ kho 209 câu chửi).*\n\n"
             "• `.stop`\n"
             "  └ *Ghi chú: Dừng ngay lập tức mọi hoạt động phản hồi chat tự động và các tác vụ spam đang chạy.*\n\n"
