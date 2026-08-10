@@ -23,7 +23,7 @@ intents.members = True
 intents.guilds = True
 intents.moderation = True
 
-bot = commands.Bot(command_prefix=(".", "/", "?", "@", "#"), intents=intents, help_command=None)
+bot = commands.Bot(command_prefix=(".", "/", "?", "@"), intents=intents, help_command=None)
 
 current_persona_id = 1
 last_active_persona_id = 1
