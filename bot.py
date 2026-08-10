@@ -54,7 +54,7 @@ ROAST_LINES = [
     "# Địt vào mồm mày thối, nuốt tinh trùng thối rữa + phân chó tươi! {username}",
     "# Mày chết cho sạch đường phố, đồ rác rưởi bệnh hoạn của xã hội chuyên bú cặc thú vật! {username}",
     "# Mày chết mẹ mày, đồ rác của xã hội bệnh hoạn chuyên bú cặc thú! {username}",
-    "# Lồn to như cái chảo lớn, chứa tinh trùng thối rữa + máu mủ đặc + nước đái thú! {username}",
+    "# Lồn to như cái chảo lớn, chứa tinh trùng thối rữa + máu mủ + nước đái thú! {username}",
     "# Đụ má thằng mặt khỉ đột, mẹ mày bú cặc ngựa cả ngày + nuốt tinh trùng sống! {username}",
     "# Chửi tục cái lồn nát, cút xéo thằng chó đẻ bú cặc thú cho đã! {username}",
     "# Đụ má cái lồn to đùng chứa tinh trùng thối + máu mủ + nước đái chó! {username}",
@@ -223,7 +223,7 @@ async def setup(ctx):
             f"📌 **Kênh kết nối:** {ctx.channel.mention}\n"
             f"🌸 **Nhân cách mặc định:** `{p_info['name']}`\n\n"
             "🔹 **1.** `.persona <1|2>` ➔ Đổi nhân cách.\n"
-            "🔹 **2.** `.spam @user [nội dung tùy chỉnh]` ➔ Spam 3 câu/giây (Dùng câu tùy chỉnh hoặc ngẫu nhiên kho 209 câu).\n"
+            "🔹 **2.** `.spam thằng ngu @user [nội dung tùy chỉnh]` ➔ Spam 1 câu mỗi 600ms (Dùng câu tùy chỉnh hoặc ngẫu nhiên kho 209 câu).\n"
             "🔹 **3.** `.stop` ➔ Dừng mọi hoạt động & spam.\n"
             "🔹 **4.** `.on` ➔ Khôi phục hoạt động.\n"
             "🔹 **5.** `.stats` ➔ Xem thông số máy chủ.\n"
@@ -267,38 +267,35 @@ async def persona_error(ctx, error):
 
 @bot.command(name="spam")
 @is_bot_owner()
-async def spam(ctx, member: discord.Member = None, *, custom_text: str = None):
+async def spam(ctx, keyword: str = None, member: discord.Member = None, *, custom_text: str = None):
     global spam_task_running, is_spamming
-    if member is None:
-        await ctx.send("⚠️ VUI LÒNG TAG TÊN NGƯỜI DÙNG CẦN SPAM! Ví dụ: `.spam @user thg ngu`")
+    
+    # Kiểm tra cú pháp: .spam thằng ngu @user [nội dung]
+    if keyword != "thằng" or member is None:
+        # Trường hợp người dùng nhập thiếu hoặc sai cú pháp cơ bản
+        # Thử kiểm tra nếu họ nhập .spam @user (thiếu keyword) thì hỗ trợ linh hoạt luôn hoặc báo lỗi
+        await ctx.send("⚠️ CÚ PHÁP ĐÚNG: `.spam thằng ngu @user [nội dung tùy chỉnh]`")
         return
 
     if spam_task_running and not spam_task_running.done():
         spam_task_running.cancel()
 
     is_spamming = True  
-    await ctx.send(f"🚨 **BẮT ĐẦU CHIẾN DỊCH SPAM 3 CÂU/GIÂY:** {member.mention} 🖕🔥")
+    await ctx.send(f"🚨 **BẮT ĐẦU CHIẾN DỊCH SPAM (TỐC ĐỘ 600MS/CÂU):** {member.mention} 🖕🔥")
 
     async def spam_loop():
         try:
             while True:
-                # Gửi 3 câu mỗi lượt (mỗi vòng lặp)
-                messages_to_send = []
-                for _ in range(3):
-                    if custom_text:
-                        # Nếu có nhập nội dung tùy chỉnh (ví dụ: thg ngu)
-                        messages_to_send.append(f"{member.mention} {custom_text}")
-                    else:
-                        # Nếu không nhập, lấy ngẫu nhiên từ 209 câu chửi
-                        template = random.choice(ROAST_LINES)
-                        messages_to_send.append(template.format(username=member.mention))
+                if custom_text:
+                    msg = f"{member.mention} {custom_text}"
+                else:
+                    template = random.choice(ROAST_LINES)
+                    msg = template.format(username=member.mention)
                 
-                # Gửi tuần tự 3 câu trong 1 lượt
-                for msg in messages_to_send:
-                    await ctx.send(msg)
+                await ctx.send(msg)
                 
-                # Độ trễ 0.9 giây cho 1 lượt 3 câu (đảm bảo tốc độ nhanh và hạn chế tối đa rate limit)
-                await asyncio.sleep(0.9)
+                # Độ trễ 600 ms (0.6 giây) cho mỗi câu
+                await asyncio.sleep(0.6)
         except discord.Forbidden:
             print("[SPAM ERROR]: Bot bị mất quyền (Missing Access) trong kênh này!")
         except asyncio.CancelledError:
@@ -434,8 +431,8 @@ async def help_command(ctx):
             "  └ *Ghi chú: Khởi tạo hệ thống ban đầu và gửi bảng giao diện chính kèm hình ảnh.*\n\n"
             "• `.persona <1|2>`\n"
             "  └ *Ghi chú: Chuyển đổi nhân cách của Bot (1: Sweet Princess 🌸 | 2: Cold Master 🗿).*\n\n"
-            "• `.spam @user [nội dung tùy chỉnh]`\n"
-            "  └ *Ghi chú: Kích hoạt chế độ spam tốc độ cao 3 câu/giây (Dùng nội dung riêng hoặc tự động bốc ngẫu nhiên từ kho 209 câu chửi).*\n\n"
+            "• `.spam thằng ngu @user [nội dung tùy chỉnh]`\n"
+            "  └ *Ghi chú: Kích hoạt chế độ spam tốc độ 600ms/câu (Dùng nội dung riêng hoặc tự động bốc ngẫu nhiên từ kho 209 câu chửi).*\n\n"
             "• `.stop`\n"
             "  └ *Ghi chú: Dừng ngay lập tức mọi hoạt động phản hồi chat tự động và các tác vụ spam đang chạy.*\n\n"
             "• `.on`\n"
