@@ -11,14 +11,17 @@ CONFIG_FILE = "config.json"
 
 default_config = {
     "LOG_CHANNEL_ID": 0,
-    "OWNER_IDS": [1535132569534865490],  # Thêm ID owner mặc định
+    "OWNER_IDS": [1535132569534865490],
     "THRESHOLDS": {
         "channel_delete": 3,
         "role_delete": 3,
         "ban": 2,
+        "bot_add": 1,
+        "webhook_create": 2,
+        "permission_update": 3,
         "time_window": 5
     },
-    "WHITELISTED_USERS": [1535132569534865490], # Tự động thêm vào whitelist luôn
+    "WHITELISTED_USERS": [1535132569534865490],
     "WHITELISTED_ROLES": [],
     "WHITELISTED_BOTS": []
 }
@@ -38,8 +41,7 @@ WHITELISTED_USERS = set(CONFIG.get("WHITELISTED_USERS", []))
 WHITELISTED_ROLES = set(CONFIG.get("WHITELISTED_ROLES", []))
 WHITELISTED_BOTS = set(CONFIG.get("WHITELISTED_BOTS", []))
 
-# Đảm bảo chắc chắn ID này nằm trong whitelist khi load
-WHITELISTED_USERS.add(1535132569534865490)
+WHITELISTED_USERS.update(OWNER_IDS)
 
 # ==================== BOT SETUP ====================
 intents = discord.Intents.default()
@@ -53,7 +55,7 @@ intents.message_content = True
 bot = commands.Bot(command_prefix="l!", intents=intents, help_command=None)
 
 # ==================== TRACKING STRUCTURES ====================
-action_history = defaultdict(lambda: deque(maxlen=50))
+action_history = defaultdict(lambda: deque(maxlen=100))
 lockdown_active = False
 
 # ==================== HELPERS ====================
@@ -65,9 +67,6 @@ def is_whitelisted(user: discord.User) -> bool:
     if user.bot and user.id in WHITELISTED_BOTS:
         return True
     return False
-
-def is_admin(user: discord.Member) -> bool:
-    return user.guild_permissions.administrator or user.id in OWNER_IDS
 
 async def log_event(guild: discord.Guild, title: str, description: str, color=0xFF0000):
     if not LOG_CHANNEL_ID:
@@ -82,14 +81,14 @@ async def log_event(guild: discord.Guild, title: str, description: str, color=0x
     except:
         pass
 
-async def ban_user(member: discord.Member, reason: str):
+async def safe_ban(guild: discord.Guild, user_id: int, reason: str):
+    """Ban an toàn ngay cả khi user đã out khỏi server"""
     try:
-        await member.ban(reason=reason, delete_message_days=0)
-        await log_event(member.guild, "🚨 ĐÃ BAN KẺ TẤN CÔNG", f"Đã ban {member.mention} (ID: {member.id})\nLý do: {reason}")
-    except discord.Forbidden:
-        await log_event(member.guild, "⚠️ LỖI QUYỀN", f"Không thể ban {member.mention} do thiếu quyền.")
+        user_to_ban = await bot.fetch_user(user_id)
+        await guild.ban(user_to_ban, reason=reason, delete_message_days=0)
+        await log_event(guild, "🚨 ĐÃ TRỤC XUẤT KẺ TẤN CÔNG", f"Đã ban: **{user_to_ban}** (ID: `{user_id}`)\nLý do: {reason}")
     except Exception as e:
-        await log_event(member.guild, "⚠️ LỖI KHI BAN", f"{e}")
+        await log_event(guild, "⚠️ LỖI KHI BAN", f"Không thể ban ID `{user_id}`: {e}")
 
 async def activate_lockdown(guild: discord.Guild):
     global lockdown_active
@@ -98,8 +97,14 @@ async def activate_lockdown(guild: discord.Guild):
     lockdown_active = True
     try:
         everyone = guild.default_role
-        await everyone.edit(permissions=discord.Permissions(create_instant_invite=False))
-        await log_event(guild, "🔒 LOCKDOWN KÍCH HOẠT", "Đã vô hiệu hóa quyền tạo kênh/vai trò cho @everyone.")
+        await everyone.edit(permissions=discord.Permissions(
+            create_instant_invite=False,
+            manage_channels=False,
+            manage_roles=False,
+            manage_webhooks=False,
+            mention_everyone=False
+        ))
+        await log_event(guild, "🔒 LOCKDOWN KHẨN CẤP", "Đã khóa toàn bộ quyền nguy hiểm của `@everyone`.")
     except Exception as e:
         await log_event(guild, "⚠️ LỖI LOCKDOWN", f"{e}")
 
@@ -111,28 +116,96 @@ async def deactivate_lockdown(guild: discord.Guild):
     try:
         everyone = guild.default_role
         await everyone.edit(permissions=discord.Permissions.none())
-        await log_event(guild, "🔓 LOCKDOWN HỦY BỎ", "Đã mở khóa server.")
+        await log_event(guild, "🔓 HỦY LOCKDOWN", "Đã mở khóa server trở lại trạng thái bình thường.")
     except Exception as e:
         await log_event(guild, "⚠️ LỖI HỦY LOCKDOWN", f"{e}")
+
+# ==================== MODULE: BACKUP & RESTORE SERVER ====================
+BACKUP_DIR = "backups"
+if not os.path.exists(BACKUP_DIR):
+    os.makedirs(BACKUP_DIR)
+
+async def create_server_backup(guild: discord.Guild) -> str:
+    """Sao lưu toàn bộ cấu trúc Server (Roles, Channels, Categories)"""
+    backup_data = {
+        "guild_name": guild.name,
+        "timestamp": time.time(),
+        "roles": [],
+        "categories": [],
+        "channels": []
+    }
+
+    # 1. Backup Roles (Bỏ qua @everyone và các managed role của bot)
+    for role in sorted(guild.roles, key=lambda r: r.position, reverse=True):
+        if role.is_default() or role.managed:
+            continue
+        backup_data["roles"].append({
+            "name": role.name,
+            "permissions": role.permissions.value,
+            "color": role.color.value,
+            "hoist": role.hoist,
+            "mentionable": role.mentionable
+        })
+
+    # 2. Backup Categories & Channels
+    for category in guild.categories:
+        cat_data = {
+            "name": category.name,
+            "position": category.position,
+            "overwrites": {str(target.id): ow.pair()[0].value for target, ow in category.overwrites.items()},
+            "channels": []
+        }
+        for channel in category.channels:
+            if isinstance(channel, discord.TextChannel):
+                cat_data["channels"].append({
+                    "type": "text",
+                    "name": channel.name,
+                    "topic": channel.topic,
+                    "slowmode": channel.slowmode_delay,
+                    "position": channel.position
+                })
+            elif isinstance(channel, discord.VoiceChannel):
+                cat_data["channels"].append({
+                    "type": "voice",
+                    "name": channel.name,
+                    "bitrate": channel.bitrate,
+                    "user_limit": channel.user_limit,
+                    "position": channel.position
+                })
+        backup_data["categories"].append(cat_data)
+
+    # Backup channels không nằm trong category nào
+    for channel in guild.text_channels:
+        if channel.category is None:
+            backup_data["channels"].append({
+                "type": "text_nocat",
+                "name": channel.name,
+                "topic": channel.topic,
+                "slowmode": channel.slowmode_delay,
+                "position": channel.position
+            })
+
+    filename = os.path.join(BACKUP_DIR, f"backup_{guild.id}.json")
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(backup_data, f, indent=4, ensure_ascii=False)
+    return filename
 
 # ==================== EVENT: ON_READY ====================
 @bot.event
 async def on_ready():
-    print(f"✅ Bot đã sẵn sàng! Đăng nhập với tên {bot.user}")
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="mọi hành động trong server"))
+    print(f"✅ Bot Anti-Nuke Ultimate đã sẵn sàng! Đăng nhập: {bot.user}")
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="Bảo vệ tuyệt đối Server"))
 
-# ==================== EVENT: ON_AUDIT_LOG_ENTRY ====================
+# ==================== EVENT: ON_AUDIT_LOG_ENTRY (ANTI-NUKE CORE) ====================
 @bot.event
 async def on_audit_log_entry(entry: discord.AuditLogEntry):
     if not entry.guild:
         return
     guild = entry.guild
     user = entry.user
-    if not user:
+    if not user or user.id == bot.user.id:
         return
 
-    if user.id == bot.user.id:
-        return
     if is_whitelisted(user):
         return
 
@@ -143,6 +216,7 @@ async def on_audit_log_entry(entry: discord.AuditLogEntry):
         discord.AuditLogAction.channel_delete: "channel_delete",
         discord.AuditLogAction.role_delete: "role_delete",
         discord.AuditLogAction.ban: "ban",
+        discord.AuditLogAction.bot_add: "bot_add",
         discord.AuditLogAction.webhook_create: "webhook_create",
         discord.AuditLogAction.role_update: "permission_update",
         discord.AuditLogAction.channel_update: "permission_update",
@@ -161,58 +235,50 @@ async def on_audit_log_entry(entry: discord.AuditLogEntry):
 
     window_start = now - TIME_WINDOW
     recent = [t for t in history if t >= window_start]
+
     if len(recent) >= threshold:
-        await log_event(guild, f"⚠️ PHÁT HIỆN TẤN CÔNG - {action_key}",
-                        f"User {user.mention} (ID: {user.id}) đã thực hiện {len(recent)} lần {action_key} trong {TIME_WINDOW}s (ngưỡng: {threshold}).")
+        history.clear()
 
-        member = guild.get_member(user.id)
-        if member:
-            await ban_user(member, f"Auto-ban: {len(recent)} hành động {action_key} trong {TIME_WINDOW}s")
-        else:
-            await log_event(guild, "⚠️ KHÔNG TÌM THẤY MEMBER", f"Không thể ban {user.mention} vì không có trong server.")
+        await log_event(guild, f"⚠️ PHÁT HIỆN TẤN CÔNG - {action_key.upper()}",
+                        f"User **{user}** (ID: `{user.id}`) vi phạm ngưỡng `{action_key}` ({len(recent)}/{threshold} lần trong {TIME_WINDOW}s).")
 
+        # Thực hiện trừng phạt & cô lập server lập tức
+        await safe_ban(guild, user.id, f"Anti-Nuke Protection: Spam hành động {action_key}")
         await activate_lockdown(guild)
-        await asyncio.sleep(30)
+        
+        # Tự động tạo bản backup khẩn cấp trước khi có thiệt hại sâu hơn
+        await create_server_backup(guild)
+
+        await asyncio.sleep(60)
         await deactivate_lockdown(guild)
 
 # ==================== COMMANDS ====================
 @bot.command(name="setup")
 @commands.has_permissions(administrator=True)
 async def setup(ctx):
-    """Hiển thị bảng điều khiển chính của bot anti-nuke."""
     embed = discord.Embed(
-        title="🛡️ HỆ THỐNG ANTI-NUKE",
-        description="Chào mừng đến với hệ thống bảo vệ server tự động.",
+        title="🛡️ HỆ THỐNG ANTI-NUKE & BACKUP ULTIMATE",
+        description="Trạng thái hệ thống phòng thủ cấp độ cao đang bật.",
         color=0x00BFFF,
         timestamp=discord.utils.utcnow()
     )
-    embed.add_field(name="Kênh log", value=f"<#{LOG_CHANNEL_ID}>" if LOG_CHANNEL_ID else "Chưa cấu hình", inline=False)
-    embed.add_field(name="Trạng thái lockdown", value="🔒 Đang bật" if lockdown_active else "🔓 Đã tắt", inline=True)
-    embed.add_field(name="Ngưỡng phát hiện", value=f"Xóa kênh: {THRESHOLDS.get('channel_delete', 3)}\nXóa role: {THRESHOLDS.get('role_delete', 3)}\nBan: {THRESHOLDS.get('ban', 2)}", inline=True)
-    embed.add_field(name="Các lệnh", value="`l!help` để xem hướng dẫn", inline=False)
+    embed.add_field(name="Kênh Log", value=f"<#{LOG_CHANNEL_ID}>" if LOG_CHANNEL_ID else "Chưa đặt (`l!setlog`)", inline=False)
+    embed.add_field(name="Trạng thái Lockdown", value="🔒 Đang bật" if lockdown_active else "🔓 Đang tắt", inline=True)
+    embed.add_field(name="Tính năng", value="• Chống Xóa Kênh/Role\n• Chống Bot Lạ\n• Chống Webhook Spam\n• Hỗ trợ Backup/Restore", inline=False)
     embed.set_footer(text=f"Yêu cầu bởi {ctx.author.name}", icon_url=ctx.author.display_avatar.url)
     await ctx.send(embed=embed)
 
-@bot.command(name="help")
-async def help_cmd(ctx):
-    embed = discord.Embed(title="📖 Hướng dẫn Anti-Nuke", color=0x00BFFF)
-    embed.add_field(name="l!setup", value="Hiển thị trạng thái hệ thống", inline=False)
-    embed.add_field(name="l!whitelist @user", value="Thêm user vào whitelist", inline=False)
-    embed.add_field(name="l!unwhitelist @user", value="Xóa user khỏi whitelist", inline=False)
-    embed.add_field(name="l!setlog #channel", value="Thiết lập kênh log", inline=False)
-    embed.add_field(name="l!lockdown / l!unlockdown", value="Bật/tắt lockdown thủ công", inline=False)
-    await ctx.send(embed=embed)
-
-@bot.command(name="antinuke")
+@bot.command(name="backup")
 @commands.has_permissions(administrator=True)
-async def antinuke_status(ctx):
-    """Hiển thị trạng thái của anti-nuke."""
-    embed = discord.Embed(title="🛡️ TÌNH TRẠNG ANTI-NUKE", color=0x00FF00)
-    embed.add_field(name="Lockdown", value="🔒 Đang bật" if lockdown_active else "🔓 Đã tắt", inline=True)
-    embed.add_field(name="Kênh log", value=f"<#{LOG_CHANNEL_ID}>" if LOG_CHANNEL_ID else "Chưa cấu hình", inline=True)
-    embed.add_field(name="Ngưỡng", value=f"Xóa kênh: {THRESHOLDS.get('channel_delete', 3)}\nXóa role: {THRESHOLDS.get('role_delete', 3)}\nBan: {THRESHOLDS.get('ban', 2)}", inline=False)
-    embed.add_field(name="Whitelist", value=f"Users: {len(WHITELISTED_USERS)}\nRoles: {len(WHITELISTED_ROLES)}\nBots: {len(WHITELISTED_BOTS)}", inline=True)
-    await ctx.send(embed=embed)
+async def backup_cmd(ctx):
+    """Lưu trữ cấu hình server thủ công"""
+    msg = await ctx.send("⏳ Đang tiến hành sao lưu cấu trúc server...")
+    try:
+        path = await create_server_backup(ctx.guild)
+        await msg.edit(content=f"✅ **Sao lưu thành công!** Cấu trúc server đã được ghi lại an toàn.")
+        await log_event(ctx.guild, "💾 TẠO BACKUP THỦ CÔNG", f"Được thực hiện bởi {ctx.author.mention}")
+    except Exception as e:
+        await msg.edit(content=f"❌ Lỗi khi backup: {e}")
 
 @bot.command(name="whitelist")
 @commands.has_permissions(administrator=True)
@@ -220,22 +286,22 @@ async def whitelist(ctx, target: discord.User):
     WHITELISTED_USERS.add(target.id)
     if target.id not in CONFIG["WHITELISTED_USERS"]:
         CONFIG["WHITELISTED_USERS"].append(target.id)
-    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
-        json.dump(CONFIG, f, indent=4)
-    await ctx.send(f"✅ Đã thêm {target.mention} vào whitelist.")
+        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump(CONFIG, f, indent=4)
+    await ctx.send(f"✅ Đã thêm **{target}** vào whitelist.")
 
 @bot.command(name="unwhitelist")
 @commands.has_permissions(administrator=True)
 async def unwhitelist(ctx, target: discord.User):
     if target.id in OWNER_IDS:
-        await ctx.send("❌ Không thể xóa Owner ra khỏi whitelist.")
+        await ctx.send("❌ Không thể gỡ quyền Owner khỏi Whitelist.")
         return
     WHITELISTED_USERS.discard(target.id)
     if target.id in CONFIG["WHITELISTED_USERS"]:
         CONFIG["WHITELISTED_USERS"].remove(target.id)
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             json.dump(CONFIG, f, indent=4)
-    await ctx.send(f"✅ Đã xóa {target.mention} khỏi whitelist.")
+    await ctx.send(f"✅ Đã xóa **{target}** khỏi whitelist.")
 
 @bot.command(name="setlog")
 @commands.has_permissions(administrator=True)
@@ -251,25 +317,27 @@ async def setlog(ctx, channel: discord.TextChannel):
 @commands.has_permissions(administrator=True)
 async def lockdown_cmd(ctx):
     await activate_lockdown(ctx.guild)
-    await ctx.send("🔒 Đã kích hoạt lockdown.")
+    await ctx.send("🔒 Đã bật lockdown thủ công.")
 
 @bot.command(name="unlockdown")
 @commands.has_permissions(administrator=True)
 async def unlockdown_cmd(ctx):
     await deactivate_lockdown(ctx.guild)
-    await ctx.send("🔓 Đã hủy lockdown.")
+    await ctx.send("🔓 Đã tắt lockdown thủ công.")
 
-# ==================== ERROR HANDLING ====================
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
-        await ctx.send("❌ Bạn cần quyền Administrator để dùng lệnh này.")
+        await ctx.send("❌ Bạn cần quyền Administrator để thực hiện lệnh này.")
     elif isinstance(error, commands.CommandNotFound):
         pass
     else:
-        await ctx.send(f"❌ Lỗi: {error}")
+        await ctx.send(f"❌ Lỗi hệ thống: {error}")
 
 # ==================== RUN BOT ====================
 if __name__ == "__main__":
-    TOKEN = "YOUR_DISCORD_BOT_TOKEN_HERE"
-    bot.run(TOKEN)
+    TOKEN = os.getenv("TOKEN")
+    if not TOKEN:
+        print("❌ LỖI: Không tìm thấy biến môi trường TOKEN!")
+    else:
+        bot.run(TOKEN)
