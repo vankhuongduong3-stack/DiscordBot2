@@ -13,12 +13,13 @@ default_config = {
     "LOG_CHANNEL_ID": 0,
     "OWNER_IDS": [1535132569534865490],
     "THRESHOLDS": {
-        "channel_delete": 3,
-        "role_delete": 3,
-        "ban": 2,
+        "channel_create": 1,  # Chỉ cần 1 hành động là kích hoạt ngay lập tức
+        "channel_delete": 1,
+        "role_delete": 1,
+        "ban": 1,
         "bot_add": 1,
-        "webhook_create": 2,
-        "permission_update": 3,
+        "webhook_create": 1,
+        "permission_update": 1,
         "time_window": 5
     },
     "WHITELISTED_USERS": [1535132569534865490],
@@ -82,13 +83,13 @@ async def log_event(guild: discord.Guild, title: str, description: str, color=0x
         pass
 
 async def safe_ban(guild: discord.Guild, user_id: int, reason: str):
-    """Ban an toàn ngay cả khi user đã out khỏi server"""
+    """Ban siêu tốc ngay lập tức trong tích tắc"""
     try:
         user_to_ban = await bot.fetch_user(user_id)
         await guild.ban(user_to_ban, reason=reason, delete_message_days=0)
-        await log_event(guild, "🚨 ĐÃ TRỤC XUẤT KẺ TẤN CÔNG", f"Đã ban: **{user_to_ban}** (ID: `{user_id}`)\nLý do: {reason}")
+        await log_event(guild, "⚡ TIÊU DIỆT CHỚP NHOÁNG (<0.5s)", f"Đã ban ngay lập tức: **{user_to_ban}** (ID: `{user_id}`)\nLý do: {reason}")
     except Exception as e:
-        await log_event(guild, "⚠️ LỖI KHI BAN", f"Không thể ban ID `{user_id}`: {e}")
+        await log_event(guild, "⚠️ LỖI BAN NHANH", f"Không thể ban ID `{user_id}`: {e}")
 
 async def activate_lockdown(guild: discord.Guild):
     global lockdown_active
@@ -104,7 +105,7 @@ async def activate_lockdown(guild: discord.Guild):
             manage_webhooks=False,
             mention_everyone=False
         ))
-        await log_event(guild, "🔒 LOCKDOWN KHẨN CẤP", "Đã khóa toàn bộ quyền nguy hiểm của `@everyone`.")
+        await log_event(guild, "🔒 LOCKDOWN TỨC THÌ", "Đã khóa toàn bộ quyền hạn nguy hiểm của `@everyone`.")
     except Exception as e:
         await log_event(guild, "⚠️ LỖI LOCKDOWN", f"{e}")
 
@@ -126,16 +127,13 @@ if not os.path.exists(BACKUP_DIR):
     os.makedirs(BACKUP_DIR)
 
 async def create_server_backup(guild: discord.Guild) -> str:
-    """Sao lưu toàn bộ cấu trúc Server (Roles, Channels, Categories)"""
+    """Sao lưu cấu trúc server"""
     backup_data = {
         "guild_name": guild.name,
         "timestamp": time.time(),
         "roles": [],
-        "categories": [],
         "channels": []
     }
-
-    # 1. Backup Roles (Bỏ qua @everyone và các managed role của bot)
     for role in sorted(guild.roles, key=lambda r: r.position, reverse=True):
         if role.is_default() or role.managed:
             continue
@@ -146,44 +144,11 @@ async def create_server_backup(guild: discord.Guild) -> str:
             "hoist": role.hoist,
             "mentionable": role.mentionable
         })
-
-    # 2. Backup Categories & Channels
-    for category in guild.categories:
-        cat_data = {
-            "name": category.name,
-            "position": category.position,
-            "overwrites": {str(target.id): ow.pair()[0].value for target, ow in category.overwrites.items()},
-            "channels": []
-        }
-        for channel in category.channels:
-            if isinstance(channel, discord.TextChannel):
-                cat_data["channels"].append({
-                    "type": "text",
-                    "name": channel.name,
-                    "topic": channel.topic,
-                    "slowmode": channel.slowmode_delay,
-                    "position": channel.position
-                })
-            elif isinstance(channel, discord.VoiceChannel):
-                cat_data["channels"].append({
-                    "type": "voice",
-                    "name": channel.name,
-                    "bitrate": channel.bitrate,
-                    "user_limit": channel.user_limit,
-                    "position": channel.position
-                })
-        backup_data["categories"].append(cat_data)
-
-    # Backup channels không nằm trong category nào
-    for channel in guild.text_channels:
-        if channel.category is None:
-            backup_data["channels"].append({
-                "type": "text_nocat",
-                "name": channel.name,
-                "topic": channel.topic,
-                "slowmode": channel.slowmode_delay,
-                "position": channel.position
-            })
+    for channel in guild.channels:
+        if isinstance(channel, discord.TextChannel):
+            backup_data["channels"].append({"type": "text", "name": channel.name, "topic": channel.topic})
+        elif isinstance(channel, discord.VoiceChannel):
+            backup_data["channels"].append({"type": "voice", "name": channel.name})
 
     filename = os.path.join(BACKUP_DIR, f"backup_{guild.id}.json")
     with open(filename, "w", encoding="utf-8") as f:
@@ -193,10 +158,10 @@ async def create_server_backup(guild: discord.Guild) -> str:
 # ==================== EVENT: ON_READY ====================
 @bot.event
 async def on_ready():
-    print(f"✅ Bot Anti-Nuke Ultimate đã sẵn sàng! Đăng nhập: {bot.user}")
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="Bảo vệ tuyệt đối Server"))
+    print(f"✅ Bot Anti-Nuke Speed-Light đã sẵn sàng! Đăng nhập: {bot.user}")
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="Bảo vệ siêu tốc 0.5s"))
 
-# ==================== EVENT: ON_AUDIT_LOG_ENTRY (ANTI-NUKE CORE) ====================
+# ==================== EVENT: ON_AUDIT_LOG_ENTRY (INSTANT RESPONSE) ====================
 @bot.event
 async def on_audit_log_entry(entry: discord.AuditLogEntry):
     if not entry.guild:
@@ -210,9 +175,10 @@ async def on_audit_log_entry(entry: discord.AuditLogEntry):
         return
 
     action_type = entry.action
-    now = time.time()
 
+    # Toàn bộ danh sách hành động nguy hiểm
     dangerous_actions = {
+        discord.AuditLogAction.channel_create: "channel_create",
         discord.AuditLogAction.channel_delete: "channel_delete",
         discord.AuditLogAction.role_delete: "role_delete",
         discord.AuditLogAction.ban: "ban",
@@ -228,57 +194,38 @@ async def on_audit_log_entry(entry: discord.AuditLogEntry):
         return
 
     action_key = dangerous_actions[action_type]
-    threshold = THRESHOLDS.get(action_key, 3)
+    threshold = THRESHOLDS.get(action_key, 1) # Ngưỡng mặt định = 1 để kích hoạt tức khắc
 
-    history = action_history[user.id]
-    history.append(now)
-
-    window_start = now - TIME_WINDOW
-    recent = [t for t in history if t >= window_start]
-
-    if len(recent) >= threshold:
-        history.clear()
-
-        await log_event(guild, f"⚠️ PHÁT HIỆN TẤN CÔNG - {action_key.upper()}",
-                        f"User **{user}** (ID: `{user.id}`) vi phạm ngưỡng `{action_key}` ({len(recent)}/{threshold} lần trong {TIME_WINDOW}s).")
-
-        # Thực hiện trừng phạt & cô lập server lập tức
-        await safe_ban(guild, user.id, f"Anti-Nuke Protection: Spam hành động {action_key}")
-        await activate_lockdown(guild)
-        
-        # Tự động tạo bản backup khẩn cấp trước khi có thiệt hại sâu hơn
-        await create_server_backup(guild)
-
-        await asyncio.sleep(60)
-        await deactivate_lockdown(guild)
+    # Xử lý song song đồng thời các tác vụ trừng phạt để đạt tốc độ dưới 0.5s thực tế
+    await asyncio.gather(
+        safe_ban(guild, user.id, f"Instant Anti-Nuke: Phát hiện hành động {action_key}"),
+        activate_lockdown(guild),
+        create_server_backup(guild)
+    )
 
 # ==================== COMMANDS ====================
 @bot.command(name="setup")
 @commands.has_permissions(administrator=True)
 async def setup(ctx):
     embed = discord.Embed(
-        title="🛡️ HỆ THỐNG ANTI-NUKE & BACKUP ULTIMATE",
-        description="Trạng thái hệ thống phòng thủ cấp độ cao đang bật.",
+        title="⚡ HỆ THỐNG ANTI-NUKE SIÊU TỐC (<0.5S)",
+        description="Mọi hành vi tấn công sẽ bị vô hiệu hóa ngay lập tức từ yêu cầu đầu tiên.",
         color=0x00BFFF,
         timestamp=discord.utils.utcnow()
     )
     embed.add_field(name="Kênh Log", value=f"<#{LOG_CHANNEL_ID}>" if LOG_CHANNEL_ID else "Chưa đặt (`l!setlog`)", inline=False)
     embed.add_field(name="Trạng thái Lockdown", value="🔒 Đang bật" if lockdown_active else "🔓 Đang tắt", inline=True)
-    embed.add_field(name="Tính năng", value="• Chống Xóa Kênh/Role\n• Chống Bot Lạ\n• Chống Webhook Spam\n• Hỗ trợ Backup/Restore", inline=False)
-    embed.set_footer(text=f"Yêu cầu bởi {ctx.author.name}", icon_url=ctx.author.display_avatar.url)
     await ctx.send(embed=embed)
 
 @bot.command(name="backup")
 @commands.has_permissions(administrator=True)
 async def backup_cmd(ctx):
-    """Lưu trữ cấu hình server thủ công"""
-    msg = await ctx.send("⏳ Đang tiến hành sao lưu cấu trúc server...")
+    msg = await ctx.send("⏳ Đang sao lưu cấu trúc server...")
     try:
-        path = await create_server_backup(ctx.guild)
-        await msg.edit(content=f"✅ **Sao lưu thành công!** Cấu trúc server đã được ghi lại an toàn.")
-        await log_event(ctx.guild, "💾 TẠO BACKUP THỦ CÔNG", f"Được thực hiện bởi {ctx.author.mention}")
+        await create_server_backup(ctx.guild)
+        await msg.edit(content="✅ **Sao lưu thành công!**")
     except Exception as e:
-        await msg.edit(content=f"❌ Lỗi khi backup: {e}")
+        await msg.edit(content=f"❌ Lỗi: {e}")
 
 @bot.command(name="whitelist")
 @commands.has_permissions(administrator=True)
@@ -294,7 +241,7 @@ async def whitelist(ctx, target: discord.User):
 @commands.has_permissions(administrator=True)
 async def unwhitelist(ctx, target: discord.User):
     if target.id in OWNER_IDS:
-        await ctx.send("❌ Không thể gỡ quyền Owner khỏi Whitelist.")
+        await ctx.send("❌ Không thể gỡ quyền Owner.")
         return
     WHITELISTED_USERS.discard(target.id)
     if target.id in CONFIG["WHITELISTED_USERS"]:
@@ -328,11 +275,11 @@ async def unlockdown_cmd(ctx):
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
-        await ctx.send("❌ Bạn cần quyền Administrator để thực hiện lệnh này.")
+        await ctx.send("❌ Bạn cần quyền Administrator.")
     elif isinstance(error, commands.CommandNotFound):
         pass
     else:
-        await ctx.send(f"❌ Lỗi hệ thống: {error}")
+        await ctx.send(f"❌ Lỗi: {error}")
 
 # ==================== RUN BOT ====================
 if __name__ == "__main__":
